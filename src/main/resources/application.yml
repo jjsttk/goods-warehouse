@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: goods-warehouse
+
+  profiles:
+    default: dev
+
+  liquibase:
+    change-log: classpath:db/changelog/main-changelog.xml
+
+  jackson:
+    property-naming-strategy: LOWER_CAMEL_CASE
+
+app:
+  mapper:
+    type: conversion-service #Choose between: conversion-service, mapstruct
