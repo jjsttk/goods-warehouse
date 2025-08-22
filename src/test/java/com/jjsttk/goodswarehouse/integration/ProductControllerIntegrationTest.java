@@ -46,7 +46,7 @@ class ProductControllerIntegrationTest {
 
     @Test
     void createProduct_shouldReturnCreatedAndPersisted() throws Exception {
-        var request = MockMvcRequestBuilders.post("/api/products")
+        var request = MockMvcRequestBuilders.post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto));
 
@@ -69,7 +69,7 @@ class ProductControllerIntegrationTest {
 
     @Test
     void getProductById_shouldReturnProduct() throws Exception {
-        var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
+        var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())
@@ -77,7 +77,7 @@ class ProductControllerIntegrationTest {
 
         var created = objectMapper.readValue(json, ProductResponseDto.class);
 
-        var response = mockMvc.perform(MockMvcRequestBuilders.get("/api/products/{id}", created.id()))
+        var response = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", created.id()))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -89,7 +89,7 @@ class ProductControllerIntegrationTest {
 
     @Test
     void updateProduct_shouldReturnUpdatedAndPersisted() throws Exception {
-        var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
+        var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())
@@ -97,7 +97,7 @@ class ProductControllerIntegrationTest {
 
         var created = objectMapper.readValue(json, ProductResponseDto.class);
 
-        var updateRequest = MockMvcRequestBuilders.patch("/api/products/{id}", created.id())
+        var updateRequest = MockMvcRequestBuilders.patch("/api/v1/products/{id}", created.id())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateDto));
 
@@ -116,7 +116,7 @@ class ProductControllerIntegrationTest {
 
     @Test
     void deleteProduct_shouldReturnNoContentAndRemoveFromDb() throws Exception {
-        var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
+        var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())
@@ -124,7 +124,7 @@ class ProductControllerIntegrationTest {
 
         var created = objectMapper.readValue(json, ProductResponseDto.class);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/products/{id}", created.id()))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/products/{id}", created.id()))
                 .andExpect(status().isNoContent());
 
         var exists = productRepository.existsById(created.id());
@@ -133,12 +133,12 @@ class ProductControllerIntegrationTest {
 
     @Test
     void getAllProducts_shouldReturnList() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.post("/api/products")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated());
 
-        var response = mockMvc.perform(MockMvcRequestBuilders.get("/api/products"))
+        var response = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products"))
                 .andExpect(status().isOk())
                 .andReturn().getResponse();
 
@@ -146,7 +146,7 @@ class ProductControllerIntegrationTest {
         assertThat(listNode.isArray()).isTrue();
         assertThat(listNode.size()).isEqualTo(1);
 
-        var productFromDb = productRepository.findAll().get(0);
+        var productFromDb = productRepository.findAll().getFirst();
         assertThat(productFromDb.getName()).isEqualTo(createDto.getName());
     }
 }
