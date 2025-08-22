@@ -1,8 +1,8 @@
 package com.jjsttk.goodswarehouse.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jjsttk.goodswarehouse.dto.request.CreateProductRequestDto;
-import com.jjsttk.goodswarehouse.dto.request.UpdateProductRequestDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestUpdateDto;
 import com.jjsttk.goodswarehouse.dto.response.ProductResponseDto;
 import com.jjsttk.goodswarehouse.repository.ProductRepository;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
@@ -33,8 +33,8 @@ class ProductControllerIntegrationTest {
     @Autowired
     private ProductRepository productRepository;
 
-    private CreateProductRequestDto createDto;
-    private UpdateProductRequestDto updateDto;
+    private ProductRequestCreateDto createDto;
+    private ProductRequestUpdateDto updateDto;
 
     @BeforeEach
     void setUp() {
@@ -45,7 +45,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void createProduct_shouldReturnCreatedAndPersisted() throws Exception {
+    void createProductShouldReturnCreatedAndPersisted() throws Exception {
         var request = MockMvcRequestBuilders.post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto));
@@ -68,7 +68,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void getProductById_shouldReturnProduct() throws Exception {
+    void getProductByIdShouldReturnProduct() throws Exception {
         var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
@@ -88,7 +88,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void updateProduct_shouldReturnUpdatedAndPersisted() throws Exception {
+    void updateProductShouldReturnUpdatedAndPersisted() throws Exception {
         var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
@@ -115,7 +115,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void deleteProduct_shouldReturnNoContentAndRemoveFromDb() throws Exception {
+    void deleteProductShouldReturnNoContentAndRemoveFromDb() throws Exception {
         var json = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
@@ -132,7 +132,7 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void getAllProducts_shouldReturnList() throws Exception {
+    void getAllProductsShouldReturnList() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))

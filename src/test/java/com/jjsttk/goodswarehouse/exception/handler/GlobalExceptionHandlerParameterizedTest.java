@@ -40,11 +40,14 @@ class GlobalExceptionHandlerParameterizedTest {
 
     @ParameterizedTest
     @MethodSource("exceptionProvider")
-    void handleExceptions_shouldReturnExpectedResponse(TestData data) {
+    void handleExceptionsShouldReturnExpectedResponse(TestData data) {
         ResponseEntity<Map<String, Object>> response = switch (data.exception) {
-            case ValidationException validationException -> handler.handleValidationException(validationException);
-            case ResourceNotFoundException resourceNotFoundException -> handler.handleResourceNotFoundException(resourceNotFoundException);
-            case DataIntegrityViolationException dataIntegrityViolationException -> handler.handleDataIntegrityViolationException(dataIntegrityViolationException);
+            case ValidationException validationException ->
+                    handler.handleValidationException(validationException);
+            case ResourceNotFoundException resourceNotFoundException ->
+                    handler.handleResourceNotFoundException(resourceNotFoundException);
+            case DataIntegrityViolationException dataIntegrityViolationException ->
+                    handler.handleDataIntegrityViolationException(dataIntegrityViolationException);
             default -> handler.handleGenericException(data.exception);
         };
 
@@ -63,5 +66,6 @@ class GlobalExceptionHandlerParameterizedTest {
             HttpStatus status,
             String error,
             String message
-    ) {}
+    ) {
+    }
 }

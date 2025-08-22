@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-public class ProductTest {
+class ProductTest {
     private Product product;
     private ProductQuantityUpdateListener listener;
 

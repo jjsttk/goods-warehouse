@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.unit.service;
 
-import com.jjsttk.goodswarehouse.dto.request.CreateProductRequestDto;
-import com.jjsttk.goodswarehouse.dto.request.UpdateProductRequestDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestUpdateDto;
 import com.jjsttk.goodswarehouse.dto.response.ProductResponseDto;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
@@ -26,7 +26,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -40,9 +44,9 @@ class ProductServiceTest {
     private ProductConverter productConverter;
 
     private Product product;
-    private CreateProductRequestDto createDto;
+    private ProductRequestCreateDto createDto;
     private ProductResponseDto responseDto;
-    private UpdateProductRequestDto updateDto;
+    private ProductRequestUpdateDto updateDto;
 
     @BeforeEach
     void setUp() {
@@ -53,20 +57,20 @@ class ProductServiceTest {
     }
 
     @Test
-    void create_shouldSaveProduct_whenArticleIsUniqueAndCategoryValid() {
+    void createShouldSaveProductWhenArticleIsUniqueAndCategoryValid() {
         when(productRepository.findByArticle(createDto.getArticle())).thenReturn(Optional.empty());
         when(productConverter.mapToEntity(createDto)).thenReturn(product);
         when(productRepository.save(product)).thenReturn(product);
         when(productConverter.mapToDto(product)).thenReturn(responseDto);
 
-        ProductResponseDto result = productService.create(createDto);
+        var result = productService.create(createDto);
 
         assertThat(result).isEqualTo(responseDto);
         verify(productRepository, times(1)).save(product);
     }
 
     @Test
-    void create_shouldThrowValidationException_whenArticleAlreadyExists() {
+    void createShouldThrowValidationExceptionWhenArticleAlreadyExists() {
         when(productRepository.findByArticle(createDto.getArticle())).thenReturn(Optional.of(product));
 
         assertThrows(ValidationException.class, () -> productService.create(createDto));
@@ -74,7 +78,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void create_shouldThrowValidationException_whenCategoryNotFound() {
+    void createShouldThrowValidationExceptionWhenCategoryNotFound() {
         createDto.setCategory("doesNotExist");
 
         when(productRepository.findByArticle(createDto.getArticle())).thenReturn(Optional.empty());
@@ -85,19 +89,19 @@ class ProductServiceTest {
 
 
     @Test
-    void getById_shouldReturnProduct_whenProductExist() {
+    void getByIdShouldReturnProductWhenProductExist() {
         var id = product.getId();
         when(productRepository.findById(id)).thenReturn(Optional.of(product));
         when(productConverter.mapToDto(product)).thenReturn(responseDto);
 
-        ProductResponseDto result = productService.getById(id);
+        var result = productService.getById(id);
 
         assertThat(result).isEqualTo(responseDto);
         verify(productRepository, times(1)).findById(id);
     }
 
     @Test
-    void getById_shouldThrowResourceNotFoundException_whenProductDoesNotExist() {
+    void getByIdShouldThrowResourceNotFoundExceptionWhenProductDoesNotExist() {
         var id = UUID.randomUUID();
         when(productRepository.findById(id)).thenReturn(Optional.empty());
 
@@ -107,7 +111,7 @@ class ProductServiceTest {
 
 
     @Test
-    void getAll_shouldReturnEmptyList_whenNoProductsExist() {
+    void getAllShouldReturnEmptyListWhenNoProductsExist() {
         when(productRepository.findAll()).thenReturn(Collections.emptyList());
 
         var result = productService.getAll();
@@ -119,7 +123,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void getAll_shouldReturnListOfProducts_whenProductsExist() {
+    void getAllShouldReturnListOfProductsWhenProductsExist() {
         var anotherProduct = ProductTestDataFactory.getProductEntityWithGeneratedId();
         var anotherProductResponseDto = ProductTestDataFactory.getProductResponseDto(anotherProduct);
         var productList = List.of(product, anotherProduct);
@@ -138,8 +142,8 @@ class ProductServiceTest {
 
 
     @Test
-    void update_shouldNotChangeAnything_whenAllFieldsNull() {
-        var updateDto = UpdateProductRequestDto.builder().build();
+    void updateShouldNotChangeAnythingWhenAllFieldsNull() {
+        updateDto = ProductRequestUpdateDto.builder().build();
         product.setLastQuantityModified(null);
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -160,7 +164,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldNotModifyTimeInLastQuantityModified_whenQuantityDoesNotChanged() {
+    void updateShouldNotModifyTimeInLastQuantityModifiedWhenQuantityDoesNotChanged() {
         updateDto.setName("NewName");
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -177,7 +181,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldModifyFields_whenValidUpdateDto() {
+    void updateShouldModifyFieldsWhenValidUpdateDto() {
         updateDto.setName("NewName");
         updateDto.setPrice(new BigDecimal("150.00"));
         updateDto.setQuantity(product.getQuantity() + 1);
@@ -199,7 +203,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowNotFound_whenProductDoesNotExist() {
+    void updateShouldThrowNotFoundWhenProductDoesNotExist() {
         when(productRepository.findById(product.getId())).thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> productService.update(updateDto, product.getId()));
@@ -208,7 +212,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenArticleIsNotValid() {
+    void updateShouldThrowValidationExceptionWhenArticleIsNotValid() {
         updateDto.setArticle(-332L);
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -219,7 +223,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenQuantityIsNotValid() {
+    void updateShouldThrowValidationExceptionWhenQuantityIsNotValid() {
         updateDto.setQuantity(-15);
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -230,7 +234,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenNameIsNotValid() {
+    void updateShouldThrowValidationExceptionWhenNameIsNotValid() {
         updateDto.setName("         ");
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -241,7 +245,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenInvalidPrice() {
+    void updateShouldThrowValidationExceptionWhenInvalidPrice() {
         updateDto.setPrice(new BigDecimal("-100"));
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -252,7 +256,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenArticleAlreadyExists() {
+    void updateShouldThrowValidationExceptionWhenArticleAlreadyExists() {
         var id = product.getId();
 
         when(productRepository.findById(id)).thenReturn(Optional.of(product));
@@ -267,7 +271,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenDescriptionBlank() {
+    void updateShouldThrowValidationExceptionWhenDescriptionBlank() {
         updateDto.setDescription("   ");
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -278,7 +282,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenCategoryBlank() {
+    void updateShouldThrowValidationExceptionWhenCategoryBlank() {
         updateDto.setCategory("   ");
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -289,7 +293,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldThrowValidationException_whenCategoryInvalid() {
+    void updateShouldThrowValidationExceptionWhenCategoryInvalid() {
         updateDto.setCategory("invalid_category");
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -300,7 +304,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldModifyDescription_whenValid() {
+    void updateShouldModifyDescriptionWhenValid() {
         updateDto.setDescription("Updated Description");
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -315,7 +319,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldModifyCategory_whenValid() {
+    void updateShouldModifyCategoryWhenValid() {
         updateDto.setCategory("electronics");
 
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
@@ -332,7 +336,7 @@ class ProductServiceTest {
 
 
     @Test
-    void delete_shouldDeleteProduct_whenExists() {
+    void deleteShouldDeleteProductWhenExists() {
         when(productRepository.findById(product.getId())).thenReturn(Optional.of(product));
 
         productService.delete(product.getId());
@@ -342,7 +346,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void delete_shouldThrowNotFoundException_whenProductDoesNotExist() {
+    void deleteShouldThrowNotFoundExceptionWhenProductDoesNotExist() {
         var randomId = UUID.randomUUID();
 
         when(productRepository.findById(randomId)).thenReturn(Optional.empty());
@@ -353,7 +357,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void update_shouldUpdateLastQuantityModified_whenQuantityChanges() {
+    void updateShouldUpdateLastQuantityModifiedWhenQuantityChanges() {
         updateDto.setQuantity(product.getQuantity() + 5);
         product.setLastQuantityModified(null);
 

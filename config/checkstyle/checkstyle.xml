@@ -191,6 +191,7 @@
 
         <module name="Indentation">
             <property name="basicOffset" value="4"/>
+            <property name="arrayInitIndent" value="8"/>
         </module>
 
         <!-- https://checkstyle.org/config_filters.html#SuppressionXpathFilter -->

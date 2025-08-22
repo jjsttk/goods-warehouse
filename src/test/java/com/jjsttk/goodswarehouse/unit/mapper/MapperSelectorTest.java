@@ -32,7 +32,7 @@ class MapperSelectorTest {
 
 
     @Test
-    void shouldReturnMapstructMapper_whenTypeIsMapstruct() {
+    void shouldReturnMapstructMapperWhenTypeIsMapstruct() {
         when(mapperProperties.getType()).thenReturn("mapstruct");
 
         var result = mapperSelector.productConverterSelector(
@@ -42,7 +42,7 @@ class MapperSelectorTest {
     }
 
     @Test
-    void shouldReturnConversionServiceMapper_whenTypeIsConversionService() {
+    void shouldReturnConversionServiceMapperWhenTypeIsConversionService() {
         when(mapperProperties.getType()).thenReturn("conversion-service");
 
         ProductConverter result = mapperSelector.productConverterSelector(
@@ -52,7 +52,7 @@ class MapperSelectorTest {
     }
 
     @Test
-    void shouldThrowException_whenTypeIsUnknown() {
+    void shouldThrowExceptionWhenTypeIsUnknown() {
         when(mapperProperties.getType()).thenReturn("unknown");
 
         assertThrows(IllegalArgumentException.class, () ->

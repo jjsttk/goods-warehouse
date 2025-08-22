@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.mapper;
 
-import com.jjsttk.goodswarehouse.dto.request.CreateProductRequestDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
 import com.jjsttk.goodswarehouse.dto.response.ProductResponseDto;
 import com.jjsttk.goodswarehouse.model.entity.Product;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,7 @@ public final class ConversionServiceProductConverter implements ProductConverter
 
 
     @Override
-    public Product mapToEntity(CreateProductRequestDto createDtO) {
+    public Product mapToEntity(ProductRequestCreateDto createDtO) {
         return conversionService.convert(createDtO, Product.class);
     }
 

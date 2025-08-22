@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.testutil;
 
-import com.jjsttk.goodswarehouse.dto.request.CreateProductRequestDto;
-import com.jjsttk.goodswarehouse.dto.request.UpdateProductRequestDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestUpdateDto;
 import com.jjsttk.goodswarehouse.dto.response.ProductResponseDto;
 import com.jjsttk.goodswarehouse.model.entity.Product;
 import org.instancio.Instancio;
@@ -21,8 +21,8 @@ public class ProductTestDataFactory {
         return Instancio.of(Product.class).create();
     }
 
-    public static CreateProductRequestDto getCreateProductRequestDto(Product product) {
-        return Instancio.of(CreateProductRequestDto.class)
+    public static ProductRequestCreateDto getCreateProductRequestDto(Product product) {
+        return Instancio.of(ProductRequestCreateDto.class)
                 .set(field("name"), product.getName())
                 .set(field("article"), product.getArticle())
                 .set(field("category"), product.getCategory().name())
@@ -32,8 +32,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static UpdateProductRequestDto getUpdateProductRequestDto(Product product) {
-        return Instancio.of(UpdateProductRequestDto.class)
+    public static ProductRequestUpdateDto getUpdateProductRequestDto(Product product) {
+        return Instancio.of(ProductRequestUpdateDto.class)
                 .set(field("name"), product.getName())
                 .set(field("article"), product.getArticle())
                 .set(field("category"), product.getCategory().name())

@@ -1,38 +1,38 @@
 package com.jjsttk.goodswarehouse.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+
+
+
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;
-
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public final class CreateProductRequestDto implements NormalizableDto {
-    @NotBlank
+public final class ProductRequestUpdateDto implements NormalizableDto {
+
+    @Nullable
     private String name;
 
-    @NotNull
+    @Nullable
     private Long article;
 
-    @NotBlank
+    @Nullable
     private String description;
 
-    @NotBlank
+    @Nullable
     private String category;
 
-    @NotNull
-    @Positive
+    @Nullable
     private BigDecimal price;
 
-    @NotNull
-    @Positive
+    @Nullable
     private Integer quantity;
 }

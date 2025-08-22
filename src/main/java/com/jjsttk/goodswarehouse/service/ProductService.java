@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service;
 
-import com.jjsttk.goodswarehouse.dto.request.CreateProductRequestDto;
-import com.jjsttk.goodswarehouse.dto.request.UpdateProductRequestDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestUpdateDto;
 import com.jjsttk.goodswarehouse.dto.response.ProductResponseDto;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
@@ -42,7 +42,7 @@ public final class ProductService {
                 ));
     }
 
-    public ProductResponseDto create(CreateProductRequestDto createDto) {
+    public ProductResponseDto create(ProductRequestCreateDto createDto) {
         checkArticleUnique(createDto.getArticle());
         DtoNormalizer.normalize(createDto);
         validateCategory(createDto.getCategory());
@@ -53,7 +53,7 @@ public final class ProductService {
         return productConverter.mapToDto(saved);
     }
 
-    public ProductResponseDto update(UpdateProductRequestDto updateDto, UUID id) {
+    public ProductResponseDto update(ProductRequestUpdateDto updateDto, UUID id) {
         Product entity = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         ExceptionMessage.entityNotFoundMessage(Product.class, id)
@@ -103,29 +103,35 @@ public final class ProductService {
 
 
 
-    private void updateName(UpdateProductRequestDto dto, Product entity) {
+    private void updateName(ProductRequestUpdateDto dto, Product entity) {
         Optional.ofNullable(dto.getName())
                 .ifPresent(name -> {
-                    if (name.isBlank()) throw new ValidationException(
-                            ValidationMessage.nameCannotBeBlankMessage());
+                    if (name.isBlank()) {
+                        throw new ValidationException(
+                                ValidationMessage.nameCannotBeBlankMessage());
+                    }
                     entity.setName(name);
                 });
     }
 
-    private void updateDescription(UpdateProductRequestDto dto, Product entity) {
+    private void updateDescription(ProductRequestUpdateDto dto, Product entity) {
         Optional.ofNullable(dto.getDescription())
                 .ifPresent(desc -> {
-                    if (desc.isBlank()) throw new ValidationException(
-                            ValidationMessage.descriptionCannotBeBlankMessage());
+                    if (desc.isBlank()) {
+                        throw new ValidationException(
+                                ValidationMessage.descriptionCannotBeBlankMessage());
+                    }
                     entity.setDescription(desc);
                 });
     }
 
-    private void updateCategory(UpdateProductRequestDto dto, Product entity) {
+    private void updateCategory(ProductRequestUpdateDto dto, Product entity) {
         Optional.ofNullable(dto.getCategory())
                 .ifPresent(category -> {
-                    if (category.isBlank()) throw new ValidationException(
-                            ValidationMessage.categoryCannotBeBlankMessage());
+                    if (category.isBlank()) {
+                        throw new ValidationException(
+                                ValidationMessage.categoryCannotBeBlankMessage());
+                    }
                     try {
                         entity.setCategory(Category.valueOf(category.toUpperCase()));
                     } catch (IllegalArgumentException e) {
@@ -135,35 +141,42 @@ public final class ProductService {
                 });
     }
 
-    private void updateArticle(UpdateProductRequestDto dto, Product entity) {
+    private void updateArticle(ProductRequestUpdateDto dto, Product entity) {
         Optional.ofNullable(dto.getArticle())
                 .ifPresent(article -> {
-                    if (article < 0) throw new ValidationException(
-                            ValidationMessage.articleIsNotValidMessage());
+                    if (article < 0) {
+                        throw new ValidationException(
+                                ValidationMessage.articleIsNotValidMessage());
+                    }
 
                     boolean exists = productRepository.existsByArticleAndIdNot(article, entity.getId());
-                    if (exists) throw new ValidationException(
-                            ValidationMessage.notUniqueArticleMessage());
+                    if (exists) {
+                        throw new ValidationException(
+                                ValidationMessage.notUniqueArticleMessage());
+                    }
 
                     entity.setArticle(article);
                 });
     }
 
-    private void updatePrice(UpdateProductRequestDto dto, Product entity) {
+    private void updatePrice(ProductRequestUpdateDto dto, Product entity) {
         Optional.ofNullable(dto.getPrice())
                 .ifPresent(price -> {
-                    if (price.compareTo(BigDecimal.ZERO) <= 0)
+                    if (price.compareTo(BigDecimal.ZERO) <= 0) {
                         throw new ValidationException(
                                 ValidationMessage.priceIsNotValidMessage());
+                    }
                     entity.setPrice(price);
                 });
     }
 
-    private void updateQuantity(UpdateProductRequestDto dto, Product entity) {
+    private void updateQuantity(ProductRequestUpdateDto dto, Product entity) {
         Optional.ofNullable(dto.getQuantity())
                 .ifPresent(quantity -> {
-                    if (quantity < 0) throw new ValidationException(
-                            ValidationMessage.quantityIsNotValidMessage());
+                    if (quantity < 0) {
+                        throw new ValidationException(
+                                ValidationMessage.quantityIsNotValidMessage());
+                    }
 
                     if (!Objects.equals(entity.getQuantity(), quantity)) {
                         entity.setQuantity(quantity);

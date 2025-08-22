@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.unit.mapper.converter;
 
-import com.jjsttk.goodswarehouse.dto.request.CreateProductRequestDto;
-import com.jjsttk.goodswarehouse.mapper.converter.CreateProductRequestDtoToProductConverter;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
+import com.jjsttk.goodswarehouse.mapper.converter.ProductRequestCreateDtoToProductConverter;
 import com.jjsttk.goodswarehouse.model.entity.Product;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,22 +10,22 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class CreateProductRequestDtoToProductConverterTest {
+class ProductRequestCreateDtoToProductConverterTest {
 
-    private CreateProductRequestDtoToProductConverter converter;
+    private ProductRequestCreateDtoToProductConverter converter;
     private Product product;
-    private CreateProductRequestDto createDto;
+    private ProductRequestCreateDto createDto;
 
     @BeforeEach
     void setUp() {
-        converter = new CreateProductRequestDtoToProductConverter();
+        converter = new ProductRequestCreateDtoToProductConverter();
         product = ProductTestDataFactory.getProductEntityWithGeneratedId();
         createDto = ProductTestDataFactory.getCreateProductRequestDto(product);
 
     }
 
     @Test
-    void convert_shouldMapAllFieldsCorrectly() {
+    void convertShouldMapAllFieldsCorrectly() {
         var expectedProduct = product;
         var actualProduct = converter.convert(createDto);
 
@@ -33,7 +33,7 @@ class CreateProductRequestDtoToProductConverterTest {
     }
 
     @Test
-    void convert_shouldThrowException_whenInvalidCategory() {
+    void convertShouldThrowExceptionWhenInvalidCategory() {
         createDto.setCategory("exception category");
 
         assertThrows(IllegalArgumentException.class,

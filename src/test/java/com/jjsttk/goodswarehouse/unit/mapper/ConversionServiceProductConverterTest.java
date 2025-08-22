@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.unit.mapper;
 
-import com.jjsttk.goodswarehouse.dto.request.CreateProductRequestDto;
+import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
 import com.jjsttk.goodswarehouse.dto.response.ProductResponseDto;
 import com.jjsttk.goodswarehouse.mapper.ConversionServiceProductConverter;
 import com.jjsttk.goodswarehouse.model.entity.Product;
@@ -29,7 +29,7 @@ class ConversionServiceProductConverterTest {
     private ConversionServiceProductConverter converter;
 
     private Product product;
-    private CreateProductRequestDto createDto;
+    private ProductRequestCreateDto createDto;
     private ProductResponseDto responseDto;
 
     @BeforeEach
@@ -40,7 +40,7 @@ class ConversionServiceProductConverterTest {
     }
 
     @Test
-    void mapToEntity_shouldDelegateToConversionService() {
+    void mapToEntityShouldDelegateToConversionService() {
         var expectedProduct = product;
         when(conversionService.convert(createDto, Product.class)).thenReturn(expectedProduct);
         var actual = converter.mapToEntity(createDto);
@@ -50,7 +50,7 @@ class ConversionServiceProductConverterTest {
     }
 
     @Test
-    void mapToDto_shouldDelegateToConversionService() {
+    void mapToDtoShouldDelegateToConversionService() {
         var expectedDto = responseDto;
 
         when(conversionService.convert(product, ProductResponseDto.class)).thenReturn(expectedDto);

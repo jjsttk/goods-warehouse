@@ -18,7 +18,7 @@ public final class NormalizeData {
     }
 
     public static BigDecimal normalizePrice(BigDecimal price) {
-        return price == null ? null: price.setScale(2, RoundingMode.HALF_UP);
+        return price == null ? null : price.setScale(2, RoundingMode.HALF_UP);
     }
 
 }

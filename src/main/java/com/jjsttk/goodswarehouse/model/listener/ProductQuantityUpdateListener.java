@@ -10,9 +10,7 @@ public final class ProductQuantityUpdateListener {
     public void prePersist(Product product) {
         if (product.getQuantity() == null) {
             product.setQuantity(0);
-        } else {
-            product.setLastQuantityModified(LocalDateTime.now());
         }
+        product.setLastQuantityModified(LocalDateTime.now());
     }
-
 }

@@ -33,6 +33,7 @@ dependencies {
     implementation ("org.openapitools:jackson-databind-nullable:0.2.6")
     implementation ("org.instancio:instancio-junit:5.0.2")
     implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    annotationProcessor ("org.projectlombok:lombok-mapstruct-binding:0.2.0")
 
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
