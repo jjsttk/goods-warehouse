@@ -11,7 +11,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @DataJpaTest
-class ProductRepositoryTest {
+class ProductRepositoryIntegrationTest {
 
     private Product product;
 

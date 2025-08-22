@@ -14,6 +14,7 @@ import com.jjsttk.goodswarehouse.utils.ValidationMessage;
 import jakarta.validation.ValidationException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -22,18 +23,41 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Service class for managing {@link Product} entities.
+ * <p>
+ * Provides business logic for CRUD operations with products,
+ * including validation, normalization of DTOs, and mapping
+ * between entities and response objects.
+ * </p>
+ *
+ * <p>All modifying operations are wrapped with {@link org.springframework.transaction.annotation.Transactional}
+ * to ensure data consistency in concurrent environments.</p>
+ */
 @Service
 @AllArgsConstructor
-public final class ProductService {
+public class ProductService {
     private final ProductRepository productRepository;
     private final ProductConverter productConverter;
 
+    /**
+     * Retrieves all products from the database.
+     *
+     * @return list of {@link ProductResponseDto} objects representing all products
+     */
     public List<ProductResponseDto> getAll() {
         return productRepository.findAll().stream()
                 .map(productConverter::mapToDto)
                 .toList();
     }
 
+    /**
+     * Retrieves a product by its unique identifier.
+     *
+     * @param id the UUID of the product
+     * @return {@link ProductResponseDto} representation of the found product
+     * @throws ResourceNotFoundException if no product is found with the given id
+     */
     public ProductResponseDto getById(UUID id) {
         return productRepository.findById(id)
                 .map(productConverter::mapToDto)
@@ -42,6 +66,17 @@ public final class ProductService {
                 ));
     }
 
+    /**
+     * Creates a new product in the database.
+     * <p>
+     * Performs validation of article uniqueness and category correctness.
+     * </p>
+     *
+     * @param createDto request DTO containing product creation data
+     * @return {@link ProductResponseDto} of the created product
+     * @throws ValidationException if the article is not unique or category is invalid
+     */
+    @Transactional
     public ProductResponseDto create(ProductRequestCreateDto createDto) {
         checkArticleUnique(createDto.getArticle());
         DtoNormalizer.normalize(createDto);
@@ -53,6 +88,20 @@ public final class ProductService {
         return productConverter.mapToDto(saved);
     }
 
+    /**
+     * Updates an existing product with new values.
+     * <p>
+     * Only non-null fields from the DTO will be updated. Ensures
+     * article uniqueness, category validity, and correct constraints.
+     * </p>
+     *
+     * @param updateDto DTO containing updated fields
+     * @param id        UUID of the product to update
+     * @return updated {@link ProductResponseDto}
+     * @throws ResourceNotFoundException if the product is not found
+     * @throws ValidationException       if validation fails (e.g. duplicate article, invalid price)
+     */
+    @Transactional
     public ProductResponseDto update(ProductRequestUpdateDto updateDto, UUID id) {
         Product entity = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -73,6 +122,13 @@ public final class ProductService {
         return productConverter.mapToDto(entity);
     }
 
+    /**
+     * Deletes a product by its UUID.
+     *
+     * @param id UUID of the product to delete
+     * @throws ResourceNotFoundException if no product exists with the given id
+     */
+    @Transactional
     public void delete(UUID id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
@@ -81,6 +137,12 @@ public final class ProductService {
     }
 
 
+    /**
+     * Ensures that the product article is unique.
+     *
+     * @param article product article number
+     * @throws ValidationException if article already exists
+     */
     private void checkArticleUnique(Long article) {
         productRepository.findByArticle(article)
                 .ifPresent(p -> {
@@ -90,6 +152,12 @@ public final class ProductService {
                 });
     }
 
+    /**
+     * Validates if category string corresponds to an existing {@link Category}.
+     *
+     * @param categoryStr category string
+     * @throws ValidationException if category is invalid
+     */
     private void validateCategory(String categoryStr) {
         try {
             Category.valueOf(categoryStr.toUpperCase());
@@ -100,8 +168,7 @@ public final class ProductService {
         }
     }
 
-
-
+    // ---------------- Private Update Helpers ---------------- //
 
     private void updateName(ProductRequestUpdateDto dto, Product entity) {
         Optional.ofNullable(dto.getName())

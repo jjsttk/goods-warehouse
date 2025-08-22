@@ -30,7 +30,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
     annotationProcessor ("org.mapstruct:mapstruct-processor:1.6.2")
-    implementation ("org.openapitools:jackson-databind-nullable:0.2.6")
     implementation ("org.instancio:instancio-junit:5.0.2")
     implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
     annotationProcessor ("org.projectlombok:lombok-mapstruct-binding:0.2.0")
@@ -42,7 +41,6 @@ dependencies {
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    developmentOnly("org.springframework.boot:spring-boot-docker-compose")
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.projectlombok:lombok")
@@ -52,4 +50,5 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    systemProperty ("spring.profiles.active", "test")
 }
