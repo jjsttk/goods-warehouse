@@ -22,12 +22,12 @@ Spring Boot приложение для управления складом то
 
 ### Быстрый старт с профилем dev и базой h2 для локальной разработки и тестирования:
 ````
-git clone -b develop --single-branch https://github.com/jjsttk/goods-warehouse && cd goods-warehouse && ./gradlew bootRun
+git clone -b feature --single-branch https://github.com/jjsttk/goods-warehouse && cd goods-warehouse && ./gradlew bootRun
 ````
 ### 1. Клонирование репозитория
 
 ````
-git clone -b develop --single-branch https://github.com/jjsttk/goods-warehouse
+git clone -b feature --single-branch https://github.com/jjsttk/goods-warehouse
 cd goods-warehouse
 ````
 
