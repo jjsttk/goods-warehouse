@@ -76,7 +76,7 @@ goods-warehouse
 | Переменная | Описание                                                  | Пример                                                                                             | Обязательная                     |
 |--------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------|
 | `SPRING_PROFILES_ACTIVE` | Активный профиль Spring Boot                              | `prod`, `dev`                                                                                      | Нет (default: `dev`)               |
-| `SPRING_DATASOURCE_URL` | URL подключения к базе данных                             | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (для профиля prod)            |
+| `DATABASE_URL` | URL подключения к базе данных                             | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (для профиля prod)            |
 | `APP_MAPPER_TYPE`     | Выбор активного маппера для entity <-> dto преобразований | `mapstruct`, `conversion-service`                                                                   | Нет (default: `conversion-service` |
 
 
