@@ -60,7 +60,7 @@ docker build -t goods-warehouse .
 
 docker run -p 8080:8080 \
 -e SPRING_PROFILES_ACTIVE=prod \
--e DATABASE_URL="jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]" \
+-e DATABASE_URL="jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]" \
 goods-warehouse
 ````
 

@@ -1,164 +1,212 @@
 package com.jjsttk.goodswarehouse.controller.api;
 
-import com.jjsttk.goodswarehouse.dto.request.ProductRequestCreateDto;
-import com.jjsttk.goodswarehouse.dto.request.ProductRequestUpdateDto;
-import com.jjsttk.goodswarehouse.dto.response.ProductResponseDto;
-import com.jjsttk.goodswarehouse.service.ProductService;
+import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
+import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
+import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
+import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
+import com.jjsttk.goodswarehouse.exception.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
 import java.util.UUID;
 
 /**
- * REST controller for managing products in the warehouse.
+ * REST API interface for managing warehouse products.
+ * Provides endpoints for product CRUD operations with validation and pagination support.
+ * Time format: All timestamps are returned in ISO-8601 format with UTC offset
+ * (e.g., 2023-10-05T12:00:00+00:00). Clients can use the provided offset
+ * for accurate timezone conversion without additional calculations.
  */
-@RestController
-@RequestMapping("/api/v1/products")
-@AllArgsConstructor
-@Tag(name = "Products", description = "CRUD operations for warehouse products")
-public class ProductController {
-
-    private final ProductService productService;
+@Tag(name = "Product Management", description = "APIs for managing products in the warehouse")
+public interface ProductController {
 
     /**
-     * Get all products.
+     * Retrieves a paginated list of products from the warehouse.
+     * Uses Spring Data's 0-based pagination (page 0 = first page).
      *
-     * @return list of {@link ProductResponseDto}
+     * @param pageableRequest pagination parameters (page number starts from 0 in the response), size, sorting
+     * @return paginated response with product list and metadata
      */
     @Operation(
-            summary = "Get all products",
-            description = "Returns a list of all available products",
+            summary = "Get paginated products",
+            description = "Returns a paginated list of products with metadata including totalCount. "
+                    + "All timestamps include timezone offset information. "
+                    + "Supports sorting by any product field and custom page size. "
+                    + "Uses standard Spring Data 0-based pagination.",
+            parameters = {
+                    @Parameter(name = "page", description = "Page number (0-based)", example = "0"),
+                    @Parameter(name = "size", description = "Number of items per page", example = "20"),
+                    @Parameter(name = "sort", description = "Sorting criteria in the format: property(,asc|desc). "
+                            + "Default sort order is ascending. Multiple sort criteria are supported.",
+                            example = "name,asc")
+            },
             responses = {
-                    @ApiResponse(responseCode = "200", description = "List retrieved successfully",
+                    @ApiResponse(responseCode = "200",
+                            description = "Paginated products retrieved successfully",
                             content = @Content(mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = ProductResponseDto.class))))
+                                    schema = @Schema(implementation = GetPageProductResponse.class))),
+                    @ApiResponse(responseCode = "400",
+                            description = "Invalid pagination parameters",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @GetMapping
-    public ResponseEntity<List<ProductResponseDto>> index() {
-        return ResponseEntity.ok(productService.getAll());
-    }
+    GetPageProductResponse<GetProductResponse> getAllProducts(
+            @Parameter(description = "Pagination and sorting parameters. Example: ?page=1&size=10&sort=name,asc",
+                    hidden = true)
+            @PageableDefault(page = 0, size = 20, sort = "id", direction = Sort.Direction.ASC)
+            Pageable pageableRequest
+    );
 
     /**
-     * Get product by ID.
+     * Retrieves a product by its unique ID.
      *
      * @param id UUID of the product
-     * @return {@link ProductResponseDto}
+     * @return product details
      */
     @Operation(
             summary = "Get product by ID",
-            description = "Returns a single product by its UUID",
+            description = "Returns detailed information about a product using its unique identifier.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Product found",
+                    @ApiResponse(responseCode = "200",
+                            description = "Product retrieved successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ProductResponseDto.class))),
-                    @ApiResponse(responseCode = "404", description = "Product not found",
-                            content = @Content(mediaType = "application/json"))
+                                    schema = @Schema(implementation = GetProductResponse.class))),
+                    @ApiResponse(responseCode = "404",
+                            description = "Product not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @GetMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> show(
-            @Parameter(description = "UUID of the product") @PathVariable UUID id) {
-        return ResponseEntity.ok(productService.getById(id));
-    }
+    GetProductResponse getProductById(
+            @Parameter(description = "UUID of the product", required = true,
+                    example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id
+    );
 
     /**
-     * Create a new product.
+     * Creates a new product in the warehouse.
      *
-     * @param createDto request body with product details
-     * @return created {@link ProductResponseDto}
+     * @param createProductRequest product creation data
+     * @return UUID of the created product
      */
     @Operation(
             summary = "Create a new product",
-            description = "Creates and stores a new product in the warehouse",
+            description = "Adds a new product to the warehouse. Returns the UUID of the created product.",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Product created successfully",
+                    @ApiResponse(responseCode = "201",
+                            description = "Product created successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ProductResponseDto.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid input data",
-                            content = @Content(mediaType = "application/json"))
+                                    schema = @Schema(implementation = UUID.class))),
+                    @ApiResponse(responseCode = "400",
+                            description = "Validation failed or invalid input",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "422",
+                            description = "Business rule conflict or data integrity violation",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @PostMapping
-    public ResponseEntity<ProductResponseDto> create(
+    UUID createProduct(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Product data to create",
+                    description = "Product creation payload",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = ProductRequestCreateDto.class))
+                    content = @Content(schema = @Schema(implementation = CreateProductRequest.class))
             )
-            @Valid @RequestBody ProductRequestCreateDto createDto) {
-        var productResponseDto = productService.create(createDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(productResponseDto);
-    }
+            @Valid @RequestBody CreateProductRequest createProductRequest
+    );
 
     /**
-     * Update an existing product.
+     * Updates an existing product.
      *
-     * @param id        UUID of the product
-     * @param updateDto request body with updated fields
-     * @return updated {@link ProductResponseDto}
+     * @param id UUID of the product
+     * @param updateDto updated product data
+     * @return UUID of the updated product
      */
     @Operation(
             summary = "Update an existing product",
-            description = "Updates product details by its UUID",
+            description = "Updates details of an existing product and returns the UUID of the updated product.",
             responses = {
-                    @ApiResponse(responseCode = "200", description = "Product updated successfully",
+                    @ApiResponse(responseCode = "200",
+                            description = "Product updated successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ProductResponseDto.class))),
-                    @ApiResponse(responseCode = "404", description = "Product not found",
-                            content = @Content(mediaType = "application/json"))
+                                    schema = @Schema(implementation = UUID.class))),
+                    @ApiResponse(responseCode = "400",
+                            description = "Validation failed or invalid input",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "404",
+                            description = "Product not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "422",
+                            description = "Business rule conflict or data integrity violation",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @PatchMapping("/{id}")
-    public ResponseEntity<ProductResponseDto> update(
-            @Parameter(description = "UUID of the product") @PathVariable UUID id,
+    UUID updateProductById(
+            @Parameter(description = "UUID of the product to update", required = true,
+                    example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                    description = "Product data to update",
+                    description = "Product update payload",
                     required = true,
-                    content = @Content(schema = @Schema(implementation = ProductRequestUpdateDto.class))
+                    content = @Content(schema = @Schema(implementation = UpdateProductRequest.class))
             )
-            @Valid @RequestBody ProductRequestUpdateDto updateDto) {
-        return ResponseEntity.ok(productService.update(updateDto, id));
-    }
+            @Valid @RequestBody UpdateProductRequest updateDto
+    );
 
     /**
-     * Delete product by ID.
+     * Deletes a product by UUID.
      *
      * @param id UUID of the product
-     * @return HTTP 204 if deletion is successful
      */
     @Operation(
             summary = "Delete a product",
-            description = "Removes a product by its UUID",
+            description = "Deletes a product from the warehouse using its unique identifier.",
             responses = {
-                    @ApiResponse(responseCode = "204", description = "Product deleted successfully",
-                            content = @Content(mediaType = "application/json")),
-                    @ApiResponse(responseCode = "404", description = "Product not found",
-                            content = @Content(mediaType = "application/json"))
+                    @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
+                    @ApiResponse(responseCode = "404",
+                            description = "Product not found",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @Parameter(description = "UUID of the product") @PathVariable UUID id) {
-        productService.delete(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+    void deleteProductById(
+            @Parameter(description = "UUID of the product to delete", required = true,
+                    example = "123e4567-e89b-12d3-a456-426614174000")
+            @PathVariable UUID id
+    );
 }

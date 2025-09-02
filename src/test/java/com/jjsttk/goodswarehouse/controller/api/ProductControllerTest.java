@@ -1,0 +1,334 @@
+package com.jjsttk.goodswarehouse.controller.api;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
+import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
+import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
+import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
+import com.jjsttk.goodswarehouse.enums.Category;
+import com.jjsttk.goodswarehouse.exception.FieldValidationException;
+import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.exception.handler.GlobalExceptionHandler;
+import com.jjsttk.goodswarehouse.mapper.ProductConverter;
+import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
+import com.jjsttk.goodswarehouse.service.ProductService;
+import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
+import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
+import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
+import com.jjsttk.goodswarehouse.controller.request.validation.UniqueArticleValidator;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorFactory;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@ExtendWith(MockitoExtension.class)
+class ProductControllerTest {
+
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
+    private UniqueArticleValidator uniqueArticleValidator;
+
+    @Mock
+    private ProductRepository repositoryMock;
+
+    @Mock
+    private ProductConverter converterMock;
+
+    @Mock
+    private ProductService productServiceMock;
+
+    @InjectMocks
+    private ProductControllerImpl sut;
+
+    private CreateProductRequest controllerRequestStub;
+    private UpdateProductRequest controllerUpdateRequestStub;
+    private GetProductResponse controllerResponseStub;
+
+    private ProductCreateCommand createCommandStub;
+    private ProductUpdateCommand updateCommandStub;
+    private ProductServiceResponse serviceResponseStub;
+
+    private ProductEntity productEntityStub;
+
+    @BeforeEach
+    void setUp() {
+        uniqueArticleValidator = new UniqueArticleValidator(repositoryMock);
+
+        Validator validator;
+        try (ValidatorFactory factory = Validation.byDefaultProvider()
+                .configure()
+                .constraintValidatorFactory(new ConstraintValidatorFactory() {
+                    @SuppressWarnings("unchecked")
+                    @Override
+                    public <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
+                        if (key == UniqueArticleValidator.class) {
+                            return (T) uniqueArticleValidator;
+                        }
+                        try {
+                            return key.getDeclaredConstructor().newInstance();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+
+                    @Override
+                    public void releaseInstance(ConstraintValidator<?, ?> instance) {
+                        // stub
+                    }
+                })
+                .buildValidatorFactory()) {
+            validator = factory.getValidator();
+        }
+
+        mockMvc = MockMvcBuilders.standaloneSetup(sut)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
+                .setValidator(new org.springframework.validation.beanvalidation.SpringValidatorAdapter(validator))
+                .build();
+
+        objectMapper = new ObjectMapper();
+
+        productEntityStub = ProductTestDataFactory.getProductEntityWithGeneratedId();
+        controllerRequestStub = ProductTestDataFactory.getCreateProductRequest(productEntityStub);
+        controllerUpdateRequestStub = ProductTestDataFactory.getUpdateProductRequest(productEntityStub);
+        controllerResponseStub = ProductTestDataFactory.getGetProductResponse(productEntityStub);
+
+        createCommandStub = ProductTestDataFactory.getProductCreateCommand(productEntityStub);
+        updateCommandStub = ProductTestDataFactory.getProductUpdateCommand(productEntityStub);
+        serviceResponseStub = ProductTestDataFactory.getProductServiceResponse(productEntityStub);
+    }
+
+    @Test
+    void getProductByIdShouldReturn404WhenNotFound() throws Exception {
+        var id = controllerResponseStub.id();
+        when(productServiceMock.getById(id))
+                .thenThrow(new ResourceNotFoundException("Product not found"));
+
+        mockMvc.perform(get("/api/v1/products/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Product not found"))
+                .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"))
+                .andExpect(jsonPath("$.source").isNotEmpty())
+                .andExpect(jsonPath("$.dateTime").isNotEmpty());
+    }
+
+    @Test
+    void createProductShouldReturn400WhenValidationFails() throws Exception {
+        var invalidRequest = controllerRequestStub;
+        invalidRequest.setName("");
+        invalidRequest.setArticle(productEntityStub.getArticle());
+        invalidRequest.setPrice(new BigDecimal("-50"));
+        invalidRequest.setQuantity(new BigDecimal("-100"));
+        invalidRequest.setDescription("      ");
+        invalidRequest.setCategory(null);
+
+        when(repositoryMock.findByArticle(any())).thenReturn(Optional.of(productEntityStub));
+
+        mockMvc.perform(post("/api/v1/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidRequest)))
+                .andExpect(jsonPath("$.validationErrors.name").isArray())
+                .andExpect(jsonPath("$.validationErrors.name[0]").value("Name must not be blank"))
+                .andExpect(jsonPath("$.validationErrors.price").isArray())
+                .andExpect(jsonPath("$.validationErrors.price[0]").value("Price must be positive"))
+                .andExpect(jsonPath("$.validationErrors.quantity").isArray())
+                .andExpect(jsonPath("$.validationErrors.quantity[0]").value("Quantity must be positive or zero"))
+                .andExpect(jsonPath("$.validationErrors.category").isArray())
+                .andExpect(jsonPath("$.validationErrors.category[0]").value("Category must not be null"))
+                .andExpect(jsonPath("$.validationErrors.article").isArray())
+                .andExpect(jsonPath("$.validationErrors.article[0]")
+                        .value("ProductEntity with id = %s, already uses this article".formatted(
+                                productEntityStub.getId()
+                        )))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.exception").exists())
+                .andExpect(jsonPath("$.source").exists())
+                .andExpect(jsonPath("$.dateTime").exists());
+    }
+
+
+    @Test
+    void updateProductShouldReturn400WhenValidationFails() throws Exception {
+        var id = UUID.randomUUID();
+        var invalidUpdate = controllerUpdateRequestStub;
+        invalidUpdate.setName("       ");
+        invalidUpdate.setPrice(new BigDecimal("-50"));
+        invalidUpdate.setDescription("");
+        invalidUpdate.setQuantity(new BigDecimal("-110.05"));
+        invalidUpdate.setCategory(null);
+
+        when(productServiceMock.update(any(), any()))
+                .thenThrow(new FieldValidationException(Map.of(
+                        "name", List.of("Name must not be blank"),
+                        "price", List.of("Price must be positive"),
+                        "quantity", List.of("Quantity must be positive or zero"),
+                        "description", List.of("Description must not be blank"),
+                        "category", List.of("Category must not be null")
+                )));
+
+        mockMvc.perform(patch("/api/v1/products/{id}", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invalidUpdate)))
+                .andExpect(jsonPath("$.validationErrors.name").isArray())
+                .andExpect(jsonPath("$.validationErrors.name[0]").value("Name must not be blank"))
+                .andExpect(jsonPath("$.validationErrors.price").isArray())
+                .andExpect(jsonPath("$.validationErrors.price[0]").value("Price must be positive"))
+                .andExpect(jsonPath("$.validationErrors.description").isArray())
+                .andExpect(jsonPath("$.validationErrors.description[0]").value("Description must not be blank"))
+                .andExpect(jsonPath("$.validationErrors.quantity").isArray())
+                .andExpect(jsonPath("$.validationErrors.quantity[0]").value("Quantity must be positive or zero"))
+                .andExpect(jsonPath("$.validationErrors.category").isArray())
+                .andExpect(jsonPath("$.validationErrors.category[0]").value("Category must not be null"))
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.exception").exists())
+                .andExpect(jsonPath("$.source").exists())
+                .andExpect(jsonPath("$.dateTime").exists());
+    }
+
+    @Test
+    void createProductShouldReturn201WhenValidRequest() throws Exception {
+        var expectedResponse = controllerResponseStub;
+
+        when(converterMock.mapToServiceCommand(controllerRequestStub)).thenReturn(createCommandStub);
+        when(productServiceMock.create(createCommandStub)).thenReturn(serviceResponseStub);
+
+        var response = mockMvc.perform(post("/api/v1/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(controllerRequestStub)))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse();
+
+        var id = objectMapper.readValue(response.getContentAsString(), UUID.class);
+
+        assertThat(id).isEqualByComparingTo(expectedResponse.id());
+    }
+
+    @Test
+    void updateProductShouldReturn200WhenValidRequest() throws Exception {
+        controllerUpdateRequestStub.setCategory(Category.CLOTHING);
+
+        when(converterMock.mapToServiceCommand(controllerUpdateRequestStub))
+                .thenReturn(updateCommandStub);
+        when(productServiceMock.update(updateCommandStub, productEntityStub.getId()))
+                .thenReturn(serviceResponseStub);
+
+        var response = mockMvc.perform(patch("/api/v1/products/{id}", productEntityStub.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(controllerUpdateRequestStub)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        var resultId = objectMapper.readValue(response.getContentAsString(), UUID.class);
+        var expectedId = productEntityStub.getId();
+        assertThat(resultId).isEqualByComparingTo(expectedId);
+    }
+
+    @Test
+    void getAllProductsShouldReturn200WithPage() throws Exception {
+        var pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+        var servicePage = new PageImpl<>(List.of(serviceResponseStub), pageable, 1);
+        var expectedPageResponse =
+                ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
+
+        when(productServiceMock.getAll(any(Pageable.class))).thenReturn(servicePage);
+        when(converterMock.mapToControllerResponse(servicePage)).thenReturn(expectedPageResponse);
+
+        mockMvc.perform(get("/api/v1/products")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "name,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(controllerResponseStub.id().toString()))
+                .andExpect(jsonPath("$.content[0].name").value(controllerResponseStub.name()))
+                .andExpect(jsonPath("$.totalCount").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.currentPage").value(0))
+                .andExpect(jsonPath("$.pageSize").value(10))
+                .andExpect(jsonPath("$.currentPageSize").value(1));
+    }
+
+    @Test
+    void getAllProductsShouldReturnEmptyPage() throws Exception {
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<ProductServiceResponse> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
+        GetPageProductResponse<GetProductResponse> expectedPageResponse =
+                ProductTestDataFactory.getGetPageProductResponse(pageable, List.of());
+
+        when(productServiceMock.getAll(any(Pageable.class))).thenReturn(emptyServicePage);
+        when(converterMock.mapToControllerResponse(emptyServicePage)).thenReturn(expectedPageResponse);
+
+        mockMvc.perform(get("/api/v1/products")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalCount").value(0))
+                .andExpect(jsonPath("$.totalPages").value(0))
+                .andExpect(jsonPath("$.currentPage").value(0))
+                .andExpect(jsonPath("$.pageSize").value(10))
+                .andExpect(jsonPath("$.currentPageSize").value(0));
+    }
+
+    @Test
+    void deleteProductShouldReturn204WhenExists() throws Exception {
+        UUID id = productEntityStub.getId();
+
+        mockMvc.perform(delete("/api/v1/products/{id}", id))
+                .andExpect(status().isNoContent());
+
+        verify(productServiceMock).delete(id);
+    }
+
+    @Test
+    void deleteProductShouldReturn404WhenNotExists() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        doThrow(new ResourceNotFoundException("Product not found"))
+                .when(productServiceMock).delete(id);
+
+        mockMvc.perform(delete("/api/v1/products/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Product not found"))
+                .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"));
+
+        verify(productServiceMock).delete(id);
+    }
+}

@@ -28,6 +28,7 @@ repositories {
 dependencies {
     implementation ("org.mapstruct:mapstruct:1.6.2")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.liquibase:liquibase-core")
     testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
     annotationProcessor ("org.mapstruct:mapstruct-processor:1.6.2")
     implementation ("org.instancio:instancio-junit:5.0.2")
