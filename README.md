@@ -7,9 +7,14 @@ Spring Boot приложение для управления складом то
 - CRUD операции для товаров
 - Валидация данных
 - Документация API (Swagger/OpenAPI)
-- Поддержка разных профилей (dev/prod)
+- Поддержка разных профилей (dev, prod)
+- Реализованы планировщики (simple, optimized). Планировщики способны увеличивать
+цену всех продуктов через определенное время в настройках.
+- Реализованы аспекты для логирования времени выполнения методов, а так же методов помеченных аннотацией @Transactional(Spring)
 - Docker контейнеризация
+- Подробный отчет об ошибках с указанием поля/полей, которые по каким то причинам не прошли валидацию
 - Интеграция с PostgreSQL
+- Использованы скрипты миграции Liquibase
 
 ## Быстрый старт
 
@@ -56,11 +61,12 @@ docker build -t goods-warehouse .
 ````
 ````
 # Запуск контейнера
-# Переменные заменить своими значениями.
+# Значения из "[]" заменить на свои.
+# Пример: {[PORT] -> 5432, [PASSWORD] -> password.}
 
 docker run -p 8080:8080 \
 -e SPRING_PROFILES_ACTIVE=prod \
--e DATABASE_URL="jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]" \
+-e DATABASE_URL=jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]" \
 goods-warehouse
 ````
 
@@ -73,11 +79,17 @@ goods-warehouse
 ### Переменные окружения
 
 
-| Переменная | Описание                                                  | Пример                                                                                             | Обязательная                     |
-|---|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------|
-| `SPRING_PROFILES_ACTIVE` | Активный профиль Spring Boot                              | `prod`, `dev`                                                                                      | Нет (default: `dev`)               |
-| `DATABASE_URL` | URL подключения к базе данных                             | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (для профиля prod)            |
-| `APP_MAPPER_TYPE` | Выбор активного маппера для entity <-> dto преобразований | `mapstruct`, `conversion-service`                                                                   | Нет (default: `conversion-service` |
+| Переменная                                        | Описание                                                                                   | Пример                                                                                             | Обязательная                        |
+|---------------------------------------------------|--------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|-------------------------------------|
+| `SPRING_PROFILES_ACTIVE`                          | Активный профиль Spring Boot                                                               | `prod`, `dev`                                                                                      | Нет (default: `dev`)                |
+| `DATABASE_URL`                                    | URL подключения к базе данных                                                              | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (для профиля prod)               |
+| `APP_MAPPER_TYPE`                                 | Выбор активного маппера для entity <-> dto преобразований                                  | `mapstruct`, `conversion-service`                                                                  | Да                                  |
+| `APP_ASPECT_TRANSACTIONAL_MEASURE_EXECUTION_TIME` | Использовать ли подсчет времени выполнения методов помеченных аннотацией @Transactional    | `true`, `false`                                                                                    | Нет                                 |
+| `APP_SCHEDULING_ENABLED`                          | Использовать ли планировщик для повышения цены                                             | `true`, `false`                                                                                    | Нет                                 |
+| `APP_SCHEDULING_PERIOD`                           | Период времени, спустя которое будет выполнено новое повышение цен в миллисекундах         | `60000`                                                                                            | Да (при использовании планировщика) |
+| `APP_SCHEDULING_PRICE_INCREASE_PERCENTAGE`        | Процент на который будет увеличена текущая цена каждого продукта                           | `10`                                                                                               | Да (при использовании планировщика) |
+| `APP_SCHEDULING_OPTIMIZATION_ENABLED`             | Использовать ли оптимизированный планировщик вместо обычного                               | `true`, `false`                                                                                    | Нет (рекомендуется: `true`)         |
+| `APP_SCHEDULING_OPTIMIZATION_USE_EXCLUSIVE_LOCK`  | Использовать ли эксклюзивную блокировку базы на время работы планировщика повышающего цену | `true`, `false`                                                                                    | Нет (рекомендуется: `true`)         |
 
 
 ## Настройка базы данных
@@ -85,14 +97,14 @@ goods-warehouse
 - spring.datasource.url=jdbc:h2:mem:test
 - spring.datasource.username=sa
 - spring.datasource.password=password
-- spring.jpa.hibernate.ddl-auto=create-drop
+- spring.jpa.hibernate.ddl-auto=validate
 - spring.jpa.show-sql=true
 - spring.h2.console.enabled=true
 - spring.h2.console.path=/h2-console
 
 ### prod профиль (PostgreSQL)
 - spring.datasource.url=${DATABASE_URL}
-- spring.jpa.hibernate.ddl-auto=update
+- spring.jpa.hibernate.ddl-auto=validate
 - spring.jpa.show-sql=false
 
 ## API Документация
@@ -104,6 +116,7 @@ goods-warehouse
 
 ## Тестирование
 ### Запуск тестов
+Для тестов по дефолту используется база данных H2.
 ````
 # Все тесты
 ./gradlew test

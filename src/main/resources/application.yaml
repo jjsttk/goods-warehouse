@@ -24,4 +24,4 @@ app:
     price-increase-percentage: 10.1
     optimization:
       enabled: false
-      exclusive-lock: false
+      use-exclusive-lock: false

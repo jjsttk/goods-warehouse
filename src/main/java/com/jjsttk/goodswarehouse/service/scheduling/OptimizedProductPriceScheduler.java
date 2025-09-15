@@ -59,7 +59,7 @@ public class OptimizedProductPriceScheduler implements ProductPriceScheduler {
     /**
      * Exclusive lock value, injected from application configuration.
      */
-    @Value("${app.scheduling.optimization.exclusive-lock}")
+    @Value("${app.scheduling.optimization.use-exclusive-lock}")
     private boolean exclusiveLock;
 
     /**
