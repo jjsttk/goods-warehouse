@@ -1,0 +1,7 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL} #DATABASE_URL = jdbc:postgresql://[server]:[port]/[db]?user=[user]&password=[password]
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
