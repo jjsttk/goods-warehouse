@@ -60,7 +60,7 @@ docker build -t goods-warehouse .
 
 docker run -p 8080:8080 \
 -e SPRING_PROFILES_ACTIVE=prod \
--e DATABASE_URL="jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]" \
+-e "DATABASE_URL=jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]" \
 goods-warehouse
 ````
 
@@ -73,11 +73,11 @@ goods-warehouse
 ### Переменные окружения
 
 
-| Переменная | Описание                                                  | Пример                                                                                             | Обязательная                     |
-|---|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------|----------------------------------|
+| Переменная               | Описание                                                  | Пример                                                                                             | Обязательная                       |
+|--------------------------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------|------------------------------------|
 | `SPRING_PROFILES_ACTIVE` | Активный профиль Spring Boot                              | `prod`, `dev`                                                                                      | Нет (default: `dev`)               |
-| `DATABASE_URL` | URL подключения к базе данных                             | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (для профиля prod)            |
-| `APP_MAPPER_TYPE` | Выбор активного маппера для entity <-> dto преобразований | `mapstruct`, `conversion-service`                                                                   | Нет (default: `conversion-service` |
+| `DATABASE_URL`           | URL подключения к базе данных                             | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (для профиля prod)              |
+| `APP_MAPPER_TYPE`        | Выбор активного маппера для entity <-> dto преобразований | `mapstruct`, `conversion-service`                                                                  | Нет (default: `conversion-service` |
 
 
 ## Настройка базы данных

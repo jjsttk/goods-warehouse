@@ -19,7 +19,7 @@
                         uniqueConstraintName="uk_products_article"
                 />
             </column>
-            <column name="description" type="CLOB">
+            <column name="description" type="TEXT">
                 <constraints nullable="true"/>
             </column>
             <column name="category" type="VARCHAR(50)">
@@ -34,7 +34,7 @@
             <column name="last_quantity_modified" type="TIMESTAMP WITH TIMEZONE">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="TIMESTAMP WITH TIMEZONE" defaultValueComputed="CURRENT_TIMESTAMP">
+            <column name="created_at" type="DATE" defaultValueComputed="CURRENT_DATE">
                 <constraints nullable="false"/>
             </column>
         </createTable>

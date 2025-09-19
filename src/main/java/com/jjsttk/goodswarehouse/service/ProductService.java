@@ -1,12 +1,12 @@
 package com.jjsttk.goodswarehouse.service;
 
-import com.jjsttk.goodswarehouse.exception.FieldValidationException;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
 import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
 import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
 import java.util.UUID;
 
 public interface ProductService {
@@ -46,7 +46,6 @@ public interface ProductService {
      * @param id               UUID of the product to update
      * @return updated product service response
      * @throws ResourceNotFoundException if the product is not found
-     * @throws FieldValidationException if validation fails (e.g. duplicate article, invalid price)
      */
     ProductServiceResponse update(ProductUpdateCommand updateCommandDto, UUID id);
 

@@ -3,7 +3,7 @@ package com.jjsttk.goodswarehouse.configuration;
 import com.jjsttk.goodswarehouse.mapper.ConversionServiceProductConverter;
 import com.jjsttk.goodswarehouse.mapper.MapstructProductMapper;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
-import com.jjsttk.goodswarehouse.configuration.properties.MapperProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -15,23 +15,22 @@ import org.springframework.context.annotation.Primary;
 @Configuration
 public class MapperConfig {
 
+    @Value("${app.mapper.type:conversion-service}")
+    private String type;
     /**
      * Provides the primary {@link ProductConverter} bean.
      * Chooses between MapStruct and ConversionService implementations.
      *
      * @param mapstructMapper        the MapStruct mapper
      * @param conversionServiceMapper the ConversionService mapper
-     * @param mapperProperties       properties containing the desired mapper type
      * @return the selected {@link ProductConverter} implementation
      */
     @Bean
     @Primary
     public ProductConverter productConverterSelector(
             MapstructProductMapper mapstructMapper,
-            ConversionServiceProductConverter conversionServiceMapper,
-            MapperProperties mapperProperties) {
-
-        String type = mapperProperties.getType();
+            ConversionServiceProductConverter conversionServiceMapper
+    ) {
 
         return switch (type) {
             case "mapstruct" -> mapstructMapper;

@@ -1,112 +1,88 @@
 package com.jjsttk.goodswarehouse.exception.handler;
 
 import com.jjsttk.goodswarehouse.exception.ErrorResponse;
+import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.exception.FieldValidationException;
 import jakarta.validation.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.lang.NonNull;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.time.OffsetDateTime;
-import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestControllerAdvice
-public final class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public final class GlobalExceptionHandler {
 
-    // Bean Validation (@Valid)
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            @NonNull HttpHeaders headers,
-            @NonNull HttpStatusCode status,
-            @NonNull WebRequest request
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex
     ) {
-        Map<String, List<String>> validationErrors = ex.getBindingResult()
+        var validationMessage = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
-                .collect(Collectors.groupingBy(
-                        FieldError::getField,
-                        Collectors.mapping(FieldError::getDefaultMessage, Collectors.toList())
-                ));
+                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .collect(Collectors.joining("; "));
 
-        return buildValidationResponse(validationErrors, ex, status);
+        return buildResponse(HttpStatus.BAD_REQUEST, validationMessage, ex);
     }
 
-    @ExceptionHandler(FieldValidationException.class)
-    public ResponseEntity<Object> handleFieldValidationExceptions(FieldValidationException ex) {
-        return buildValidationResponse(ex.getValidationErrors(), ex, HttpStatus.BAD_REQUEST);
-    }
-
-    @Override
-    protected ResponseEntity<Object> handleHttpMessageNotReadable(
-            @NonNull HttpMessageNotReadableException ex,
-            @NonNull HttpHeaders headers,
-            @NonNull HttpStatusCode status,
-            @NonNull WebRequest request
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException ex
     ) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex);
     }
 
+    @ExceptionHandler(NotUniqueArticleException.class)
+    public ResponseEntity<ErrorResponse> handleNotUniqueArticle(
+            NotUniqueArticleException ex
+    ) {
+        return buildResponse(HttpStatus.CONFLICT, ex);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Object> handleResourceNotFound(ResourceNotFoundException ex) {
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<Object> handleDataIntegrity(DataIntegrityViolationException ex) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
         return buildResponse(HttpStatus.UNPROCESSABLE_ENTITY, ex);
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleGeneric(Exception ex) {
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
-    }
-
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<Object> handleJakartaValidation(ValidationException ex) {
+    public ResponseEntity<ErrorResponse> handleJakartaValidation(ValidationException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex);
     }
 
-    private ResponseEntity<Object> buildValidationResponse(Map<String, List<String>> validationErrors,
-                                                                  Exception ex,
-                                                                  HttpStatusCode status) {
+    // ========== PRIVATE HELPERS ==========
+
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, Exception ex) {
+        return buildResponse(status, ex.getMessage(), ex);
+    }
+
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String customMessage, Exception ex) {
+        log.error("Handled exception: {}", ex.getClass().getSimpleName(), ex);
+
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .message("Validation failed for " + validationErrors.size() + " field(s)")
-                .validationErrors(validationErrors)
+                .message(customMessage)
                 .exception(ex.getClass().getSimpleName())
                 .source(ex.getStackTrace()[0].getClassName())
                 .dateTime(OffsetDateTime.now())
                 .build();
-        return new ResponseEntity<>(errorResponse, status);
-    }
 
-    private ResponseEntity<Object> buildResponse(HttpStatus status,
-                                                        Exception ex,
-                                                        Map<String, List<String>> validationErrors) {
-        ErrorResponse errorResponse = ErrorResponse.builder()
-                .message(ex.getMessage() != null ? ex.getMessage() : ex.getClass().getSimpleName())
-                .validationErrors(validationErrors)
-                .exception(ex.getClass().getSimpleName())
-                .source(ex.getStackTrace()[0].getClassName())
-                .dateTime(OffsetDateTime.now())
-                .build();
         return new ResponseEntity<>(errorResponse, status);
-    }
-
-    private ResponseEntity<Object> buildResponse(HttpStatus status, Exception ex) {
-        return buildResponse(status, ex, Map.of());
     }
 }

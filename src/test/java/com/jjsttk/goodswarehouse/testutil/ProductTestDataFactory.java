@@ -11,6 +11,8 @@ import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +32,8 @@ public class ProductTestDataFactory {
     public static ProductEntity getProductEntityWithoutGeneratedId() {
         return Instancio.of(ProductEntity.class)
                 .ignore(field("id"))
+                .set(field("createdAt"), LocalDate.now())
+                .set(field("lastQuantityModified"), OffsetDateTime.now())
                 .create();
     }
 

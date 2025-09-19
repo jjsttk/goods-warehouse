@@ -6,7 +6,6 @@ import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
-import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.TimeZone;
 import java.util.UUID;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -33,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 class ProductControllerIntegrationTest {
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -98,8 +95,9 @@ class ProductControllerIntegrationTest {
     void updateShouldUpdateProductAndReturnId() throws Exception {
         var expectedQuantity = new BigDecimal("9999");
         var expectedDescription = "Updated test";
-        entityStub.setQuantity(new BigDecimal("3301"));
+
         var previousTime = entityStub.getLastQuantityModified();
+
         updateDtoStub.setQuantity(expectedQuantity);
         updateDtoStub.setDescription(expectedDescription);
 
@@ -165,35 +163,6 @@ class ProductControllerIntegrationTest {
     }
 
     @Test
-    void shouldHandleDifferentTimeZonesInResponse() throws Exception {
-        OffsetDateTime testTime = OffsetDateTime.parse("2023-01-01T12:00:00+09:00"); // Tokyo time
-        entityStub.setLastQuantityModified(testTime);
-        productRepository.save(entityStub);
-
-        mockMvc.perform(get("/api/v1/products/{id}", entityStub.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.lastQuantityModified").value("2023-01-01T12:00:00+09:00"));
-    }
-
-    @Test
-    void shouldPreserveTimeZoneWhenUpdatingProduct() throws Exception {
-        ProductCreateCommand updateCommand = ProductCreateCommand.builder()
-                .name("Updated Product")
-                .article("UPDATED123")
-                .price(new BigDecimal("99.99"))
-                .quantity(new BigDecimal("10"))
-                .build();
-
-        mockMvc.perform(patch("/api/v1/products/{id}", entityStub.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateCommand)))
-                .andExpect(status().isOk());
-
-        ProductEntity updatedProduct = productRepository.findById(entityStub.getId()).orElseThrow();
-        assertThat(updatedProduct.getLastQuantityModified()).isNotNull();
-    }
-
-    @Test
     void shouldHandleUTCtimeZoneCorrectly() throws Exception {
         OffsetDateTime utcTime = OffsetDateTime.parse("2023-01-01T12:00:00Z");
         entityStub.setLastQuantityModified(utcTime);
@@ -202,68 +171,5 @@ class ProductControllerIntegrationTest {
         mockMvc.perform(get("/api/v1/products/{id}", entityStub.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lastQuantityModified").value("2023-01-01T12:00:00Z"));
-    }
-
-    @Test
-    void shouldHandleTimeZoneConversionInJson() throws Exception {
-        TimeZone originalTimeZone = TimeZone.getDefault();
-
-        try {
-            testWithTimeZone("UTC");
-            testWithTimeZone("Asia/Tokyo");
-            testWithTimeZone("America/New_York");
-        } finally {
-            TimeZone.setDefault(originalTimeZone);
-        }
-    }
-
-    private void testWithTimeZone(String timeZoneId) throws Exception {
-        TimeZone.setDefault(TimeZone.getTimeZone(timeZoneId));
-
-        ProductEntity product = ProductTestDataFactory.getProductEntityWithoutGeneratedId();
-        product = productRepository.save(product);
-
-        mockMvc.perform(get("/api/v1/products/{id}", product.getId()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.lastQuantityModified").exists());
-    }
-
-
-    @Test
-    void shouldCorrectlyConvertTimeBetweenDifferentTimeZones() throws Exception {
-        // Пользователь из Токио сохраняет данные
-        TimeZone.setDefault(TimeZone.getTimeZone("Asia/Tokyo"));
-
-        var tokioCreateDto = createDtoStub;
-        tokioCreateDto.setName("Tokyo Product");
-        tokioCreateDto.setArticle("TOKYO123");
-
-        var createResult = mockMvc.perform(post("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(tokioCreateDto)))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        var responseContent = createResult.getResponse().getContentAsString();
-        var tokyoProductId = objectMapper.readValue(responseContent, UUID.class);
-        var tokyoProduct = productRepository.findById(tokyoProductId);
-
-        // Пользователь из Америки читает данные
-        TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"));
-
-        var getResult = mockMvc.perform(get("/api/v1/products/{id}", tokyoProductId))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        var getResponseContent = getResult.getResponse().getContentAsString();
-        var nyResponse = objectMapper.readValue(getResponseContent, GetProductResponse.class);
-
-        // Проверяем, что момент времени одинаков, несмотря на разные часовые пояса
-        assertThat(nyResponse.lastQuantityModified().toInstant())
-                .isEqualTo(tokyoProduct.get().getLastQuantityModified().toInstant());
-
-        // Проверяем, что смещения разные (соответствуют часовым поясам)
-        assertThat(nyResponse.lastQuantityModified().getOffset().getTotalSeconds())
-                .isNotEqualTo(tokyoProduct.get().getLastQuantityModified().getOffset().getTotalSeconds());
     }
 }

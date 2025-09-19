@@ -6,7 +6,7 @@ import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.enums.Category;
-import com.jjsttk.goodswarehouse.exception.FieldValidationException;
+import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.handler.GlobalExceptionHandler;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
@@ -17,18 +17,13 @@ import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
 import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
 import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
-import com.jjsttk.goodswarehouse.controller.request.validation.UniqueArticleValidator;
-import jakarta.validation.ConstraintValidator;
-import jakarta.validation.ConstraintValidatorFactory;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import jakarta.validation.ValidatorFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -41,11 +36,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -62,7 +56,6 @@ class ProductControllerTest {
 
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
-    private UniqueArticleValidator uniqueArticleValidator;
 
     @Mock
     private ProductRepository repositoryMock;
@@ -88,38 +81,9 @@ class ProductControllerTest {
 
     @BeforeEach
     void setUp() {
-        uniqueArticleValidator = new UniqueArticleValidator(repositoryMock);
-
-        Validator validator;
-        try (ValidatorFactory factory = Validation.byDefaultProvider()
-                .configure()
-                .constraintValidatorFactory(new ConstraintValidatorFactory() {
-                    @SuppressWarnings("unchecked")
-                    @Override
-                    public <T extends ConstraintValidator<?, ?>> T getInstance(Class<T> key) {
-                        if (key == UniqueArticleValidator.class) {
-                            return (T) uniqueArticleValidator;
-                        }
-                        try {
-                            return key.getDeclaredConstructor().newInstance();
-                        } catch (Exception e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-
-                    @Override
-                    public void releaseInstance(ConstraintValidator<?, ?> instance) {
-                        // stub
-                    }
-                })
-                .buildValidatorFactory()) {
-            validator = factory.getValidator();
-        }
-
         mockMvc = MockMvcBuilders.standaloneSetup(sut)
                 .setControllerAdvice(new GlobalExceptionHandler())
                 .setCustomArgumentResolvers(new PageableHandlerMethodArgumentResolver())
-                .setValidator(new org.springframework.validation.beanvalidation.SpringValidatorAdapter(validator))
                 .build();
 
         objectMapper = new ObjectMapper();
@@ -149,39 +113,88 @@ class ProductControllerTest {
     }
 
     @Test
-    void createProductShouldReturn400WhenValidationFails() throws Exception {
-        var invalidRequest = controllerRequestStub;
-        invalidRequest.setName("");
-        invalidRequest.setArticle(productEntityStub.getArticle());
-        invalidRequest.setPrice(new BigDecimal("-50"));
-        invalidRequest.setQuantity(new BigDecimal("-100"));
-        invalidRequest.setDescription("      ");
-        invalidRequest.setCategory(null);
+    void createProductShouldReturn400WhenJakartaValidationFails() throws Exception {
+        var request = controllerRequestStub;
 
-        when(repositoryMock.findByArticle(any())).thenReturn(Optional.of(productEntityStub));
+        when(productServiceMock.create(any()))
+                .thenThrow(new jakarta.validation.ValidationException("Jakarta validation failed"));
 
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(invalidRequest)))
-                .andExpect(jsonPath("$.validationErrors.name").isArray())
-                .andExpect(jsonPath("$.validationErrors.name[0]").value("Name must not be blank"))
-                .andExpect(jsonPath("$.validationErrors.price").isArray())
-                .andExpect(jsonPath("$.validationErrors.price[0]").value("Price must be positive"))
-                .andExpect(jsonPath("$.validationErrors.quantity").isArray())
-                .andExpect(jsonPath("$.validationErrors.quantity[0]").value("Quantity must be positive or zero"))
-                .andExpect(jsonPath("$.validationErrors.category").isArray())
-                .andExpect(jsonPath("$.validationErrors.category[0]").value("Category must not be null"))
-                .andExpect(jsonPath("$.validationErrors.article").isArray())
-                .andExpect(jsonPath("$.validationErrors.article[0]")
-                        .value("ProductEntity with id = %s, already uses this article".formatted(
-                                productEntityStub.getId()
-                        )))
-                .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.exception").exists())
-                .andExpect(jsonPath("$.source").exists())
-                .andExpect(jsonPath("$.dateTime").exists());
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Jakarta validation failed"))
+                .andExpect(jsonPath("$.exception").value("ValidationException"))
+                .andExpect(jsonPath("$.source").isNotEmpty())
+                .andExpect(jsonPath("$.dateTime").isNotEmpty());
     }
 
+    @Test
+    void createProductShouldReturn500WhenUnexpectedError() throws Exception {
+        var request = controllerRequestStub;
+
+        when(productServiceMock.create(any()))
+                .thenThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(post("/api/v1/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.message").value("Unexpected error"))
+                .andExpect(jsonPath("$.exception").value("RuntimeException"))
+                .andExpect(jsonPath("$.source").isNotEmpty())
+                .andExpect(jsonPath("$.dateTime").isNotEmpty());
+    }
+
+    @Test
+    void createProductShouldReturn409WhenArticleNotUnique() throws Exception {
+        var request = controllerRequestStub;
+
+        when(productServiceMock.create(any()))
+                .thenThrow(new NotUniqueArticleException("Article already exists"));
+
+        mockMvc.perform(post("/api/v1/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Article already exists"))
+                .andExpect(jsonPath("$.exception").value("NotUniqueArticleException"))
+                .andExpect(jsonPath("$.source").isNotEmpty())
+                .andExpect(jsonPath("$.dateTime").isNotEmpty());
+    }
+
+    @Test
+    void createProductShouldReturn422WhenDataIntegrityViolation() throws Exception {
+        var request = controllerRequestStub;
+
+        when(productServiceMock.create(any()))
+                .thenThrow(new DataIntegrityViolationException("DB constraint failed"));
+
+        mockMvc.perform(post("/api/v1/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value("DB constraint failed"))
+                .andExpect(jsonPath("$.exception").value("DataIntegrityViolationException"))
+                .andExpect(jsonPath("$.source").isNotEmpty())
+                .andExpect(jsonPath("$.dateTime").isNotEmpty());
+    }
+
+
+
+    @Test
+    void createProductShouldReturn400WhenInvalidJson() throws Exception {
+        var invalidJson = "{ \"name\": \"Product\" "; // обрезали кавычку, JSON сломан
+
+        mockMvc.perform(post("/api/v1/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.exception").value("HttpMessageNotReadableException"))
+                .andExpect(jsonPath("$.source").isNotEmpty())
+                .andExpect(jsonPath("$.dateTime").isNotEmpty());
+    }
 
     @Test
     void updateProductShouldReturn400WhenValidationFails() throws Exception {
@@ -189,36 +202,21 @@ class ProductControllerTest {
         var invalidUpdate = controllerUpdateRequestStub;
         invalidUpdate.setName("       ");
         invalidUpdate.setPrice(new BigDecimal("-50"));
-        invalidUpdate.setDescription("");
+        invalidUpdate.setArticle(ProductTestDataFactory.getStringByLength(101));
         invalidUpdate.setQuantity(new BigDecimal("-110.05"));
-        invalidUpdate.setCategory(null);
-
-        when(productServiceMock.update(any(), any()))
-                .thenThrow(new FieldValidationException(Map.of(
-                        "name", List.of("Name must not be blank"),
-                        "price", List.of("Price must be positive"),
-                        "quantity", List.of("Quantity must be positive or zero"),
-                        "description", List.of("Description must not be blank"),
-                        "category", List.of("Category must not be null")
-                )));
 
         mockMvc.perform(patch("/api/v1/products/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invalidUpdate)))
-                .andExpect(jsonPath("$.validationErrors.name").isArray())
-                .andExpect(jsonPath("$.validationErrors.name[0]").value("Name must not be blank"))
-                .andExpect(jsonPath("$.validationErrors.price").isArray())
-                .andExpect(jsonPath("$.validationErrors.price[0]").value("Price must be positive"))
-                .andExpect(jsonPath("$.validationErrors.description").isArray())
-                .andExpect(jsonPath("$.validationErrors.description[0]").value("Description must not be blank"))
-                .andExpect(jsonPath("$.validationErrors.quantity").isArray())
-                .andExpect(jsonPath("$.validationErrors.quantity[0]").value("Quantity must be positive or zero"))
-                .andExpect(jsonPath("$.validationErrors.category").isArray())
-                .andExpect(jsonPath("$.validationErrors.category[0]").value("Category must not be null"))
                 .andExpect(jsonPath("$.message").exists())
-                .andExpect(jsonPath("$.exception").exists())
-                .andExpect(jsonPath("$.source").exists())
-                .andExpect(jsonPath("$.dateTime").exists());
+                .andExpect(jsonPath("$.exception").value("MethodArgumentNotValidException"))
+                .andExpect(jsonPath("$.message", containsString("Name must not be blank")))
+                .andExpect(jsonPath("$.message", containsString("Price must be positive")))
+                .andExpect(jsonPath("$.message", containsString("Quantity must be positive or zero")))
+                .andExpect(jsonPath("$.message", containsString("Article must be no longer than 100 characters")))
+
+                .andExpect(jsonPath("$.source").isNotEmpty())
+                .andExpect(jsonPath("$.dateTime").isNotEmpty());
     }
 
     @Test

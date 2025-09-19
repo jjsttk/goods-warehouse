@@ -27,7 +27,10 @@ import java.util.UUID;
  * (e.g., 2023-10-05T12:00:00+00:00). Clients can use the provided offset
  * for accurate timezone conversion without additional calculations.
  */
-@Tag(name = "Product Management", description = "APIs for managing products in the warehouse")
+@Tag(
+        name = "Product Management",
+        description = "APIs for managing products in the warehouse"
+)
 public interface ProductController {
 
     /**
@@ -97,8 +100,10 @@ public interface ProductController {
             }
     )
     GetProductResponse getProductById(
-            @Parameter(description = "UUID of the product", required = true,
-                    example = "123e4567-e89b-12d3-a456-426614174000")
+            @Parameter(
+                    description = "UUID of the product", required = true,
+                    example = "123e4567-e89b-12d3-a456-426614174000"
+            )
             @PathVariable UUID id
     );
 

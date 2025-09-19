@@ -14,33 +14,47 @@ import java.util.Objects;
 @Schema(description = "Generic paginated response for product data")
 public final class GetPageProductResponse<T> {
 
-    @Schema(description = "List of products on the current page")
+    @Schema(
+            description = "List of products on the current page"
+    )
     @Builder.Default
     private List<T> content = new ArrayList<>();
 
-    @Schema(description = "Total number of items in all pages",
-            example = "125")
+    @Schema(
+            description = "Total number of items in all pages",
+            example = "125"
+    )
     private long totalCount;
 
-    @Schema(description = "Total number of available pages",
-            example = "7")
+    @Schema(
+            description = "Total number of available pages",
+            example = "7"
+    )
     private int totalPages;
 
-    @Schema(description = "Current page number (starting from 1 if there are results, otherwise 0)",
-            example = "2")
+    @Schema(
+            description = "Current page number (starting from 1 if there are results, otherwise 0)",
+            example = "2"
+    )
     private int currentPage;
 
-    @Schema(description = "Requested page size (limit)",
-            example = "20")
+    @Schema(
+            description = "Requested page size (limit)",
+            example = "20"
+    )
     private int pageSize;
 
-    @Schema(description = "Number of items actually present on the current page",
-            example = "15")
+    @Schema(
+            description = "Number of items actually present on the current page",
+            example = "15"
+    )
     private int currentPageSize;
 
-    public GetPageProductResponse(List<T> contentInput, long totalCountInput,
-                                  int totalPagesInput, int currentPageInput,
-                                  int pageSizeInput, int currentPageSizeInput) {
+    public GetPageProductResponse(
+            List<T> contentInput, long totalCountInput,
+            int totalPagesInput, int currentPageInput,
+            int pageSizeInput, int currentPageSizeInput
+    ) {
         this.content = Objects.requireNonNullElse(contentInput, Collections.emptyList());
         this.totalCount = totalCountInput;
         this.totalPages = totalPagesInput;

@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "7481c960-eb56-46ad-baee-afddf11c7032",
+		"_postman_id": "b05d5769-9f78-44ff-b2d4-b3fe639901cf",
 		"name": "GoodsWarehouse Product",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "47819625",
-		"_collection_link": "https://jjsttk-9774643.postman.co/workspace/Aleksandr-Konstantinov's-Worksp~5a53cb8d-a6e8-44f4-88b5-0292ad3ea48f/collection/47819625-7481c960-eb56-46ad-baee-afddf11c7032?action=share&source=collection_link&creator=47819625"
+		"_collection_link": "https://jjsttk-9774643.postman.co/workspace/Aleksandr-Konstantinov's-Worksp~5a53cb8d-a6e8-44f4-88b5-0292ad3ea48f/collection/47819625-b05d5769-9f78-44ff-b2d4-b3fe639901cf?action=share&source=collection_link&creator=47819625"
 	},
 	"item": [
 		{
@@ -184,7 +184,6 @@
 							"    const response = pm.response.json();",
 							"    ",
 							"    pm.expect(response).to.have.property(\"message\");",
-							"    pm.expect(response).to.have.property(\"validationErrors\");",
 							"    pm.expect(response).to.have.property(\"exception\");",
 							"    pm.expect(response).to.have.property(\"source\");",
 							"    pm.expect(response).to.have.property(\"dateTime\");",
@@ -192,27 +191,9 @@
 							"",
 							"pm.test(\"Message indicates validation failure\", function () {",
 							"    const response = pm.response.json();",
-							"    pm.expect(response.message).to.include(\"Validation failed\");",
-							"});",
-							"",
-							"pm.test(\"Validation errors contain all expected fields\", function () {",
-							"    const response = pm.response.json();",
-							"    const errors = response.validationErrors;",
-							"    ",
-							"    pm.expect(errors).to.have.property(\"quantity\");",
-							"    pm.expect(errors).to.have.property(\"price\");",
-							"    pm.expect(errors).to.have.property(\"name\");",
-							"    pm.expect(errors).to.have.property(\"article\");",
-							"});",
-							"",
-							"pm.test(\"Error messages are correct\", function () {",
-							"    const response = pm.response.json();",
-							"    const errors = response.validationErrors;",
-							"    ",
-							"    pm.expect(errors.quantity[0]).to.equal(\"Quantity must be positive or zero\");",
-							"    pm.expect(errors.price[0]).to.equal(\"Price must be positive\");",
-							"    pm.expect(errors.name[0]).to.equal(\"Name must not be blank\");",
-							"    pm.expect(errors.article[0]).to.include(\"already uses this article\");",
+							"    pm.expect(response.message).to.include(\"Price must be positive\");",
+							"    pm.expect(response.message).to.include(\"Quantity must be positive or zero\");",
+							"    pm.expect(response.message).to.include(\"Name must not be blank\");",
 							"});"
 						],
 						"type": "text/javascript",

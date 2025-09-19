@@ -8,11 +8,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Constraint(validatedBy = UniqueArticleValidator.class)
-@Target({ ElementType.FIELD })
+@Constraint(validatedBy = NotBlankOrNullValidator.class)
+@Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UniqueArticle {
-    String message() default "Article must be unique";
+public @interface NotBlankOrNull {
+    String message() default "Field cannot be empty";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

@@ -1,6 +1,8 @@
 package com.jjsttk.goodswarehouse.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.lang.Nullable;
 
 @Schema(description = "Product category")
 public enum Category {
@@ -32,5 +34,13 @@ public enum Category {
     OFFICE,
 
     @Schema(description = "Products for pets and animals")
-    PETS
+    PETS;
+
+    @JsonCreator
+    public static Category fromValue(@Nullable String str) {
+        if (str == null) {
+            return null;
+        }
+        return Category.valueOf(str.toUpperCase());
+    }
 }

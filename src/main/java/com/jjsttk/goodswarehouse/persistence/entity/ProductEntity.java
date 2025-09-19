@@ -8,7 +8,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -17,18 +16,25 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@EntityListeners(ProductEntityListener.class)
 @Table(
         name = "products",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_products_article", columnNames = "article")
-        })
+                @UniqueConstraint(
+                        name = "uk_products_article",
+                        columnNames = "article"
+                )
+        }
+)
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -47,7 +53,6 @@ public final class ProductEntity {
     @Column(name = "article", nullable = false)
     private String article;
 
-    @Lob
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
@@ -64,6 +69,7 @@ public final class ProductEntity {
     @Column(name = "last_quantity_modified", nullable = false)
     private OffsetDateTime lastQuantityModified;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private OffsetDateTime createdAt;
+    private LocalDate createdAt;
 }

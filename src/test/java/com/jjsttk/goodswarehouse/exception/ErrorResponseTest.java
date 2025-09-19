@@ -20,7 +20,6 @@ public class ErrorResponseTest {
                 .build();
 
         assertThat(response.message()).isEqualTo("Validation failed");
-        assertThat(response.validationErrors()).isEmpty();
         assertThat(response.exception()).isEqualTo("TestException");
         assertThat(response.source()).isEqualTo("TestSource");
         assertThat(response.dateTime()).isEqualTo(now);

@@ -4,6 +4,7 @@ import com.jjsttk.goodswarehouse.enums.Category;
 import lombok.Builder;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -17,6 +18,6 @@ public record ProductServiceResponse(
         BigDecimal price,
         BigDecimal quantity,
         OffsetDateTime lastQuantityModified,
-        OffsetDateTime createdAt
+        LocalDate createdAt
 ) {
 }

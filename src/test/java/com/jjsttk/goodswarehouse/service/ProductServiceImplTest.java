@@ -1,14 +1,14 @@
 package com.jjsttk.goodswarehouse.service;
 
-import com.jjsttk.goodswarehouse.exception.FieldValidationException;
-import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.enums.Category;
+import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.enums.Category;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
+import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
+import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
+import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -73,9 +71,12 @@ class ProductServiceImplTest {
 
         var serviceResponse = sut.create(createCommandStub);
 
+        assertThat(serviceResponse.createdAt()).isEqualTo(productEntityStub.getCreatedAt());
+        assertThat(serviceResponse.lastQuantityModified()).isNotEqualTo(productEntityStub.getLastQuantityModified());
         assertThat(serviceResponse).isEqualTo(serviceResponseStub);
         verify(repositoryMock, times(1)).save(productEntityStub);
     }
+
 
     @Test
     void getByIdShouldReturnProductWhenProductExist() {
@@ -209,21 +210,19 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void updateShouldThrowValidationExceptionWhenArticleIsAlreadyExistsAndUsedByOtherProduct() {
+    void updateShouldThrowNotUniqueArticleExceptionWhenArticleIsAlreadyExistsAndUsedByOtherProduct() {
         var id = productEntityStub.getId();
         var duplicateProductStub = ProductTestDataFactory.getProductEntityWithGeneratedId();
         duplicateProductStub.setArticle(productEntityStub.getArticle());
 
-        when(repositoryMock.findById(id))
-                .thenReturn(Optional.of(productEntityStub));
         when(repositoryMock.findByArticle(productEntityStub.getArticle()))
                 .thenReturn(Optional.of(duplicateProductStub));
 
-        assertThrows(FieldValidationException.class,
+        assertThrows(NotUniqueArticleException.class,
                 () -> sut.update(updateCommandStub, id));
 
-        verify(repositoryMock, times(1)).findById(any());
         verify(repositoryMock, times(1)).findByArticle(any());
+        verify(repositoryMock, never()).findById(any());
         verify(repositoryMock, never()).save(any());
     }
 
@@ -260,75 +259,6 @@ class ProductServiceImplTest {
         verify(mapperMock, times(1)).mapToServiceResponse(any());
         verify(repositoryMock, times(1)).save(productEntityStub);
     }
-
-    @Test
-    void updateShouldThrowMapOfValidationExceptionsWithAllFieldsInvalidInFirstTriggerSet() {
-        var firstTriggerSet = updateCommandStub;
-        firstTriggerSet.setArticle(" ");
-        firstTriggerSet.setPrice(new BigDecimal("100.0005"));
-        firstTriggerSet.setName(" ");
-        firstTriggerSet.setQuantity(new BigDecimal("-1"));
-
-        when(repositoryMock.findById(productEntityStub.getId()))
-                .thenReturn(Optional.of(productEntityStub));
-
-        var exception = assertThrows(FieldValidationException.class,
-                () -> sut.update(firstTriggerSet, productEntityStub.getId()));
-
-        Map<String, List<String>> errors = exception.getValidationErrors();
-
-        assertThat(errors).containsKey("article");
-        assertThat(errors.get("article")).contains("Article must not be blank");
-
-        assertThat(errors).containsKey("price");
-        assertThat(errors.get("price")).contains("Price must have up to 8 digits before decimal and 2 after");
-
-        assertThat(errors).containsKey("name");
-        assertThat(errors.get("name")).contains("Name must not be blank");
-
-        assertThat(errors).containsKey("quantity");
-        assertThat(errors.get("quantity")).contains("Quantity must be positive or zero");
-
-        verify(repositoryMock, times(1)).findById(any());
-        verify(repositoryMock, never()).save(any());
-        verify(mapperMock, never()).mapToServiceResponse(any());
-
-    }
-
-    @Test
-    void updateShouldThrowMapOfValidationExceptionsWithAllFieldsInvalidInSecondTriggerSet() {
-        var secondTriggerSet = updateCommandStub;
-        secondTriggerSet.setArticle(ProductTestDataFactory.getStringByLength(110));
-        secondTriggerSet.setPrice(new BigDecimal("-1"));
-        secondTriggerSet.setName(ProductTestDataFactory.getStringByLength(60));
-        secondTriggerSet.setQuantity(new BigDecimal("1.1112"));
-
-        when(repositoryMock.findById(productEntityStub.getId()))
-                .thenReturn(Optional.of(productEntityStub));
-
-        var exception = assertThrows(FieldValidationException.class,
-                () -> sut.update(secondTriggerSet, productEntityStub.getId()));
-
-        Map<String, List<String>> errors = exception.getValidationErrors();
-
-        assertThat(errors).containsKey("article");
-        assertThat(errors.get("article")).contains("Article must be no longer than 100 characters");
-
-        assertThat(errors).containsKey("price");
-        assertThat(errors.get("price")).contains("Price must be positive");
-
-        assertThat(errors).containsKey("name");
-        assertThat(errors.get("name")).contains("Name must be no longer than 50 characters");
-
-        assertThat(errors).containsKey("quantity");
-        assertThat(errors.get("quantity")).contains("Quantity must have up to 9 digits before decimal and 3 after");
-
-        verify(repositoryMock, times(1)).findById(any());
-        verify(repositoryMock, never()).save(any());
-        verify(mapperMock, never()).mapToServiceResponse(any());
-    }
-
-
 
     @Test
     void deleteShouldDeleteProductWhenExists() {

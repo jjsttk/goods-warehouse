@@ -1,14 +1,13 @@
 package com.jjsttk.goodswarehouse.service;
 
-import com.jjsttk.goodswarehouse.exception.FieldValidationException;
-import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
-import com.jjsttk.goodswarehouse.utils.ExceptionMessage;
+import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
+import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
+import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,10 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -60,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findById(id)
                 .map(productConverter::mapToServiceResponse)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        ExceptionMessage.entityNotFoundMessage(ProductEntity.class, id)
+                        String.format("Product with id %s not found", id)
                 ));
     }
 
@@ -70,9 +65,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductServiceResponse create(ProductCreateCommand createCommandDto) {
-        ProductEntity entity = productConverter.mapToEntity(createCommandDto);
-        ProductEntity saved = productRepository.save(entity);
-        return productConverter.mapToServiceResponse(saved);
+        checkArticleUnique(createCommandDto.getArticle());
+        var entity = productConverter.mapToEntity(createCommandDto);
+        entity.setLastQuantityModified(OffsetDateTime.now());
+        productRepository.save(entity);
+
+        return productConverter.mapToServiceResponse(entity);
     }
 
     /**
@@ -81,17 +79,14 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductServiceResponse update(ProductUpdateCommand updateCommandDto, UUID id) {
-        ProductEntity entity = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        ExceptionMessage.entityNotFoundMessage(ProductEntity.class, id)
-                ));
-
-        var mbErrors = validateUpdate(updateCommandDto, id);
-
-        if (!mbErrors.isEmpty()) {
-            throw new FieldValidationException(mbErrors);
+        if (updateCommandDto.getArticle() != null) {
+            checkArticleUnique(updateCommandDto.getArticle(), id);
         }
 
+        var entity = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        String.format("Product with id %s not found", id)
+                ));
         updateProductEntity(updateCommandDto, entity);
         productRepository.save(entity);
 
@@ -104,100 +99,38 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void delete(UUID id) {
-        ProductEntity productEntity = productRepository.findById(id)
+        var productEntity = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        ExceptionMessage.entityNotFoundMessage(ProductEntity.class, id)));
+                        String.format("Product with id %s not found", id)
+                ));
+
         productRepository.delete(productEntity);
     }
 
-
-
-    // ---------------- Private Validate Helpers ---------------- //
-
-    private Map<String, List<String>> validateUpdate(ProductUpdateCommand command, UUID id) {
-        Map<String, List<String>> errors = new HashMap<>();
-
-        validateName(command, errors);
-        validateArticle(command, id, errors);
-        validatePrice(command, errors);
-        validateQuantity(command, errors);
-
-        return errors;
+    private void checkArticleUnique(String article) {
+        var mbProduct = productRepository.findByArticle(article);
+        if (mbProduct.isPresent()) {
+            throw new NotUniqueArticleException(
+                    String.format(
+                            "Product with id %s already uses this article",
+                            mbProduct.get().getId()
+                    )
+            );
+        }
     }
 
-
-    private static void validateQuantity(ProductUpdateCommand command, Map<String, List<String>> errors) {
-        Optional.ofNullable(command.getQuantity())
-                .ifPresent(quantity -> {
-                    if (quantity.signum() < 0) {
-                        errors.computeIfAbsent("quantity", k -> new ArrayList<>())
-                                .add("Quantity must be positive or zero");
-                    }
-
-                    var ruleMaxIntegerDigits = 9;
-                    var ruleMaxScale = 3;
-                    if ((quantity.precision() - quantity.scale()) > ruleMaxIntegerDigits
-                            || (quantity.scale() > ruleMaxScale)) {
-                        errors.computeIfAbsent("quantity", k -> new ArrayList<>())
-                                .add("Quantity must have up to 9 digits before decimal and 3 after");
-                    }
-                });
+    private void checkArticleUnique(String article, UUID id) {
+        var mbProduct = productRepository.findByArticle(article);
+        if (mbProduct.isPresent() && !mbProduct.get().getId().equals(id)) {
+            throw new NotUniqueArticleException(
+                    String.format(
+                            "Product with id %s already uses this article",
+                            mbProduct.get().getId()
+                    )
+            );
+        }
     }
 
-    private static void validatePrice(ProductUpdateCommand command, Map<String, List<String>> errors) {
-        Optional.ofNullable(command.getPrice())
-                .ifPresent(price -> {
-                    if (price.signum() <= 0) {
-                        errors.computeIfAbsent("price", k -> new ArrayList<>())
-                                .add("Price must be positive");
-                    }
-
-                    var ruleMaxIntegerDigits = 8;
-                    var ruleMaxScale = 2;
-                    if (price.precision() - price.scale() > ruleMaxIntegerDigits || price.scale() > ruleMaxScale) {
-                        errors.computeIfAbsent("price", k -> new ArrayList<>())
-                                .add("Price must have up to 8 digits before decimal and 2 after");
-                    }
-                });
-    }
-
-    private void validateArticle(ProductUpdateCommand command, UUID id, Map<String, List<String>> errors) {
-        Optional.ofNullable(command.getArticle())
-                .ifPresent(article -> {
-                    String stripped = article.strip();
-                    if (stripped.isEmpty()) {
-                        errors.computeIfAbsent("article", k -> new ArrayList<>())
-                                .add("Article must not be blank");
-                    }
-                    if (stripped.length() > 100) {
-                        errors.computeIfAbsent("article", k -> new ArrayList<>())
-                                .add("Article must be no longer than 100 characters");
-                    }
-                    productRepository.findByArticle(stripped)
-                            .ifPresent(existingProduct -> {
-                                if (!existingProduct.getId().equals(id)) {
-                                    errors.computeIfAbsent("article", k -> new ArrayList<>())
-                                            .add(ExceptionMessage.entityWithThisIdAlreadyUsesThisArticleMessage(
-                                                    ProductEntity.class, id
-                                            ));
-                                }
-                            });
-                });
-    }
-
-    private static void validateName(ProductUpdateCommand command, Map<String, List<String>> errors) {
-        Optional.ofNullable(command.getName())
-                .ifPresent(name -> {
-                    String stripped = name.strip();
-                    if (stripped.isEmpty()) {
-                        errors.computeIfAbsent("name", k -> new ArrayList<>())
-                                .add("Name must not be blank");
-                    } else if (stripped.length() > 50) {
-                        errors.computeIfAbsent("name", k -> new ArrayList<>())
-                                .add("Name must be no longer than 50 characters");
-                    }
-                });
-    }
 
     // ---------------- Private Update Helpers ---------------- //
 

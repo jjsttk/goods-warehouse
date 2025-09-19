@@ -32,7 +32,10 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/v1/products")
 @AllArgsConstructor
-@Tag(name = "Products", description = "CRUD operations for warehouse products")
+@Tag(
+        name = "Products",
+        description = "CRUD operations for warehouse products"
+)
 public class ProductControllerImpl implements ProductController {
 
     private final ProductService productService;
