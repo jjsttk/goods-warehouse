@@ -11,7 +11,6 @@ import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.handler.GlobalExceptionHandler;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
 import com.jjsttk.goodswarehouse.service.ProductService;
 import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
 import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
@@ -58,9 +57,6 @@ class ProductControllerTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private ProductRepository repositoryMock;
-
-    @Mock
     private ProductConverter converterMock;
 
     @Mock
@@ -102,11 +98,11 @@ class ProductControllerTest {
     void getProductByIdShouldReturn404WhenNotFound() throws Exception {
         var id = controllerResponseStub.id();
         when(productServiceMock.getById(id))
-                .thenThrow(new ResourceNotFoundException("Product not found"));
+                .thenThrow(new ResourceNotFoundException(id));
 
         mockMvc.perform(get("/api/v1/products/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Product not found"))
+                .andExpect(jsonPath("$.message").value(String.format("Resource with id = %s not found", id)))
                 .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty());
@@ -149,15 +145,17 @@ class ProductControllerTest {
     @Test
     void createProductShouldReturn409WhenArticleNotUnique() throws Exception {
         var request = controllerRequestStub;
-
+        var id = UUID.randomUUID();
         when(productServiceMock.create(any()))
-                .thenThrow(new NotUniqueArticleException("Article already exists"));
+                .thenThrow(new NotUniqueArticleException(id));
 
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.message").value("Article already exists"))
+                .andExpect(jsonPath("$.message").value(
+                        String.format("Product with id %s already uses this article", id)
+                ))
                 .andExpect(jsonPath("$.exception").value("NotUniqueArticleException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty());
@@ -179,7 +177,6 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty());
     }
-
 
 
     @Test
@@ -319,12 +316,12 @@ class ProductControllerTest {
     void deleteProductShouldReturn404WhenNotExists() throws Exception {
         UUID id = UUID.randomUUID();
 
-        doThrow(new ResourceNotFoundException("Product not found"))
+        doThrow(new ResourceNotFoundException(id))
                 .when(productServiceMock).delete(id);
 
         mockMvc.perform(delete("/api/v1/products/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Product not found"))
+                .andExpect(jsonPath("$.message").value(String.format("Resource with id = %s not found", id)))
                 .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"));
 
         verify(productServiceMock).delete(id);

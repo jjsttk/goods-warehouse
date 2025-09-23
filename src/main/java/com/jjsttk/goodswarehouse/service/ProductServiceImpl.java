@@ -54,9 +54,7 @@ public class ProductServiceImpl implements ProductService {
     public ProductServiceResponse getById(UUID id) {
         return productRepository.findById(id)
                 .map(productConverter::mapToServiceResponse)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Product with id %s not found", id)
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
     /**
@@ -84,9 +82,7 @@ public class ProductServiceImpl implements ProductService {
         }
 
         var entity = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Product with id %s not found", id)
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException(id));
         updateProductEntity(updateCommandDto, entity);
         productRepository.save(entity);
 
@@ -100,9 +96,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void delete(UUID id) {
         var productEntity = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        String.format("Product with id %s not found", id)
-                ));
+                .orElseThrow(() -> new ResourceNotFoundException(id));
 
         productRepository.delete(productEntity);
     }
@@ -110,24 +104,14 @@ public class ProductServiceImpl implements ProductService {
     private void checkArticleUnique(String article) {
         var mbProduct = productRepository.findByArticle(article);
         if (mbProduct.isPresent()) {
-            throw new NotUniqueArticleException(
-                    String.format(
-                            "Product with id %s already uses this article",
-                            mbProduct.get().getId()
-                    )
-            );
+            throw new NotUniqueArticleException(mbProduct.get().getId());
         }
     }
 
     private void checkArticleUnique(String article, UUID id) {
         var mbProduct = productRepository.findByArticle(article);
         if (mbProduct.isPresent() && !mbProduct.get().getId().equals(id)) {
-            throw new NotUniqueArticleException(
-                    String.format(
-                            "Product with id %s already uses this article",
-                            mbProduct.get().getId()
-                    )
-            );
+            throw new NotUniqueArticleException(mbProduct.get().getId());
         }
     }
 

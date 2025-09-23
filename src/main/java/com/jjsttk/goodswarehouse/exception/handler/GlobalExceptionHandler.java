@@ -73,11 +73,11 @@ public final class GlobalExceptionHandler {
         return buildResponse(status, ex.getMessage(), ex);
     }
 
-    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String customMessage, Exception ex) {
+    private ResponseEntity<ErrorResponse> buildResponse(HttpStatus status, String message, Exception ex) {
         log.error("Handled exception: {}", ex.getClass().getSimpleName(), ex);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
-                .message(customMessage)
+                .message(message)
                 .exception(ex.getClass().getSimpleName())
                 .source(ex.getStackTrace()[0].getClassName())
                 .dateTime(OffsetDateTime.now())
