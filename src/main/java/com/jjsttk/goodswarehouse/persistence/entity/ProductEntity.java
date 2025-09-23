@@ -26,10 +26,10 @@ import java.util.UUID;
 
 @Entity
 @Table(
-        name = "products",
+        name = "product",
         uniqueConstraints = {
                 @UniqueConstraint(
-                        name = "uk_products_article",
+                        name = "uk_product_article",
                         columnNames = "article"
                 )
         }
@@ -41,16 +41,17 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode(of = "article")
-public final class ProductEntity {
+public class ProductEntity {
 
     @Id
     @GeneratedValue
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "article", nullable = false)
+    @Column(name = "article", nullable = false, unique = true)
     private String article;
 
     @Column(name = "description", columnDefinition = "TEXT")

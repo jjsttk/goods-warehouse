@@ -5,7 +5,7 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <changeSet id="v1-1" author="Konstantinov Aleksandr">
-        <createTable tableName="products">
+        <createTable tableName="product">
             <column name="id" type="UUID">
                 <constraints primaryKey="true"/>
             </column>

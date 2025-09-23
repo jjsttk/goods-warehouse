@@ -1,7 +1,15 @@
 package com.jjsttk.goodswarehouse.exception;
 
+import lombok.Getter;
+
+import java.util.UUID;
+
+@Getter
 public class NotUniqueArticleException extends RuntimeException {
-    public NotUniqueArticleException(String message) {
-        super(message);
+    private final UUID productId;
+
+    public NotUniqueArticleException(UUID id) {
+        super(String.format("Product with id %s already uses this article", id));
+        this.productId = id;
     }
 }
