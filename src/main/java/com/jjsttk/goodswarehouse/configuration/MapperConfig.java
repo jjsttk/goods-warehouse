@@ -32,7 +32,7 @@ public class MapperConfig {
             ConversionServiceProductConverter conversionServiceMapper
     ) {
 
-        return switch (type) {
+        return switch (type.toLowerCase()) {
             case "mapstruct" -> mapstructMapper;
             case "conversion-service" -> conversionServiceMapper;
             default -> throw new IllegalArgumentException("Unknown mapper type: " + type);

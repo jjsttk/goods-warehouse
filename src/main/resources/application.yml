@@ -1,16 +1,32 @@
 spring:
   application:
     name: goods-warehouse
-
   profiles:
     default: dev
-
   liquibase:
     change-log: classpath:db/changelog/main-changelog.xml
-
   jackson:
     property-naming-strategy: LOWER_CAMEL_CASE
+    deserialization:
+      fail-on-unknown-properties: false
+
+logging:
+  level:
+    root: info
 
 app:
   mapper:
-    type: conversion-service #Choose between: conversion-service, mapstruct
+    type: conversion-service # Choose between: conversion-service, mapstruct
+
+  aspect:
+    transactional:
+      measure-execution-time: true # Highlighted because the aspect class lacks a @Value annotation for the property. ${} is used.
+
+  scheduling:
+    enabled: true
+    period: 60000 # ms
+    price-increase-percentage: 10.1
+    optimization:
+      enabled: false
+      use-exclusive-lock: true
+      output-file-name: scheduling-db-result.log
