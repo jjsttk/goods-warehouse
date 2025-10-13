@@ -10,6 +10,7 @@ Spring Boot приложение для управления складом то
 - Поддержка разных профилей (dev/prod)
 - Docker контейнеризация
 - Интеграция с PostgreSQL
+- Шедулинг для управления повышением цены
 
 ## Быстрый старт
 
@@ -73,27 +74,34 @@ goods-warehouse
 ### Переменные окружения
 
 
-| Переменная               | Описание                                                  | Пример                                                                                             | Обязательная                       |
-|--------------------------|-----------------------------------------------------------|----------------------------------------------------------------------------------------------------|------------------------------------|
-| `SPRING_PROFILES_ACTIVE` | Активный профиль Spring Boot                              | `prod`, `dev`                                                                                      | Нет (default: `dev`)               |
-| `DATABASE_URL`           | URL подключения к базе данных                             | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (для профиля prod)              |
-| `APP_MAPPER_TYPE`        | Выбор активного маппера для entity <-> dto преобразований | `mapstruct`, `conversion-service`                                                                  | Нет (default: `conversion-service` |
+| Переменная                                    | Описание                                                                                                        | Пример                                                                                             | Обязательная                                      |
+|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| `SPRING_PROFILES_ACTIVE`                      | Активный профиль Spring Boot                                                                                    | `prod`, `dev`                                                                                      | Нет (Default: `dev`)                              |
+| `DATABASE_URL`                                | URL подключения к базе данных                                                                                   | `jdbc:postgresql://jdbc:postgresql://[HOST]:[PORT]/[DATABASE]?user=[USERNAME]&password=[PASSWORD]` | Да (Для профиля prod)                             |
+| `APP_MAPPER_TYPE`                             | Выбор активного маппера для entity <-> dto преобразований                                                       | `mapstruct`, `conversion-service`                                                                  | Нет (Default: `conversion-service`)               |
+| `ASPECT_TRANSACTIONAL_MEASURE_EXECUTION_TIME` | Вычислять ли время выполнения методов помеченных аннотацией @Transactional                                      | `true`, `false`                                                                                    | Нет (Default: `false`)                            |
+| `SCHEDULING_ENABLED`                          | Включить ли шедулер, который будет повышать цену каждого товара согласно установленных правил                   | `true`, `false`                                                                                    | Нет (Default: `false`)                            |
+| `SCHEDULING_PERIOD`                           | Интервал повышения цен шедулером в миллисекундах                                                                | `120`                                                                                              | Да (Если установлен `SCHEDULING_ENABLED`:`true` ) |
+| `SCHEDULING_PRICE_INCREASE_PERCENTAGE`        | На сколько шедулер будет увеличивать цену в процентах                                                           | `10`                                                                                               | Да (Если установлен `SCHEDULING_ENABLED`:`true` ) |
+| `SCHEDULING_OPTIMIZATION_ENABLED`             | Использовать ли оптимизированный шедуллер (работает гораздо быстрее обычного)                                   | `true`, `false`                                                                                    | Нет (Default: `false`)                            |
+| `SCHEDULING_OPTIMIZATION_USE_EXCLUSIVE_LOCK`  | Использовать ли эксклюзивную блокировку строк на время работы шедулера                                          | `true`, `false`                                                                                    | Нет (Default: `false`)                            |
+| `SCHEDULING_OPTIMIZATION_OUTPUT_FILE_NAME`    | Установить собственное название и расширение для файла, содержащего логированную копию обновленных данных из бд | `result.log`                                                                                       | Нет (Default: `scheduling-result.log`)            |
 
 
-## Настройка базы данных
-### dev профиль (H2)
-- spring.datasource.url=jdbc:h2:mem:test
-- spring.datasource.username=sa
-- spring.datasource.password=password
-- spring.jpa.hibernate.ddl-auto=create-drop
-- spring.jpa.show-sql=true
-- spring.h2.console.enabled=true
-- spring.h2.console.path=/h2-console
+## Настройка базы данных используя файлы конфигурации
+### dev профиль (H2) `application-dev.yml`
+- `spring:datasource:url: jdbc:h2:mem:test`
+- `spring:datasource:username: sa`
+- `spring:datasource:password: password`
+- `spring:jpa:hibernate:ddl-auto: validate`
+- `spring:jpa:show-sql: true`
+- `spring:h2.console:enabled: true`
+- `spring:h2.console:path: /h2-console`
 
-### prod профиль (PostgreSQL)
-- spring.datasource.url=${DATABASE_URL}
-- spring.jpa.hibernate.ddl-auto=update
-- spring.jpa.show-sql=false
+### prod профиль (PostgreSQL) `application-prod.yml`
+- `spring:datasource:url: ${DATABASE_URL}`
+- `spring:jpa.hibernate:ddl-auto: validate`
+- `spring:jpa:show-sql: false`
 
 ## API Документация
 

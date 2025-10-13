@@ -1,0 +1,14 @@
+<configuration>
+    <!-- Appender rules for colored text in logback-->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level [%thread] %logger{36}) %highlight(%msg%n%ex)
+            </pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>
