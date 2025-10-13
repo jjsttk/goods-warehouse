@@ -1,5 +1,7 @@
 package com.jjsttk.goodswarehouse.service;
 
+import com.jjsttk.goodswarehouse.service.search.advanced.param.AdvancedSearchParam;
+import com.jjsttk.goodswarehouse.service.search.simple.SimpleSearchDto;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
 import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
@@ -7,6 +9,7 @@ import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
@@ -56,4 +59,20 @@ public interface ProductService {
      * @throws ResourceNotFoundException if no product exists with the given id
      */
     void delete(UUID id);
+
+    /**
+     * Retrieves a paginated list of products from the database.
+     *
+     * @param simpleSearchDto filter parameters and page information
+     * @return a page of {@link ProductServiceResponse} representing the products
+     */
+    Page<ProductServiceResponse> simpleSearch(SimpleSearchDto simpleSearchDto);
+
+    /**
+     * Retrieves a paginated list of products from the database.
+     * @param pageable pagination and sorting information
+     * @param filterParams filter parameters and page information
+     * @return a page of {@link ProductServiceResponse} representing the products
+     */
+    Page<ProductServiceResponse> advancedSearch(Pageable pageable, List<AdvancedSearchParam<?>> filterParams);
 }

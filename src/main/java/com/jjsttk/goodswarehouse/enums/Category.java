@@ -38,9 +38,6 @@ public enum Category {
 
     @JsonCreator
     public static Category fromValue(@Nullable String str) {
-        if (str == null) {
-            return null;
-        }
-        return Category.valueOf(str.toUpperCase());
+        return str == null ? null : Category.valueOf(str.toUpperCase());
     }
 }

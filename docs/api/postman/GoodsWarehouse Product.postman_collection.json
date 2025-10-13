@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "b05d5769-9f78-44ff-b2d4-b3fe639901cf",
+		"_postman_id": "4ef8bb1b-e192-4d68-949b-fa87f6545f0f",
 		"name": "GoodsWarehouse Product",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "47819625",
-		"_collection_link": "https://jjsttk-9774643.postman.co/workspace/Aleksandr-Konstantinov's-Worksp~5a53cb8d-a6e8-44f4-88b5-0292ad3ea48f/collection/47819625-b05d5769-9f78-44ff-b2d4-b3fe639901cf?action=share&source=collection_link&creator=47819625"
+		"_collection_link": "https://jjsttk-9774643.postman.co/workspace/Aleksandr-Konstantinov's-Worksp~5a53cb8d-a6e8-44f4-88b5-0292ad3ea48f/collection/47819625-4ef8bb1b-e192-4d68-949b-fa87f6545f0f?action=share&source=collection_link&creator=47819625"
 	},
 	"item": [
 		{
@@ -1079,6 +1079,183 @@
 						{
 							"key": "size",
 							"value": "2"
+						},
+						{
+							"key": "sort",
+							"value": "name,asc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Simple search",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct pagination structure\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(response).to.be.an(\"object\");",
+							"    pm.expect(response).to.have.property(\"content\").that.is.an(\"array\");",
+							"    pm.expect(response).to.have.property(\"totalCount\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"totalPages\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"currentPage\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"pageSize\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"currentPageSize\").that.is.a(\"number\");",
+							"});",
+							"",
+							"pm.test(\"Pagination metadata values are correct\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(response.totalCount).to.equal(3);",
+							"    pm.expect(response.totalPages).to.equal(1);",
+							"    pm.expect(response.currentPage).to.equal(0);",
+							"    pm.expect(response.pageSize).to.equal(5);",
+							"    pm.expect(response.currentPageSize).to.equal(3);",
+							"});",
+							"",
+							"pm.test(\"Content contains exactly 3 products\", function () {",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.content).to.have.lengthOf(3);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/products/search?price=99.99&quantity=&page=0&size=5",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"search"
+					],
+					"query": [
+						{
+							"key": "price",
+							"value": "99.99"
+						},
+						{
+							"key": "quantity",
+							"value": ""
+						},
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Advanced search",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct pagination structure\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(response).to.be.an(\"object\");",
+							"    pm.expect(response).to.have.property(\"content\").that.is.an(\"array\");",
+							"    pm.expect(response).to.have.property(\"totalCount\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"totalPages\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"currentPage\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"pageSize\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"currentPageSize\").that.is.a(\"number\");",
+							"});",
+							"",
+							"pm.test(\"Pagination metadata values are correct\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(response.totalCount).to.equal(1);",
+							"    pm.expect(response.totalPages).to.equal(1);",
+							"    pm.expect(response.currentPage).to.equal(0);",
+							"    pm.expect(response.pageSize).to.equal(20);",
+							"    pm.expect(response.currentPageSize).to.equal(1);",
+							"});",
+							"",
+							"pm.test(\"Content contains exactly 1 product\", function () {",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.content).to.have.lengthOf(1);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"field\": \"price\",\n        \"value\": 2,\n        \"operation\": \"Equal\"\n    },\n    {\n        \"field\": \"createdAt\",\n        \"value\": \"11-10-2025\",\n        \"operation\": \"==\"\n    }\n]"
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/products/search?page=0&size=20&sort=name,asc",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"search"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
 						},
 						{
 							"key": "sort",

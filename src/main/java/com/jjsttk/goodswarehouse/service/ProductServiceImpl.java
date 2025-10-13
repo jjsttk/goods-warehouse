@@ -8,13 +8,18 @@ import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
 import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
 import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
 import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.search.ProductSpecification;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.AdvancedSearchParam;
+import com.jjsttk.goodswarehouse.service.search.simple.SimpleSearchDto;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +40,7 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductConverter productConverter;
+    private final ProductSpecification productSpecification;
 
     /**
      * {@inheritDoc}
@@ -101,6 +107,36 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(productEntity);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional
+    public Page<ProductServiceResponse> simpleSearch(SimpleSearchDto simpleSearchDto) {
+        var specification = productSpecification.buildSimpleSpecification(simpleSearchDto);
+        var filteredProducts = productRepository.findAll(
+                specification,
+                PageRequest.of(simpleSearchDto.page(), simpleSearchDto.size())
+        );
+
+        return filteredProducts
+                .map(productConverter::mapToServiceResponse);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional
+    public Page<ProductServiceResponse> advancedSearch(Pageable pageable, List<AdvancedSearchParam<?>> filterParams) {
+        var specification = productSpecification.buildAdvancedSpecification(filterParams);
+        var filteredProducts = productRepository.findAll(specification, pageable);
+
+        return filteredProducts.map(productConverter::mapToServiceResponse);
+    }
+
+    // ------------------------------------------------------------------------------------------------------
+
     private void checkArticleUnique(String article) {
         var mbProduct = productRepository.findByArticle(article);
         if (mbProduct.isPresent()) {
@@ -114,7 +150,6 @@ public class ProductServiceImpl implements ProductService {
             throw new NotUniqueArticleException(mbProduct.get().getId());
         }
     }
-
 
     // ---------------- Private Update Helpers ---------------- //
 

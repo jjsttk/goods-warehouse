@@ -6,6 +6,7 @@ import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.enums.Category;
+import com.jjsttk.goodswarehouse.enums.FilterOperation;
 import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.handler.GlobalExceptionHandler;
@@ -15,6 +16,9 @@ import com.jjsttk.goodswarehouse.service.ProductService;
 import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
 import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
 import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.AdvancedSearchParam;
+import com.jjsttk.goodswarehouse.service.search.simple.SimpleSearchDto;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.StringParam;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -325,5 +329,66 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"));
 
         verify(productServiceMock).delete(id);
+    }
+
+    @Test
+    void searchShouldReturn200WithPage() throws Exception {
+        var pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
+        var servicePage = new PageImpl<>(
+                List.of(serviceResponseStub),
+                pageable, 1);
+        var expectedPageResponse =
+                ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
+
+        when(productServiceMock.simpleSearch(any(SimpleSearchDto.class))).thenReturn(servicePage);
+        when(converterMock.mapToControllerResponse(servicePage)).thenReturn(expectedPageResponse);
+
+        mockMvc.perform(get("/api/v1/products/search")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "name,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(controllerResponseStub.id().toString()))
+                .andExpect(jsonPath("$.content[0].name").value(controllerResponseStub.name()))
+                .andExpect(jsonPath("$.totalCount").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.currentPage").value(0))
+                .andExpect(jsonPath("$.pageSize").value(10))
+                .andExpect(jsonPath("$.currentPageSize").value(1));
+
+        verify(productServiceMock).simpleSearch(any(SimpleSearchDto.class));
+        verify(converterMock).mapToControllerResponse(servicePage);
+    }
+
+
+    @Test
+    void testSearchShouldReturnsMappedResponse() throws Exception {
+        var pageable = PageRequest.of(0, 20, Sort.by("id").ascending());
+        List<AdvancedSearchParam<?>> params = List.of(new StringParam("name", "test", FilterOperation.LIKE));
+
+        var servicePage = new PageImpl<>(
+                List.of(serviceResponseStub),
+                pageable, 1);
+        var expectedPageResponse =
+                ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
+
+        when(productServiceMock.advancedSearch(pageable, params)).thenReturn(servicePage);
+        when(converterMock.mapToControllerResponse(servicePage)).thenReturn(expectedPageResponse);
+
+
+        mockMvc.perform(post("/api/v1/products/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(params)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].id").value(controllerResponseStub.id().toString()))
+                .andExpect(jsonPath("$.content[0].name").value(controllerResponseStub.name()))
+                .andExpect(jsonPath("$.totalCount").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.currentPage").value(0))
+                .andExpect(jsonPath("$.pageSize").value(20))
+                .andExpect(jsonPath("$.currentPageSize").value(1));
+
+        verify(productServiceMock).advancedSearch(pageable, params);
+        verify(converterMock).mapToControllerResponse(servicePage);
     }
 }

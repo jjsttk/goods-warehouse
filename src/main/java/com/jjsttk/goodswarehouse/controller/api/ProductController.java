@@ -5,6 +5,11 @@ import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.exception.ErrorResponse;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.AdvancedSearchParam;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.BigDecimalParam;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.LocalDateParam;
+import com.jjsttk.goodswarehouse.service.search.simple.SimpleSearchDto;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.StringParam;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +23,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -73,6 +79,98 @@ public interface ProductController {
                     hidden = true)
             @PageableDefault(page = 0, size = 20, sort = "id", direction = Sort.Direction.ASC)
             Pageable pageableRequest
+    );
+
+
+    /**
+     * Searches for products using multiple filter parameters.
+     * Supports filtering by name, price range, quantity range and pagination.
+     *
+     * @param searchParams filter parameters including optional name, price max,
+     *                     quantity and required size and page for page request settings
+     * @return paginated list of filtered products with metadata
+     */
+    @Operation(
+            summary = "Search products with filters",
+            description = "Performs a filtered search for products based on provided criteria. "
+                    + "Supports filtering by name (partial match), price range, quantity range, "
+                    + "and pagination with sorting. Returns a paginated result with metadata.",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Filtered products retrieved successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = GetPageProductResponse.class))),
+                    @ApiResponse(responseCode = "400",
+                            description = "Invalid filter parameters",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    GetPageProductResponse<GetProductResponse> search(
+            @Parameter(
+                    description = "Filter parameters for searching products. "
+                            + "Only non-null fields will be applied as filters.",
+                    required = true,
+                    content = @Content(schema = @Schema(implementation = SimpleSearchDto.class))
+            )
+            @Valid SimpleSearchDto searchParams
+    );
+
+    /**
+     * Performs an advanced product search using a list of filter parameters.
+     * Each filter corresponds to a specific field, comparison operation,
+     * and value. Only non-null values are applied.
+     * <p>
+     * Supports combining multiple conditions and paginating the result.
+     * Uses Spring Data's 0-based pagination (page 0 = first page).
+     *
+     * @param pageable             pagination and sorting parameters
+     * @param advancedSearchParams list of filter parameters with field name,
+     *                             operation type and value
+     * @return paginated list of filtered products with metadata
+     */
+    @Operation(
+            summary = "Advanced search with multiple filters",
+            description = "Allows searching products by combining multiple filter parameters. "
+                    + "Each parameter contains a target field, "
+                    + "comparison operation (e.g., EQUAL, GREATER_THAN_OR_EQUAL), "
+                    + "and a value. Supports numeric, date, and string filtering. "
+                    + "Results are returned in a paginated format with metadata.",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Filtered products retrieved successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = GetPageProductResponse.class))),
+                    @ApiResponse(responseCode = "400",
+                            description = "Invalid filter parameters",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class))),
+                    @ApiResponse(responseCode = "500",
+                            description = "Internal server error",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)))
+            }
+    )
+    GetPageProductResponse<GetProductResponse> search(
+            @Parameter(description = "Pagination and sorting parameters. Example: ?page=1&size=10&sort=name,asc",
+                    hidden = true)
+            @PageableDefault(page = 0, size = 20, sort = "id", direction = Sort.Direction.ASC)
+            Pageable pageable,
+            @Parameter(
+                    description = "List of advanced search conditions",
+                    content = @Content(
+                            schema = @Schema(oneOf = {
+                                    StringParam.class,
+                                    BigDecimalParam.class,
+                                    LocalDateParam.class
+                            })
+                    )
+            )
+            @Valid @RequestBody List<AdvancedSearchParam<?>> advancedSearchParams
     );
 
     /**
@@ -147,7 +245,7 @@ public interface ProductController {
     /**
      * Updates an existing product.
      *
-     * @param id UUID of the product
+     * @param id        UUID of the product
      * @param updateDto updated product data
      * @return UUID of the updated product
      */

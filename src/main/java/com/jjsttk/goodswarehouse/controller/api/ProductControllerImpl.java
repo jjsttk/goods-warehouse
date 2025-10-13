@@ -1,6 +1,8 @@
 package com.jjsttk.goodswarehouse.controller.api;
 
 import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.AdvancedSearchParam;
+import com.jjsttk.goodswarehouse.service.search.simple.SimpleSearchDto;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -46,8 +49,33 @@ public class ProductControllerImpl implements ProductController {
      */
     @Override
     @GetMapping
+    // Pageable defaults: page=0, size=20, sort=id,asc (defined in interface)
     public GetPageProductResponse<GetProductResponse> getAllProducts(Pageable controllerPageableRequest) {
         var serviceResponse = productService.getAll(controllerPageableRequest);
+        return mapper.mapToControllerResponse(serviceResponse);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @GetMapping("/search")
+    public GetPageProductResponse<GetProductResponse> search(@Valid SimpleSearchDto simpleSearchDto) {
+        var serviceResponse = productService.simpleSearch(simpleSearchDto);
+        return mapper.mapToControllerResponse(serviceResponse);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @PostMapping("/search")
+    // Pageable defaults: page=0, size=20, sort=id,asc (defined in interface)
+    public GetPageProductResponse<GetProductResponse> search(
+            Pageable pageable,
+            @Valid @RequestBody List<AdvancedSearchParam<?>> advancedSearchParams
+    ) {
+        var serviceResponse = productService.advancedSearch(pageable, advancedSearchParams);
         return mapper.mapToControllerResponse(serviceResponse);
     }
 
