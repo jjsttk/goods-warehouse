@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.mapper.converter;
 
 import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
-import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 

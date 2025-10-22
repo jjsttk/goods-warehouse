@@ -1,5 +1,6 @@
 package com.jjsttk.goodswarehouse.exception;
 
+import com.jjsttk.goodswarehouse.exception.response.ErrorResponse;
 import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;

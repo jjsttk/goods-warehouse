@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.mapper.converter;
 
-import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;

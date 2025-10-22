@@ -4,10 +4,11 @@ import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
-import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.enums.PriceCurrency;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -73,6 +74,7 @@ public class ProductTestDataFactory {
                 .set(field("quantity"), productEntity.getQuantity())
                 .set(field("price"), productEntity.getPrice())
                 .set(field("description"), productEntity.getDescription())
+                .set(field("currency"), PriceCurrency.RUB)
                 .set(field("createdAt"), productEntity.getCreatedAt())
                 .set(field("lastQuantityModified"), productEntity.getLastQuantityModified())
                 .create();

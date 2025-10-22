@@ -2,6 +2,7 @@ package com.jjsttk.goodswarehouse.controller.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jjsttk.goodswarehouse.enums.Category;
+import com.jjsttk.goodswarehouse.enums.PriceCurrency;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -55,6 +56,12 @@ public record GetProductResponse(
                 example = "150"
         )
         BigDecimal quantity,
+
+        @Schema(
+                description = "Short name of currency",
+                example = "EUR"
+        )
+        PriceCurrency currency,
 
         @Schema(
                 description = "Timestamp with timezone offset when product quantity was last modified",

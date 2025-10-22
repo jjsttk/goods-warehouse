@@ -2,16 +2,16 @@ package com.jjsttk.goodswarehouse.mapper;
 
 import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
-import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.service.exchange.response.ExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.util.List;
+import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,13 +21,22 @@ public class MapstructTest {
 
     @Test
     void mapToGetPageProductResponseShouldMapAllFieldsCorrectly() {
-        List<ProductEntity> products = ProductTestDataFactory.getProductsList(5);
-        List<ProductServiceResponse> serviceResponses = ProductTestDataFactory.getServiceResponsesList(products);
-        Page<ProductServiceResponse> page =
-                new PageImpl<>(serviceResponses, PageRequest.of(0, 5),
-                        serviceResponses.size());
+        var products = ProductTestDataFactory.getProductsList(5);
+        var serviceResponses = ProductTestDataFactory.getServiceResponsesList(products);
+        var page = new PageImpl<>(serviceResponses, PageRequest.of(0, 5),
+                serviceResponses.size());
+        var exchangeServiceResponses = new ArrayList<ExchangeServiceResponse>();
+        for (var p : serviceResponses) {
+            exchangeServiceResponses.add(ExchangeServiceResponse.builder()
+                    .price(p.price())
+                    .currency(PriceCurrency.RUB)
+                    .build()
+            );
+        }
 
-        GetPageProductResponse<GetProductResponse> result = mapper.mapToControllerResponse(page);
+        GetPageProductResponse<GetProductResponse> result = mapper.mapToControllerResponse(
+                page, exchangeServiceResponses
+        );
 
         assertThat(result).isNotNull();
         assertThat(result.getTotalCount()).isEqualTo(page.getTotalElements());
@@ -35,6 +44,7 @@ public class MapstructTest {
         assertThat(result.getCurrentPage()).isEqualTo(page.getNumber());
         assertThat(result.getCurrentPageSize()).isEqualTo(page.getNumberOfElements());
         assertThat(result.getTotalPages()).isEqualTo(page.getTotalPages());
+        assertThat(result.getContent().getFirst().currency()).isEqualTo(PriceCurrency.RUB);
 
 
         assertThat(result.getContent())

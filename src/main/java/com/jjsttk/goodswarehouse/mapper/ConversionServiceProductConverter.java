@@ -4,14 +4,17 @@ import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
-import com.jjsttk.goodswarehouse.service.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
-import com.jjsttk.goodswarehouse.service.command.ProductUpdateCommand;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.service.exchange.response.ExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -23,11 +26,6 @@ public final class ConversionServiceProductConverter implements ProductConverter
     @Override
     public ProductEntity mapToEntity(ProductCreateCommand createCommandDtO) {
         return conversionService.convert(createCommandDtO, ProductEntity.class);
-    }
-
-    @Override
-    public GetProductResponse mapToControllerResponse(ProductServiceResponse productServiceResponse) {
-        return conversionService.convert(productServiceResponse, GetProductResponse.class);
     }
 
     @Override
@@ -46,11 +44,47 @@ public final class ConversionServiceProductConverter implements ProductConverter
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public GetPageProductResponse<GetProductResponse> mapToControllerResponse(
-            Page<ProductServiceResponse> serviceResponse
+    public GetProductResponse mapToControllerResponse(
+            ProductServiceResponse productServiceResponse,
+            ExchangeServiceResponse exchangeServiceResponse
     ) {
-        return conversionService.convert(serviceResponse, GetPageProductResponse.class);
+        return GetProductResponse.builder()
+                .id(productServiceResponse.id())
+                .name(productServiceResponse.name())
+                .article(productServiceResponse.article())
+                .description(productServiceResponse.description())
+                .category(productServiceResponse.category())
+                .quantity(productServiceResponse.quantity())
+                .price(exchangeServiceResponse.price())
+                .currency(exchangeServiceResponse.currency())
+                .lastQuantityModified(productServiceResponse.lastQuantityModified())
+                .createdAt(productServiceResponse.createdAt())
+                .build();
+    }
+
+    @Override
+    public GetPageProductResponse<GetProductResponse> mapToControllerResponse(
+            Page<ProductServiceResponse> productServiceResponse,
+            List<ExchangeServiceResponse> priceExchangeServiceResponse
+    ) {
+        List<GetProductResponse> content = productServiceResponse
+                .getContent()
+                .stream()
+                .map(req -> {
+                    int index = productServiceResponse.getContent().indexOf(req);
+                    ExchangeServiceResponse exchange = priceExchangeServiceResponse.get(index);
+                    return mapToControllerResponse(req, exchange);
+                })
+                .toList();
+
+        return GetPageProductResponse.<GetProductResponse>builder()
+                .content(content)
+                .totalCount(productServiceResponse.getTotalElements())
+                .totalPages(productServiceResponse.getTotalPages())
+                .currentPage(productServiceResponse.getNumber())
+                .pageSize(productServiceResponse.getSize())
+                .currentPageSize(productServiceResponse.getNumberOfElements())
+                .build();
     }
 }
 
