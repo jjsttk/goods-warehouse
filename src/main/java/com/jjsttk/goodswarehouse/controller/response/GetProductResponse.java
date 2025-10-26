@@ -64,11 +64,11 @@ public record GetProductResponse(
 
         @Schema(
                 description = "Server date when the product was created",
-                example = "2025-01-15T09:00:00+03:00"
+                example = "25-12-2024"
         )
         @JsonFormat(
                 shape = JsonFormat.Shape.STRING,
-                pattern = "dd:MM:yyyy"
+                pattern = "dd-MM-yyyy"
         )
         LocalDate createdAt
 ) {

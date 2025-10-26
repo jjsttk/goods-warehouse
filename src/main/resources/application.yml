@@ -20,10 +20,10 @@ app:
 
   aspect:
     transactional:
-      measure-execution-time: true # Highlighted because the aspect class lacks a @Value annotation for the property. ${} is used.
+      measure-execution-time: false # Highlighted because the aspect class lacks a @Value annotation for the property. ${} is used.
 
   scheduling:
-    enabled: true
+    enabled: false
     period: 60000 # ms
     price-increase-percentage: 10.1
     optimization:

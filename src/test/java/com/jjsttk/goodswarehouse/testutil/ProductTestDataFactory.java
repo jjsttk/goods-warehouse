@@ -10,6 +10,7 @@ import com.jjsttk.goodswarehouse.service.response.ProductServiceResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -134,11 +135,11 @@ public class ProductTestDataFactory {
                 .map(ProductTestDataFactory::getGetProductResponse)
                 .toList();
 
-        int totalElements = entities.size();
-        int totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize());
-        int currentPage = pageable.getPageNumber();
-        int pageSize = pageable.getPageSize();
-        int currentPageSize = content.size();
+        var totalElements = entities.size();
+        var totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize());
+        var currentPage = pageable.getPageNumber();
+        var pageSize = pageable.getPageSize();
+        var currentPageSize = content.size();
 
         return GetPageProductResponse.<GetProductResponse>builder()
                 .content(content)
@@ -148,5 +149,9 @@ public class ProductTestDataFactory {
                 .pageSize(pageSize)
                 .currentPageSize(currentPageSize)
                 .build();
+    }
+
+    public static Specification<ProductEntity> getUnrestrictedProductSpecification() {
+        return Specification.unrestricted();
     }
 }

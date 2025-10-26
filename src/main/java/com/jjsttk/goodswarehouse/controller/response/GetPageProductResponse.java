@@ -33,7 +33,7 @@ public final class GetPageProductResponse<T> {
     private int totalPages;
 
     @Schema(
-            description = "Current page number (starting from 1 if there are results, otherwise 0)",
+            description = "Current page number. Zero based",
             example = "2"
     )
     private int currentPage;
