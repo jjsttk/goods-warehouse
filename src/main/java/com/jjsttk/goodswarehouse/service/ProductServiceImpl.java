@@ -87,7 +87,7 @@ public class ProductServiceImpl implements ProductService {
             checkArticleUnique(updateCommandDto.getArticle(), id);
         }
 
-        var entity = productRepository.findById(id)
+        var entity = productRepository.findByIdLocked(id)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
         updateProductEntity(updateCommandDto, entity);
         productRepository.save(entity);

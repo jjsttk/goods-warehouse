@@ -164,7 +164,7 @@ class ProductServiceImplTest {
         updateCommandStub = ProductUpdateCommand.builder().build();
         productEntityStub.setLastQuantityModified(null);
 
-        when(repositoryMock.findById(productEntityStub.getId()))
+        when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.of(productEntityStub));
         when(mapperMock.mapToServiceResponse(productEntityStub))
                 .thenReturn(serviceResponseStub);
@@ -179,7 +179,7 @@ class ProductServiceImplTest {
         assertThat(productEntityStub.getQuantity()).isNotEqualTo(null);
         assertThat(productEntityStub.getLastQuantityModified()).isNull();
 
-        verify(repositoryMock, times(1)).findById(any());
+        verify(repositoryMock, times(1)).findByIdLocked(any());
         verify(repositoryMock, times(1)).save(productEntityStub);
     }
 
@@ -187,7 +187,7 @@ class ProductServiceImplTest {
     void updateShouldNotModifyTimeInLastQuantityModifiedWhenQuantityDoesNotChanged() {
         updateCommandStub.setName("NewName");
 
-        when(repositoryMock.findById(productEntityStub.getId()))
+        when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.of(productEntityStub));
         when(mapperMock.mapToServiceResponse(productEntityStub))
                 .thenReturn(serviceResponseStub);
@@ -209,7 +209,7 @@ class ProductServiceImplTest {
         updateCommandStub.setQuantity(productEntityStub.getQuantity().add(BigDecimal.ONE));
         updateCommandStub.setArticle(productEntityStub.getArticle() + 1);
 
-        when(repositoryMock.findById(productEntityStub.getId()))
+        when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.of(productEntityStub));
         when(mapperMock.mapToServiceResponse(productEntityStub))
                 .thenReturn(serviceResponseStub);
@@ -228,11 +228,11 @@ class ProductServiceImplTest {
 
     @Test
     void updateShouldThrowNotFoundExceptionWhenProductDoesNotExist() {
-        when(repositoryMock.findById(productEntityStub.getId()))
+        when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.empty());
 
         assertThrows(ResourceNotFoundException.class, () -> sut.update(updateCommandStub, productEntityStub.getId()));
-        verify(repositoryMock, times(1)).findById(any());
+        verify(repositoryMock, times(1)).findByIdLocked(any());
         verify(repositoryMock, never()).save(any());
     }
 
@@ -249,7 +249,7 @@ class ProductServiceImplTest {
                 () -> sut.update(updateCommandStub, id));
 
         verify(repositoryMock, times(1)).findByArticle(any());
-        verify(repositoryMock, never()).findById(any());
+        verify(repositoryMock, never()).findByIdLocked(any());
         verify(repositoryMock, never()).save(any());
     }
 
@@ -257,7 +257,7 @@ class ProductServiceImplTest {
     void updateShouldModifyDescription() {
         updateCommandStub.setDescription("Updated Description");
 
-        when(repositoryMock.findById(productEntityStub.getId()))
+        when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.of(productEntityStub));
         when(mapperMock.mapToServiceResponse(productEntityStub))
                 .thenReturn(serviceResponseStub);
@@ -265,7 +265,7 @@ class ProductServiceImplTest {
         sut.update(updateCommandStub, productEntityStub.getId());
 
         assertThat(productEntityStub.getDescription()).isEqualTo("Updated Description");
-        verify(repositoryMock, times(1)).findById(any());
+        verify(repositoryMock, times(1)).findByIdLocked(any());
         verify(mapperMock, times(1)).mapToServiceResponse(any());
         verify(repositoryMock, times(1)).save(productEntityStub);
     }
@@ -274,7 +274,7 @@ class ProductServiceImplTest {
     void updateShouldModifyCategory() {
         updateCommandStub.setCategory(Category.BEAUTY);
 
-        when(repositoryMock.findById(productEntityStub.getId()))
+        when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.of(productEntityStub));
         when(mapperMock.mapToServiceResponse(productEntityStub))
                 .thenReturn(serviceResponseStub);
@@ -282,7 +282,7 @@ class ProductServiceImplTest {
         sut.update(updateCommandStub, productEntityStub.getId());
 
         assertThat(productEntityStub.getCategory()).isEqualTo(Category.BEAUTY);
-        verify(repositoryMock, times(1)).findById(any());
+        verify(repositoryMock, times(1)).findByIdLocked(any());
         verify(mapperMock, times(1)).mapToServiceResponse(any());
         verify(repositoryMock, times(1)).save(productEntityStub);
     }
@@ -315,7 +315,7 @@ class ProductServiceImplTest {
         updateCommandStub.setQuantity(productEntityStub.getQuantity().add(BigDecimal.TWO));
         productEntityStub.setLastQuantityModified(null);
 
-        when(repositoryMock.findById(productEntityStub.getId()))
+        when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.of(productEntityStub));
         when(mapperMock.mapToServiceResponse(productEntityStub))
                 .thenReturn(serviceResponseStub);
@@ -325,7 +325,7 @@ class ProductServiceImplTest {
         assertThat(productEntityStub.getQuantity()).isEqualTo(updateCommandStub.getQuantity());
         assertThat(productEntityStub.getLastQuantityModified()).isNotNull();
 
-        verify(repositoryMock, times(1)).findById(any());
+        verify(repositoryMock, times(1)).findByIdLocked(any());
         verify(repositoryMock, times(1)).save(productEntityStub);
     }
 

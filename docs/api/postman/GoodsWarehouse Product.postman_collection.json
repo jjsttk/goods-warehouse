@@ -368,7 +368,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -378,6 +379,11 @@
 					{
 						"key": "Content-Type",
 						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "currency",
+						"value": "EUR",
 						"type": "text"
 					}
 				],
@@ -1137,7 +1143,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BaseUrl}}/api/v1/products/search?price=99.99&quantity=&page=0&size=5",
+					"raw": "{{BaseUrl}}/api/v1/products/search?price=99.99&page=0&size=5&quantity=10",
 					"host": [
 						"{{BaseUrl}}"
 					],
@@ -1153,16 +1159,16 @@
 							"value": "99.99"
 						},
 						{
-							"key": "quantity",
-							"value": ""
-						},
-						{
 							"key": "page",
 							"value": "0"
 						},
 						{
 							"key": "size",
 							"value": "5"
+						},
+						{
+							"key": "quantity",
+							"value": "10"
 						}
 					]
 				}
@@ -1235,7 +1241,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n    {\n        \"field\": \"price\",\n        \"value\": 2,\n        \"operation\": \"Equal\"\n    },\n    {\n        \"field\": \"createdAt\",\n        \"value\": \"11-10-2025\",\n        \"operation\": \"==\"\n    }\n]"
+					"raw": "[\n    {\n        \"field\": \"price\",\n        \"value\": 2,\n        \"operation\": \"<=\"\n    }\n    \n]"
 				},
 				"url": {
 					"raw": "{{BaseUrl}}/api/v1/products/search?page=0&size=20&sort=name,asc",

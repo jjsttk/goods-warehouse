@@ -4,121 +4,471 @@ import com.jjsttk.goodswarehouse.enums.FilterOperation;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
 import com.jjsttk.goodswarehouse.service.search.advanced.param.AdvancedSearchParam;
-import com.jjsttk.goodswarehouse.service.search.simple.SimpleSearchDto;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.BigDecimalParam;
+import com.jjsttk.goodswarehouse.service.search.advanced.param.LocalDateParam;
 import com.jjsttk.goodswarehouse.service.search.advanced.param.StringParam;
 import com.jjsttk.goodswarehouse.service.search.advanced.strategy.BigDecimalStrategy;
 import com.jjsttk.goodswarehouse.service.search.advanced.strategy.LocalDateStrategy;
 import com.jjsttk.goodswarehouse.service.search.advanced.strategy.StringStrategy;
+import com.jjsttk.goodswarehouse.service.search.simple.SimpleSearchDto;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 @DataJpaTest
-@Import({ProductSpecification.class, StringStrategy.class,
-        BigDecimalStrategy.class, LocalDateStrategy.class})
+@Import({
+        StringStrategy.class,
+        BigDecimalStrategy.class,
+        LocalDateStrategy.class,
+        ProductSpecification.class
+})
 class ProductSpecificationIntegrationTest {
+
+    @Container
+    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER =
+            new PostgreSQLContainer<>("postgres:16-alpine");
+
+    @DynamicPropertySource
+    private static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", POSTGRE_SQL_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRE_SQL_CONTAINER::getUsername);
+        registry.add("spring.datasource.password", POSTGRE_SQL_CONTAINER::getPassword);
+    }
 
     @Autowired
     private ProductRepository productRepository;
 
     @Autowired
-    private ProductSpecification productSpecification;
+    private ProductSpecification specification;
 
-    private List<ProductEntity> entities;
+    private List<ProductEntity> productEntities;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
         productRepository.deleteAll();
-        entities = ProductTestDataFactory.getProductsList(10);
+        productEntities = ProductTestDataFactory.getProductsList(20);
+        productRepository.saveAllAndFlush(productEntities);
     }
 
-    // Simple: Name contains + Price less or equal + Quantity greater or equal
-    @Test
-    void testSimpleSpecificationWithAllFilterFields() {
-        var expectedEntityFirst = entities.getFirst();
-        expectedEntityFirst.setName("ContainsThisName");
-        expectedEntityFirst.setPrice(new BigDecimal("999.99"));
-        expectedEntityFirst.setQuantity(new BigDecimal("10"));
-
-        var expectedEntitySecond = entities.getLast();
-        expectedEntitySecond.setName("ProductContainsThisNameToo");
-        expectedEntitySecond.setPrice(new BigDecimal("500.01"));
-        expectedEntitySecond.setQuantity(new BigDecimal("1"));
-
-        productRepository.saveAllAndFlush(entities);
-
-
-        var simpleSearchDto = SimpleSearchDto.builder()
-                .name("this")
-                .price(new BigDecimal("1000"))
-                .quantity(BigDecimal.ONE)
-                .page(0)
-                .size(10)
-                .build();
-
-        var spec = productSpecification.buildSimpleSpecification(simpleSearchDto);
-
-        var result = productRepository.findAll(spec, PageRequest.of(simpleSearchDto.page(), simpleSearchDto.size()));
-
-        assertThat(result).hasSize(2);
-        assertThat(result.getContent())
-                .extracting(ProductEntity::getName)
-                .containsExactlyInAnyOrder(expectedEntityFirst.getName(), expectedEntitySecond.getName());
-        assertThat(result.getContent())
-                .extracting(ProductEntity::getPrice)
-                .containsExactlyInAnyOrder(expectedEntityFirst.getPrice(), expectedEntitySecond.getPrice());
-        assertThat(result.getContent())
-                .extracting(ProductEntity::getQuantity)
-                .containsExactlyInAnyOrder(expectedEntityFirst.getQuantity(), expectedEntitySecond.getQuantity());
-    }
+    // ----------------------SIMPLE SPECIFICATION TESTS----------------------------
 
     @Test
-    void testAdvancedSpecificationByNameLike() {
-        var expectedEntityFirst = entities.getFirst();
-        expectedEntityFirst.setName("ContainsThisName");
+    @Transactional
+    public void buildSimpleSpecificationShouldFilterByNameContains() {
+        var product = productEntities.getLast();
+        var nameToFind = "Find me";
 
-        var expectedEntitySecond = entities.getLast();
-        expectedEntitySecond.setName("ProductContainsThisNameToo");
+        product.setName(nameToFind);
+        productRepository.saveAndFlush(product);
 
-        productRepository.saveAllAndFlush(entities);
+        var spec1 = specification.buildSimpleSpecification(
+                SimpleSearchDto.builder()
+                        .name("find") //CaseInsensitive
+                        .build()
+        );
 
+        var spec2 = specification.buildSimpleSpecification(
+                SimpleSearchDto.builder()
+                        .name(nameToFind)
+                        .build()
+        );
 
-        var param = StringParam.builder()
-                .field("name")
-                .value("tHiS")
-                .operation(FilterOperation.LIKE)
-                .build();
-        List<AdvancedSearchParam<?>> params = List.of(param);
+        var result1 = productRepository.findAll(spec1);
+        var result2 = productRepository.findAll(spec2);
 
-        var spec = productSpecification.buildAdvancedSpecification(params);
+        assertThat(result1).hasSizeGreaterThanOrEqualTo(1);
+        for (var p : result1) {
+            assertThat(p.getName()).containsIgnoringCase("find");
+        }
 
-
-        var result = productRepository.findAll(spec, PageRequest.of(0, 10));
-
-        assertThat(result).hasSize(2);
-        assertThat(result.getContent())
-                .extracting(ProductEntity::getName)
-                .containsExactlyInAnyOrder(expectedEntityFirst.getName(), expectedEntitySecond.getName());
+        assertThat(result2).hasSizeGreaterThanOrEqualTo(1);
+        for (var p : result2) {
+            assertThat(p.getName()).contains(nameToFind);
+        }
     }
 
     @Test
-    void testAdvancedSpecificationWithEmptyParamsListReturnsNonFilteredEntityList() {
-        productRepository.saveAllAndFlush(entities);
+    @Transactional
+    public void buildSimpleSpecificationShouldFilterByPrice() {
+        var product = productEntities.getLast();
+        var priceToFind = BigDecimal.TEN;
 
-        var spec = productSpecification.buildAdvancedSpecification(Collections.emptyList());
+        product.setPrice(priceToFind);
+        productRepository.saveAndFlush(product);
 
-        var result = productRepository.findAll(spec, PageRequest.of(0, 10));
+        var spec = specification.buildSimpleSpecification(
+                SimpleSearchDto.builder()
+                        .price(priceToFind)
+                        .build()
+        );
 
-        assertThat(result).hasSize(entities.size());
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var findRes : result) {
+            assertThat(findRes.getPrice()).isLessThanOrEqualTo(priceToFind);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildSimpleSpecificationShouldFilterByQuantity() {
+        var product = productEntities.getLast();
+        var quantityToFind = BigDecimal.TEN;
+        product.setQuantity(quantityToFind);
+        productRepository.saveAndFlush(product);
+
+        var spec = specification.buildSimpleSpecification(
+                SimpleSearchDto.builder()
+                        .quantity(BigDecimal.TEN)
+                        .build()
+        );
+
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var findRes : result) {
+            assertThat(findRes.getQuantity()).isGreaterThanOrEqualTo(quantityToFind);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildSimpleSpecificationShouldFilterByPriceAndQuantity() {
+        var product = productEntities.getLast();
+        var priceToFind = BigDecimal.TEN;
+        var quantityToFind = BigDecimal.ONE;
+        product.setPrice(priceToFind);
+        product.setQuantity(quantityToFind);
+
+        productRepository.saveAndFlush(product);
+
+        var spec = specification.buildSimpleSpecification(
+                SimpleSearchDto.builder()
+                        .price(priceToFind)
+                        .quantity(quantityToFind)
+                        .build()
+        );
+
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var findRes : result) {
+            assertThat(findRes.getPrice()).isLessThanOrEqualTo(priceToFind);
+            assertThat(findRes.getQuantity()).isGreaterThanOrEqualTo(quantityToFind);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildSimpleSpecificationShouldFilterByNameAndByPriceAndByQuantity() {
+        var product = productEntities.getLast();
+        var priceToFind = BigDecimal.TEN;
+        var quantityToFind = BigDecimal.ONE;
+        var nameToFind = "Find me";
+
+        product.setPrice(priceToFind);
+        product.setQuantity(quantityToFind);
+        product.setName(nameToFind);
+        productRepository.saveAndFlush(product);
+
+        var spec = specification.buildSimpleSpecification(
+                SimpleSearchDto.builder()
+                        .name("find")
+                        .quantity(quantityToFind)
+                        .price(priceToFind)
+                        .build()
+        );
+
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var findRes : result) {
+            assertThat(findRes.getName()).containsIgnoringCase("find");
+            assertThat(findRes.getQuantity()).isGreaterThanOrEqualTo(quantityToFind);
+            assertThat(findRes.getPrice()).isLessThanOrEqualTo(priceToFind);
+        }
+    }
+
+    // --------------------------ADVANCED SPECIFICATION TESTS--------------------
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByStringEqual() {
+        var product = productEntities.getLast();
+        var nameToFind = "Exact Match Product";
+
+        product.setName(nameToFind);
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> stringParam = new StringParam("name", nameToFind, FilterOperation.EQUAL);
+
+        var spec = specification.buildAdvancedSpecification(List.of(stringParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getName()).isEqualTo(nameToFind);
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByStringLike() {
+        var product = productEntities.getLast();
+        var nameToFind = "Special Test Product";
+
+        product.setName(nameToFind);
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> stringParam = new StringParam("name", "Test", FilterOperation.LIKE);
+
+        var spec = specification.buildAdvancedSpecification(List.of(stringParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var foundProduct : result) {
+            assertThat(foundProduct.getName()).containsIgnoringCase("Test");
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByBigDecimalEqual() {
+        var product = productEntities.getLast();
+        var exactPrice = new BigDecimal("99.99");
+
+        product.setPrice(exactPrice);
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam("price", exactPrice, FilterOperation.EQUAL);
+
+        var spec = specification.buildAdvancedSpecification(List.of(bigDecimalParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getPrice()).isEqualByComparingTo(exactPrice);
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByBigDecimalGreaterThanOrEqual() {
+        var product = productEntities.getLast();
+        var minPrice = new BigDecimal("50.00");
+
+        product.setPrice(new BigDecimal("75.00"));
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam(
+                "price", minPrice, FilterOperation.GREATER_THAN_OR_EQUAL
+        );
+
+        var spec = specification.buildAdvancedSpecification(List.of(bigDecimalParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var foundProduct : result) {
+            assertThat(foundProduct.getPrice()).isGreaterThanOrEqualTo(minPrice);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByBigDecimalLessThanOrEqual() {
+        var product = productEntities.getLast();
+        var maxPrice = new BigDecimal("30.00");
+
+        product.setPrice(new BigDecimal("25.00"));
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam(
+                "price", maxPrice, FilterOperation.LESS_THAN_OR_EQUAL
+        );
+
+        var spec = specification.buildAdvancedSpecification(List.of(bigDecimalParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var foundProduct : result) {
+            assertThat(foundProduct.getPrice()).isLessThanOrEqualTo(maxPrice);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByQuantityWithMultipleConditions() {
+        var product = productEntities.getLast();
+        var exactQuantity = BigDecimal.TEN;
+        var productName = "Quantity Test Product";
+
+        product.setQuantity(exactQuantity);
+        product.setName(productName);
+        productRepository.saveAndFlush(product);
+
+
+        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam("quantity", exactQuantity, FilterOperation.EQUAL);
+        AdvancedSearchParam<?> stringParam = new StringParam("name", productName, FilterOperation.EQUAL);
+
+        var spec = specification.buildAdvancedSpecification(List.of(bigDecimalParam, stringParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getQuantity()).isEqualByComparingTo(exactQuantity);
+        assertThat(result.getFirst().getName()).isEqualTo(productName);
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByLocalDateEqual() {
+        var product = productEntities.getLast();
+        var exactDate = product.getCreatedAt();
+
+        product.setCreatedAt(exactDate);
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> localDateParam = new LocalDateParam("createdAt", exactDate, FilterOperation.EQUAL);
+
+        var spec = specification.buildAdvancedSpecification(List.of(localDateParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var foundProduct : result) {
+            assertThat(foundProduct.getCreatedAt()).isEqualTo(exactDate);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByLocalDateGreaterThanOrEqual() {
+        var product = productEntities.getLast();
+        var minDate = java.time.LocalDate.of(2024, 1, 1);
+        var productDate = java.time.LocalDate.of(2024, 2, 1);
+
+        product.setCreatedAt(productDate);
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> localDateParam = new LocalDateParam(
+                "createdAt", minDate, FilterOperation.GREATER_THAN_OR_EQUAL
+        );
+
+        var spec = specification.buildAdvancedSpecification(List.of(localDateParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var foundProduct : result) {
+            assertThat(foundProduct.getCreatedAt()).isAfterOrEqualTo(minDate);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterByLocalDateLessThanOrEqual() {
+        var product = productEntities.getLast();
+        var maxDate = product.getCreatedAt().plusYears(1);
+        var productDate = product.getCreatedAt();
+
+        product.setCreatedAt(productDate);
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> localDateParam = new LocalDateParam(
+                "createdAt", maxDate, FilterOperation.LESS_THAN_OR_EQUAL
+        );
+
+        var spec = specification.buildAdvancedSpecification(List.of(localDateParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSizeGreaterThanOrEqualTo(1);
+        for (var foundProduct : result) {
+            assertThat(foundProduct.getCreatedAt()).isBeforeOrEqualTo(maxDate);
+        }
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldFilterWithMixedTypes() {
+        var product = productEntities.getLast();
+        var productName = "Mixed Filter Product";
+        var productPrice = new BigDecimal("150.00");
+        var productQuantity = new BigDecimal("5");
+        var productDate = product.getCreatedAt();
+
+        product.setName(productName);
+        product.setPrice(productPrice);
+        product.setQuantity(productQuantity);
+        product.setCreatedAt(productDate);
+        productRepository.saveAndFlush(product);
+
+        AdvancedSearchParam<?> stringParam = new StringParam(
+                "name", productName, FilterOperation.EQUAL
+        );
+        AdvancedSearchParam<?> bigDecimalParam1 = new BigDecimalParam(
+                "price", productPrice, FilterOperation.EQUAL
+        );
+        AdvancedSearchParam<?> bigDecimalParam2 = new BigDecimalParam(
+                "quantity", productQuantity, FilterOperation.EQUAL
+        );
+        AdvancedSearchParam<?> localDateParam = new LocalDateParam(
+                "createdAt", productDate, FilterOperation.EQUAL
+        );
+
+        var spec = specification.buildAdvancedSpecification(
+                List.of(stringParam, bigDecimalParam1, bigDecimalParam2, localDateParam)
+        );
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).hasSize(1);
+
+        var foundProduct = result.getFirst();
+
+        assertThat(foundProduct.getName()).isEqualTo(productName);
+        assertThat(foundProduct.getPrice()).isEqualByComparingTo(productPrice);
+        assertThat(foundProduct.getQuantity()).isEqualByComparingTo(productQuantity);
+        assertThat(foundProduct.getCreatedAt()).isEqualTo(productDate);
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldHandleNullValues() {
+        AdvancedSearchParam<?> stringParam = new StringParam(
+                "name", null, FilterOperation.EQUAL
+        );
+        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam(
+                "price", null, FilterOperation.GREATER_THAN_OR_EQUAL
+        );
+
+        var spec = specification.buildAdvancedSpecification(List.of(stringParam, bigDecimalParam));
+        var result = productRepository.findAll(spec);
+
+        // Should return all products since null params are ignored
+        assertThat(result).hasSize(productEntities.size());
+    }
+
+    @Test
+    @Transactional
+    public void buildAdvancedSpecificationShouldReturnEmptyForNoMatches() {
+        AdvancedSearchParam<?> stringParam = new StringParam(
+                "name", "NonExistentProductName", FilterOperation.EQUAL
+        );
+        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam(
+                "price", new BigDecimal("9999.99"), FilterOperation.EQUAL
+        );
+
+        var spec = specification.buildAdvancedSpecification(List.of(stringParam, bigDecimalParam));
+        var result = productRepository.findAll(spec);
+
+        assertThat(result).isEmpty();
     }
 }
