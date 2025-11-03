@@ -1,13 +1,12 @@
 package com.jjsttk.goodswarehouse.mapper;
 
-import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
-import com.jjsttk.goodswarehouse.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.controller.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.service.exchange.response.ExchangeServiceResponse;
-import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +18,6 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,20 +33,20 @@ class ConversionServiceProductConverterTest {
     private ConversionServiceProductConverter sut;
 
     private ProductEntity productStub;
-    private ExchangeServiceResponse exchangeServiceResponseStub;
-    private ProductCreateCommand createCommandStub;
-    private ProductServiceResponse serviceResponseStub;
+    private ProductPriceExchangeServiceResponse productPriceExchangeServiceResponseStub;
+    private GetProductResponse getProductResponseStub;
+    private ProductServiceCreateCommand createCommandStub;
+    private BaseProductServiceDto serviceResponseStub;
 
     @BeforeEach
     void setUp() {
         productStub = ProductTestDataFactory.getProductEntityWithoutGeneratedId();
         createCommandStub = ProductTestDataFactory.getProductCreateCommand(productStub);
         serviceResponseStub = ProductTestDataFactory.getProductServiceResponse(productStub);
+        getProductResponseStub = ProductTestDataFactory.getGetProductResponse(productStub);
 
-        exchangeServiceResponseStub = ExchangeServiceResponse.builder()
-                .price(BigDecimal.valueOf(123))
-                .currency(PriceCurrency.RUB)
-                .build();
+        productPriceExchangeServiceResponseStub =
+                ProductTestDataFactory.getProductPriceExchangeServiceResponse(productStub);
     }
 
     @Test
@@ -63,9 +61,9 @@ class ConversionServiceProductConverterTest {
     @Test
     void mapToServiceCommandFromCreateRequestShouldDelegateToConversionService() {
         var request = ProductTestDataFactory.getCreateProductRequest(productStub);
-        when(conversionServiceMock.convert(request, ProductCreateCommand.class)).thenReturn(createCommandStub);
+        when(conversionServiceMock.convert(request, ProductServiceCreateCommand.class)).thenReturn(createCommandStub);
 
-        ProductCreateCommand result = sut.mapToServiceCommand(request);
+        ProductServiceCreateCommand result = sut.mapToServiceCommand(request);
 
         assertThat(result).isSameAs(createCommandStub);
     }
@@ -73,39 +71,60 @@ class ConversionServiceProductConverterTest {
     @Test
     void mapToServiceCommandFromUpdateRequestShouldDelegateToConversionService() {
         var updateRequest = ProductTestDataFactory.getUpdateProductRequest(productStub);
-        var updateCommand = new ProductUpdateCommand();
-        when(conversionServiceMock.convert(updateRequest, ProductUpdateCommand.class)).thenReturn(updateCommand);
+        var updateCommand = new ProductServiceUpdateCommand();
+        when(conversionServiceMock.convert(updateRequest, ProductServiceUpdateCommand.class)).thenReturn(updateCommand);
 
-        ProductUpdateCommand result = sut.mapToServiceCommand(updateRequest);
+        ProductServiceUpdateCommand result = sut.mapToServiceCommand(updateRequest);
 
         assertThat(result).isSameAs(updateCommand);
     }
 
     @Test
     void mapToServiceResponseShouldDelegateToConversionService() {
-        when(conversionServiceMock.convert(productStub, ProductServiceResponse.class)).thenReturn(serviceResponseStub);
+        when(conversionServiceMock.convert(productStub, BaseProductServiceDto.class)).thenReturn(serviceResponseStub);
 
-        ProductServiceResponse result = sut.mapToServiceResponse(productStub);
+        BaseProductServiceDto result = sut.mapToServiceResponse(productStub);
 
         assertThat(result).isSameAs(serviceResponseStub);
     }
 
     @Test
     void mapToControllerResponseShouldMapCorrectly() {
-        GetProductResponse result = sut.mapToControllerResponse(serviceResponseStub, exchangeServiceResponseStub);
+        when(conversionServiceMock.convert(productPriceExchangeServiceResponseStub, GetProductResponse.class))
+                .thenReturn(getProductResponseStub);
+
+        GetProductResponse result = sut.mapToControllerResponse(productPriceExchangeServiceResponseStub);
+
+        System.out.println("result: " + result);
 
         assertThat(result.id()).isEqualTo(serviceResponseStub.id());
-        assertThat(result.price()).isEqualTo(exchangeServiceResponseStub.price());
-        assertThat(result.currency()).isEqualTo(exchangeServiceResponseStub.currency());
+        assertThat(result.price()).isEqualTo(productPriceExchangeServiceResponseStub.price());
+        assertThat(result.currency()).isEqualTo(productPriceExchangeServiceResponseStub.currency());
         assertThat(result.name()).isEqualTo(serviceResponseStub.name());
     }
 
     @Test
     void mapToControllerResponseForPageShouldMapCorrectly() {
-        var page = new PageImpl<>(List.of(serviceResponseStub), PageRequest.of(0, 1), 1);
-        var exchanges = List.of(exchangeServiceResponseStub);
+        var pageable = PageRequest.of(0, 1);
+        var page = new PageImpl<>(
+                List.of(serviceResponseStub),
+                pageable,
+                1
+        );
+        var pageExchangeServiceResponse = new PageImpl<>(
+                List.of(productPriceExchangeServiceResponseStub),
+                pageable,
+                1
+        );
+        var pageGetProductResponse = ProductTestDataFactory.getGetPageProductResponse(
+                pageable,
+                List.of(productStub)
+        );
 
-        GetPageProductResponse<GetProductResponse> result = sut.mapToControllerResponse(page, exchanges);
+        when(conversionServiceMock.convert(pageExchangeServiceResponse, PageGetProductResponse.class))
+                .thenReturn(pageGetProductResponse);
+
+        PageGetProductResponse<GetProductResponse> result = sut.mapToControllerResponse(pageExchangeServiceResponse);
 
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().getFirst().id()).isEqualTo(serviceResponseStub.id());

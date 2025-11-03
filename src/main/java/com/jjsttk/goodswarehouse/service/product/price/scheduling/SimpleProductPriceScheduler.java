@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.service.product.price.scheduling;
 
-import com.jjsttk.goodswarehouse.configuration.property.SchedulingProperties;
+import com.jjsttk.goodswarehouse.configuration.property.service.scheduling.SchedulingProperties;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;

@@ -1,10 +1,8 @@
 package com.jjsttk.goodswarehouse.exception.handler;
 
-import com.jjsttk.goodswarehouse.exception.ExchangeRateNotFoundException;
-import com.jjsttk.goodswarehouse.exception.ExchangeRateParsingException;
-import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
-import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.exception.UnknownCurrencyException;
+import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
+import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
+import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.response.ErrorResponse;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +23,11 @@ public final class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
+    }
+
+    @ExceptionHandler(ExchangeRateProviderException.class)
+    public ResponseEntity<ErrorResponse> handleExchangeRateProviderException(ExchangeRateProviderException ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
     }
 
@@ -67,21 +70,6 @@ public final class GlobalExceptionHandler {
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ErrorResponse> handleJakartaValidation(ValidationException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex);
-    }
-
-    @ExceptionHandler(ExchangeRateNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleExchangeRateNotFound(ExchangeRateNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex);
-    }
-
-    @ExceptionHandler(ExchangeRateParsingException.class)
-    public ResponseEntity<ErrorResponse> handleExchangeRateParsing(ExchangeRateParsingException ex) {
-        return buildResponse(HttpStatus.BAD_REQUEST, ex);
-    }
-
-    @ExceptionHandler(UnknownCurrencyException.class)
-    public ResponseEntity<ErrorResponse> handleUnknownCurrency(UnknownCurrencyException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex);
     }
 

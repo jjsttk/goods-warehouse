@@ -2,7 +2,7 @@ package com.jjsttk.goodswarehouse.controller.api;
 
 import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
-import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
+import com.jjsttk.goodswarehouse.controller.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.exception.response.ErrorResponse;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
@@ -63,7 +63,7 @@ public interface ProductController {
                     @ApiResponse(responseCode = "200",
                             description = "Paginated products retrieved successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = GetPageProductResponse.class))),
+                                    schema = @Schema(implementation = PageGetProductResponse.class))),
                     @ApiResponse(responseCode = "400",
                             description = "Invalid pagination parameters",
                             content = @Content(mediaType = "application/json",
@@ -74,7 +74,7 @@ public interface ProductController {
                                     schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    GetPageProductResponse<GetProductResponse> getAllProducts(
+    PageGetProductResponse<GetProductResponse> getAllProducts(
             @Parameter(description = "Pagination and sorting parameters. Example: ?page=1&size=10&sort=name,asc",
                     hidden = true)
             @PageableDefault(page = 0, size = 20, sort = "id", direction = Sort.Direction.ASC)
@@ -99,7 +99,7 @@ public interface ProductController {
                     @ApiResponse(responseCode = "200",
                             description = "Filtered products retrieved successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = GetPageProductResponse.class))),
+                                    schema = @Schema(implementation = PageGetProductResponse.class))),
                     @ApiResponse(responseCode = "400",
                             description = "Invalid filter parameters",
                             content = @Content(mediaType = "application/json",
@@ -110,7 +110,7 @@ public interface ProductController {
                                     schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    GetPageProductResponse<GetProductResponse> search(
+    PageGetProductResponse<GetProductResponse> search(
             @Parameter(
                     description = "Filter parameters for searching products. "
                             + "Only non-null fields will be applied as filters.",
@@ -144,7 +144,7 @@ public interface ProductController {
                     @ApiResponse(responseCode = "200",
                             description = "Filtered products retrieved successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = GetPageProductResponse.class))),
+                                    schema = @Schema(implementation = PageGetProductResponse.class))),
                     @ApiResponse(responseCode = "400",
                             description = "Invalid filter parameters",
                             content = @Content(mediaType = "application/json",
@@ -155,7 +155,7 @@ public interface ProductController {
                                     schema = @Schema(implementation = ErrorResponse.class)))
             }
     )
-    GetPageProductResponse<GetProductResponse> search(
+    PageGetProductResponse<GetProductResponse> search(
             @Parameter(description = "Pagination and sorting parameters. Example: ?page=1&size=10&sort=name,asc",
                     hidden = true)
             @PageableDefault(page = 0, size = 20, sort = "id", direction = Sort.Direction.ASC)

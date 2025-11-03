@@ -2,14 +2,14 @@ package com.jjsttk.goodswarehouse.service.product;
 
 import com.jjsttk.goodswarehouse.enums.Category;
 import com.jjsttk.goodswarehouse.enums.FilterOperation;
-import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
-import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
+import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
-import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
 import com.jjsttk.goodswarehouse.service.product.search.ProductSpecification;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
@@ -58,9 +58,9 @@ class ProductServiceImplTest {
 
     private Specification<ProductEntity> specificationStub;
     private ProductEntity productEntityStub;
-    private ProductCreateCommand createCommandStub;
-    private ProductServiceResponse serviceResponseStub;
-    private ProductUpdateCommand updateCommandStub;
+    private ProductServiceCreateCommand createCommandStub;
+    private BaseProductServiceDto serviceResponseStub;
+    private ProductServiceUpdateCommand updateCommandStub;
     private Pageable pageable;
 
     @BeforeEach
@@ -149,7 +149,7 @@ class ProductServiceImplTest {
                     return serviceResponsesStub.get(index);
                 });
 
-        Page<ProductServiceResponse> result = sut.getAll(pageable);
+        Page<BaseProductServiceDto> result = sut.getAll(pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getTotalElements()).isEqualTo(entitiesStub.size());
@@ -161,7 +161,7 @@ class ProductServiceImplTest {
 
     @Test
     void updateShouldNotChangeAnythingWhenAllFieldsNull() {
-        updateCommandStub = ProductUpdateCommand.builder().build();
+        updateCommandStub = ProductServiceUpdateCommand.builder().build();
         productEntityStub.setLastQuantityModified(null);
 
         when(repositoryMock.findByIdLocked(productEntityStub.getId()))

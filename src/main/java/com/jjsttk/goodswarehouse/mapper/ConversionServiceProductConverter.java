@@ -2,19 +2,17 @@ package com.jjsttk.goodswarehouse.mapper;
 
 import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
-import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
+import com.jjsttk.goodswarehouse.controller.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.service.exchange.response.ExchangeServiceResponse;
-import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
 import lombok.AllArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 @AllArgsConstructor
@@ -24,67 +22,38 @@ public final class ConversionServiceProductConverter implements ProductConverter
 
 
     @Override
-    public ProductEntity mapToEntity(ProductCreateCommand createCommandDtO) {
+    public ProductEntity mapToEntity(ProductServiceCreateCommand createCommandDtO) {
         return conversionService.convert(createCommandDtO, ProductEntity.class);
     }
 
     @Override
-    public ProductCreateCommand mapToServiceCommand(CreateProductRequest requestCreateDto) {
-        return conversionService.convert(requestCreateDto, ProductCreateCommand.class);
+    public ProductServiceCreateCommand mapToServiceCommand(CreateProductRequest requestCreateDto) {
+        return conversionService.convert(requestCreateDto, ProductServiceCreateCommand.class);
     }
 
     @Override
-    public ProductUpdateCommand mapToServiceCommand(UpdateProductRequest requestUpdateDto) {
-        return conversionService.convert(requestUpdateDto, ProductUpdateCommand.class);
+    public ProductServiceUpdateCommand mapToServiceCommand(UpdateProductRequest requestUpdateDto) {
+        return conversionService.convert(requestUpdateDto, ProductServiceUpdateCommand.class);
     }
 
     @Override
-    public ProductServiceResponse mapToServiceResponse(ProductEntity entity) {
-        return conversionService.convert(entity, ProductServiceResponse.class);
+    public BaseProductServiceDto mapToServiceResponse(ProductEntity entity) {
+        return conversionService.convert(entity, BaseProductServiceDto.class);
     }
 
     @Override
     public GetProductResponse mapToControllerResponse(
-            ProductServiceResponse productServiceResponse,
-            ExchangeServiceResponse exchangeServiceResponse
+            ProductPriceExchangeServiceResponse priceProductPriceExchangeServiceResponse
     ) {
-        return GetProductResponse.builder()
-                .id(productServiceResponse.id())
-                .name(productServiceResponse.name())
-                .article(productServiceResponse.article())
-                .description(productServiceResponse.description())
-                .category(productServiceResponse.category())
-                .quantity(productServiceResponse.quantity())
-                .price(exchangeServiceResponse.price())
-                .currency(exchangeServiceResponse.currency())
-                .lastQuantityModified(productServiceResponse.lastQuantityModified())
-                .createdAt(productServiceResponse.createdAt())
-                .build();
+        return conversionService.convert(priceProductPriceExchangeServiceResponse, GetProductResponse.class);
     }
 
     @Override
-    public GetPageProductResponse<GetProductResponse> mapToControllerResponse(
-            Page<ProductServiceResponse> productServiceResponse,
-            List<ExchangeServiceResponse> priceExchangeServiceResponse
+    @SuppressWarnings("unchecked")
+    public PageGetProductResponse<GetProductResponse> mapToControllerResponse(
+            Page<ProductPriceExchangeServiceResponse> priceProductPriceExchangeServiceResponse
     ) {
-        List<GetProductResponse> content = productServiceResponse
-                .getContent()
-                .stream()
-                .map(req -> {
-                    int index = productServiceResponse.getContent().indexOf(req);
-                    ExchangeServiceResponse exchange = priceExchangeServiceResponse.get(index);
-                    return mapToControllerResponse(req, exchange);
-                })
-                .toList();
-
-        return GetPageProductResponse.<GetProductResponse>builder()
-                .content(content)
-                .totalCount(productServiceResponse.getTotalElements())
-                .totalPages(productServiceResponse.getTotalPages())
-                .currentPage(productServiceResponse.getNumber())
-                .pageSize(productServiceResponse.getSize())
-                .currentPageSize(productServiceResponse.getNumberOfElements())
-                .build();
+        return conversionService.convert(priceProductPriceExchangeServiceResponse, PageGetProductResponse.class);
     }
 }
 

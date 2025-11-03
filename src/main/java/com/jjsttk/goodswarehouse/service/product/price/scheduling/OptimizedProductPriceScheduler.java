@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.service.product.price.scheduling;
 
-import com.jjsttk.goodswarehouse.configuration.property.SchedulingProperties;
+import com.jjsttk.goodswarehouse.configuration.property.service.scheduling.SchedulingProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;

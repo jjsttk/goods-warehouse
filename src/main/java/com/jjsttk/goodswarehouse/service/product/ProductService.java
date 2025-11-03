@@ -1,11 +1,11 @@
 package com.jjsttk.goodswarehouse.service.product;
 
+import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
-import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -17,9 +17,9 @@ public interface ProductService {
      * Retrieves a paginated list of products from the database.
      *
      * @param pageable pagination and sorting information
-     * @return a page of {@link ProductServiceResponse} representing the products
+     * @return a page of {@link BaseProductServiceDto} representing the products
      */
-    Page<ProductServiceResponse> getAll(Pageable pageable);
+    Page<BaseProductServiceDto> getAll(Pageable pageable);
 
     /**
      * Retrieves a product by its unique identifier.
@@ -28,7 +28,7 @@ public interface ProductService {
      * @return product service response representation of the found product
      * @throws ResourceNotFoundException if no product is found with the given id
      */
-    ProductServiceResponse getById(UUID id);
+    BaseProductServiceDto getById(UUID id);
 
     /**
      * Creates a new product in the database.
@@ -36,7 +36,7 @@ public interface ProductService {
      * @param createCommandDto request DTO containing product creation data
      * @return product service response containing the ID of the created product
      */
-    ProductServiceResponse create(ProductCreateCommand createCommandDto);
+    BaseProductServiceDto create(ProductServiceCreateCommand createCommandDto);
 
     /**
      * Updates an existing product with new values.
@@ -50,7 +50,7 @@ public interface ProductService {
      * @return updated product service response
      * @throws ResourceNotFoundException if the product is not found
      */
-    ProductServiceResponse update(ProductUpdateCommand updateCommandDto, UUID id);
+    BaseProductServiceDto update(ProductServiceUpdateCommand updateCommandDto, UUID id);
 
     /**
      * Deletes a product by its UUID.
@@ -64,15 +64,15 @@ public interface ProductService {
      * Retrieves a paginated list of products from the database.
      *
      * @param simpleSearchDto filter parameters and page information
-     * @return a page of {@link ProductServiceResponse} representing the products
+     * @return a page of {@link BaseProductServiceDto} representing the products
      */
-    Page<ProductServiceResponse> simpleSearch(SimpleSearchDto simpleSearchDto);
+    Page<BaseProductServiceDto> simpleSearch(SimpleSearchDto simpleSearchDto);
 
     /**
      * Retrieves a paginated list of products from the database.
      * @param pageable pagination and sorting information
      * @param filterParams filter parameters and page information
-     * @return a page of {@link ProductServiceResponse} representing the products
+     * @return a page of {@link BaseProductServiceDto} representing the products
      */
-    Page<ProductServiceResponse> advancedSearch(Pageable pageable, List<AdvancedSearchParam<?>> filterParams);
+    Page<BaseProductServiceDto> advancedSearch(Pageable pageable, List<AdvancedSearchParam<?>> filterParams);
 }

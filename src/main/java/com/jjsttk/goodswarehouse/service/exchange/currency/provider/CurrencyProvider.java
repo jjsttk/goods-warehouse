@@ -4,10 +4,9 @@ import com.jjsttk.goodswarehouse.enums.PriceCurrency;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.annotation.SessionScope;
 
 /**
  * Session-scoped provider for storing the currently selected currency for a user session.
@@ -21,7 +20,7 @@ import org.springframework.web.context.WebApplicationContext;
  * uses a scoped proxy to allow injection into singleton-scoped components like filters or services.
  */
 @Component
-@Scope(value = WebApplicationContext.SCOPE_SESSION, proxyMode = ScopedProxyMode.TARGET_CLASS)
+@SessionScope
 @Getter
 @Setter
 public class CurrencyProvider {

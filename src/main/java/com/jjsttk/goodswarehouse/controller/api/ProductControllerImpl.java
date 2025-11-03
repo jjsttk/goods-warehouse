@@ -2,12 +2,11 @@ package com.jjsttk.goodswarehouse.controller.api;
 
 import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
-import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
+import com.jjsttk.goodswarehouse.controller.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
-import com.jjsttk.goodswarehouse.service.exchange.ExchangeService;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.ProductPriceExchangeService;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,7 +43,7 @@ import java.util.UUID;
 public class ProductControllerImpl implements ProductController {
 
     private final ProductService productService;
-    private final ExchangeService productPriceExchangeService;
+    private final ProductPriceExchangeService productPricePriceExchangeService;
     private final ProductConverter mapper;
 
     /**
@@ -53,15 +52,11 @@ public class ProductControllerImpl implements ProductController {
     @Override
     @GetMapping
     // Pageable defaults: page=0, size=20, sort=id,asc (defined in interface)
-    public GetPageProductResponse<GetProductResponse> getAllProducts(Pageable controllerPageableRequest) {
-        var serviceResponse = productService.getAll(controllerPageableRequest);
-        var exchangeServiceResponse = productPriceExchangeService.exchange(
-                serviceResponse.get()
-                        .map(ProductServiceResponse::price)
-                        .toList()
-        );
+    public PageGetProductResponse<GetProductResponse> getAllProducts(Pageable controllerPageableRequest) {
+        var pageBaseProductServiceDto = productService.getAll(controllerPageableRequest);
+        var pageExchangeServiceResponse = productPricePriceExchangeService.exchange(pageBaseProductServiceDto);
 
-        return mapper.mapToControllerResponse(serviceResponse, exchangeServiceResponse);
+        return mapper.mapToControllerResponse(pageExchangeServiceResponse);
     }
 
     /**
@@ -69,15 +64,11 @@ public class ProductControllerImpl implements ProductController {
      */
     @Override
     @GetMapping("/search")
-    public GetPageProductResponse<GetProductResponse> search(@Valid SimpleSearchDto simpleSearchDto) {
-        var serviceResponse = productService.simpleSearch(simpleSearchDto);
-        var exchangeServiceResponse = productPriceExchangeService.exchange(
-                serviceResponse.get()
-                        .map(ProductServiceResponse::price)
-                        .toList()
-        );
+    public PageGetProductResponse<GetProductResponse> search(@Valid SimpleSearchDto simpleSearchDto) {
+        var pageBaseProductServiceDto = productService.simpleSearch(simpleSearchDto);
+        var pageExchangeServiceResponse = productPricePriceExchangeService.exchange(pageBaseProductServiceDto);
 
-        return mapper.mapToControllerResponse(serviceResponse, exchangeServiceResponse);
+        return mapper.mapToControllerResponse(pageExchangeServiceResponse);
     }
 
     /**
@@ -86,18 +77,14 @@ public class ProductControllerImpl implements ProductController {
     @Override
     @PostMapping("/search")
     // Pageable defaults: page=0, size=20, sort=id,asc (defined in interface)
-    public GetPageProductResponse<GetProductResponse> search(
+    public PageGetProductResponse<GetProductResponse> search(
             Pageable pageable,
             @Valid @RequestBody List<AdvancedSearchParam<?>> advancedSearchParams
     ) {
-        var serviceResponse = productService.advancedSearch(pageable, advancedSearchParams);
-        var exchangeServiceResponse = productPriceExchangeService.exchange(
-                serviceResponse.get()
-                        .map(ProductServiceResponse::price)
-                        .toList()
-        );
+        var pageBaseProductServiceDto = productService.advancedSearch(pageable, advancedSearchParams);
+        var exchangeServiceResponse = productPricePriceExchangeService.exchange(pageBaseProductServiceDto);
 
-        return mapper.mapToControllerResponse(serviceResponse, exchangeServiceResponse);
+        return mapper.mapToControllerResponse(exchangeServiceResponse);
     }
 
     /**
@@ -106,11 +93,11 @@ public class ProductControllerImpl implements ProductController {
     @Override
     @GetMapping("/{id}")
     public GetProductResponse getProductById(@PathVariable UUID id) {
-        var serviceResponse = productService.getById(id);
+        var baseProductserviceDto = productService.getById(id);
         var priceExchangeServiceResponse =
-                productPriceExchangeService.exchange(serviceResponse.price());
+                productPricePriceExchangeService.exchange(baseProductserviceDto);
 
-        return mapper.mapToControllerResponse(serviceResponse, priceExchangeServiceResponse);
+        return mapper.mapToControllerResponse(priceExchangeServiceResponse);
     }
 
     /**
@@ -120,9 +107,9 @@ public class ProductControllerImpl implements ProductController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public UUID createProduct(@Valid @RequestBody CreateProductRequest createProductRequest) {
-        var productCreateCommand = mapper.mapToServiceCommand(createProductRequest);
-        var serviceResponse = productService.create(productCreateCommand);
-        return serviceResponse.id();
+        var productServiceCreateCommand = mapper.mapToServiceCommand(createProductRequest);
+        var baseProductServiceDto = productService.create(productServiceCreateCommand);
+        return baseProductServiceDto.id();
     }
 
     /**
@@ -132,9 +119,9 @@ public class ProductControllerImpl implements ProductController {
     @PatchMapping("/{id}")
     public UUID updateProductById(@PathVariable UUID id,
                                   @Valid @RequestBody UpdateProductRequest updateDto) {
-        var updateCommand = mapper.mapToServiceCommand(updateDto);
-        var serviceResponse = productService.update(updateCommand, id);
-        return serviceResponse.id();
+        var productServiceUpdateCommand = mapper.mapToServiceCommand(updateDto);
+        var baseProductServiceDto = productService.update(productServiceUpdateCommand, id);
+        return baseProductServiceDto.id();
     }
 
     /**

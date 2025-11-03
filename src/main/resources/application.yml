@@ -9,16 +9,25 @@ spring:
     property-naming-strategy: LOWER_CAMEL_CASE
     deserialization:
       fail-on-unknown-properties: false
-  cache:
-    cache-names: rates
-    type: caffeine
-    caffeine:
-      spec: maximumSize=159, expiresAfterWrite=1m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,caches,info
+  endpoint:
+    metrics:
+      access: read_only
+    caches:
+      access: read_only
+    health:
+      access: read_only
 
 logging:
   level:
     root: info
     org.springframework.cache: DEBUG
+
 
 
 app:
@@ -41,10 +50,24 @@ app:
   exchange-rate-client:
     implementation: real
 
-  exchange-service:
-    api:
+  cache:
+    exchange-rate-client:
+      expire-after-write: 30s
+      record-stats: true
+
+  rest:
+    exchange-service:
       host: http://localhost:8088
-      currencies:
-        path: /api/v1/currencies
-    retry-attempts: 3
-    fallback-file: backupRates.json
+      fallback-file: backupRates.json
+      methods:
+        currencies: /api/v1/currencies
+      timeout:
+        connect: 5s
+        read: 3s
+        retry:
+          read-timeout:
+            max-attempts: 10
+            backoff: 2s
+          server-errors:
+            max-attempts: 1
+            backoff: 5s

@@ -3,22 +3,22 @@ package com.jjsttk.goodswarehouse.controller.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
-import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
+import com.jjsttk.goodswarehouse.controller.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.enums.Category;
 import com.jjsttk.goodswarehouse.enums.FilterOperation;
 import com.jjsttk.goodswarehouse.enums.PriceCurrency;
-import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
-import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.handler.GlobalExceptionHandler;
+import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.service.exchange.ExchangeService;
-import com.jjsttk.goodswarehouse.service.exchange.response.ExchangeServiceResponse;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.ProductPriceExchangeService;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
@@ -70,7 +70,7 @@ class ProductControllerTest {
     private ProductService productServiceMock;
 
     @Mock
-    private ExchangeService exchangeServiceMock;
+    private ProductPriceExchangeService productPriceExchangeServiceMock;
 
     @InjectMocks
     private ProductControllerImpl sut;
@@ -79,9 +79,10 @@ class ProductControllerTest {
     private UpdateProductRequest controllerUpdateRequestStub;
     private GetProductResponse controllerResponseStub;
 
-    private ProductCreateCommand createCommandStub;
-    private ProductUpdateCommand updateCommandStub;
-    private ProductServiceResponse serviceResponseStub;
+    private ProductServiceCreateCommand createCommandStub;
+    private ProductServiceUpdateCommand updateCommandStub;
+    private BaseProductServiceDto serviceResponseStub;
+    private ProductPriceExchangeServiceResponse priceExchangeResponseStub;
 
     private ProductEntity productEntityStub;
 
@@ -102,6 +103,7 @@ class ProductControllerTest {
         createCommandStub = ProductTestDataFactory.getProductCreateCommand(productEntityStub);
         updateCommandStub = ProductTestDataFactory.getProductUpdateCommand(productEntityStub);
         serviceResponseStub = ProductTestDataFactory.getProductServiceResponse(productEntityStub);
+        priceExchangeResponseStub = ProductTestDataFactory.getProductPriceExchangeServiceResponse(productEntityStub);
     }
 
     @Test
@@ -272,19 +274,14 @@ class ProductControllerTest {
 
         var servicePage = new PageImpl<>(List.of(serviceResponseStub), pageable, 1);
 
-        var exchangeResponse = List.of(
-                ExchangeServiceResponse.builder()
-                        .price(serviceResponseStub.price())
-                        .currency(PriceCurrency.RUB)
-                        .build()
-        );
+        var exchangeResponsePage = new PageImpl<>(List.of(priceExchangeResponseStub), pageable, 1);
 
         var expectedPageResponse =
                 ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
 
         when(productServiceMock.getAll(any(Pageable.class))).thenReturn(servicePage);
-        when(exchangeServiceMock.exchange(List.of(serviceResponseStub.price()))).thenReturn(exchangeResponse);
-        when(converterMock.mapToControllerResponse(servicePage, exchangeResponse))
+        when(productPriceExchangeServiceMock.exchange(servicePage)).thenReturn(exchangeResponsePage);
+        when(converterMock.mapToControllerResponse(exchangeResponsePage))
                 .thenReturn(expectedPageResponse);
 
         mockMvc.perform(get("/api/v1/products")
@@ -305,13 +302,13 @@ class ProductControllerTest {
     @Test
     void getAllProductsShouldReturnEmptyPage() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductServiceResponse> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
-        GetPageProductResponse<GetProductResponse> expectedPageResponse =
+        Page<BaseProductServiceDto> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
+        PageGetProductResponse<GetProductResponse> expectedPageResponse =
                 ProductTestDataFactory.getGetPageProductResponse(pageable, List.of());
 
         when(productServiceMock.getAll(any(Pageable.class))).thenReturn(emptyServicePage);
-        when(exchangeServiceMock.exchange(List.of())).thenReturn(List.of());
-        when(converterMock.mapToControllerResponse(emptyServicePage, List.of())).thenReturn(expectedPageResponse);
+        when(productPriceExchangeServiceMock.exchange(emptyServicePage)).thenReturn(Page.empty());
+        when(converterMock.mapToControllerResponse(Page.empty())).thenReturn(expectedPageResponse);
 
         mockMvc.perform(get("/api/v1/products")
                         .param("page", "0")
@@ -355,20 +352,20 @@ class ProductControllerTest {
         var pageable = PageRequest.of(0, 10, Sort.by("name").ascending());
         var servicePage = new PageImpl<>(
                 List.of(serviceResponseStub),
-                pageable, 1);
+                pageable, 1
+        );
+
+        var exchangeResponsePage = new PageImpl<>(
+                List.of(priceExchangeResponseStub),
+                pageable, 1
+        );
+
         var expectedPageResponse =
                 ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
 
-        var exchangeResponse = List.of(
-                ExchangeServiceResponse.builder()
-                        .price(serviceResponseStub.price())
-                        .currency(PriceCurrency.RUB)
-                        .build()
-        );
-
         when(productServiceMock.simpleSearch(any(SimpleSearchDto.class))).thenReturn(servicePage);
-        when(exchangeServiceMock.exchange(List.of(serviceResponseStub.price()))).thenReturn(exchangeResponse);
-        when(converterMock.mapToControllerResponse(servicePage, exchangeResponse)).thenReturn(expectedPageResponse);
+        when(productPriceExchangeServiceMock.exchange(servicePage)).thenReturn(exchangeResponsePage);
+        when(converterMock.mapToControllerResponse(exchangeResponsePage)).thenReturn(expectedPageResponse);
 
         mockMvc.perform(get("/api/v1/products/search")
                         .param("page", "0")
@@ -384,7 +381,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.currentPageSize").value(1));
 
         verify(productServiceMock).simpleSearch(any(SimpleSearchDto.class));
-        verify(converterMock).mapToControllerResponse(servicePage, exchangeResponse);
+        verify(converterMock).mapToControllerResponse(exchangeResponsePage);
     }
 
 
@@ -395,22 +392,21 @@ class ProductControllerTest {
 
         var servicePage = new PageImpl<>(
                 List.of(serviceResponseStub),
-                pageable, 1);
+                pageable, 1
+        );
+
         var expectedPageResponse =
                 ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
 
 
-
-        var exchangeResponse = List.of(
-                ExchangeServiceResponse.builder()
-                        .price(serviceResponseStub.price())
-                        .currency(PriceCurrency.RUB)
-                        .build()
+        var exchangeResponsePage = new PageImpl<>(
+                List.of(priceExchangeResponseStub),
+                pageable, 1
         );
 
         when(productServiceMock.advancedSearch(pageable, params)).thenReturn(servicePage);
-        when(exchangeServiceMock.exchange(List.of(serviceResponseStub.price()))).thenReturn(exchangeResponse);
-        when(converterMock.mapToControllerResponse(servicePage, exchangeResponse)).thenReturn(expectedPageResponse);
+        when(productPriceExchangeServiceMock.exchange(servicePage)).thenReturn(exchangeResponsePage);
+        when(converterMock.mapToControllerResponse(exchangeResponsePage)).thenReturn(expectedPageResponse);
 
 
         mockMvc.perform(post("/api/v1/products/search")
@@ -426,6 +422,6 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.currentPageSize").value(1));
 
         verify(productServiceMock).advancedSearch(pageable, params);
-        verify(converterMock).mapToControllerResponse(servicePage, exchangeResponse);
+        verify(converterMock).mapToControllerResponse(exchangeResponsePage);
     }
 }

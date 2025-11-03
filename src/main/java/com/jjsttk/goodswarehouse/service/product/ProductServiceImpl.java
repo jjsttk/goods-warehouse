@@ -1,13 +1,13 @@
 package com.jjsttk.goodswarehouse.service.product;
 
-import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
-import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
+import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.ProductConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
-import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
 import com.jjsttk.goodswarehouse.service.product.search.ProductSpecification;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
@@ -47,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<ProductServiceResponse> getAll(Pageable pageable) {
+    public Page<BaseProductServiceDto> getAll(Pageable pageable) {
         return productRepository.findAll(pageable)
                 .map(productConverter::mapToServiceResponse);
     }
@@ -57,7 +57,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional(readOnly = true)
-    public ProductServiceResponse getById(UUID id) {
+    public BaseProductServiceDto getById(UUID id) {
         return productRepository.findById(id)
                 .map(productConverter::mapToServiceResponse)
                 .orElseThrow(() -> new ResourceNotFoundException(id));
@@ -68,7 +68,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public ProductServiceResponse create(ProductCreateCommand createCommandDto) {
+    public BaseProductServiceDto create(ProductServiceCreateCommand createCommandDto) {
         checkArticleUnique(createCommandDto.getArticle());
         var entity = productConverter.mapToEntity(createCommandDto);
         entity.setLastQuantityModified(OffsetDateTime.now());
@@ -82,7 +82,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public ProductServiceResponse update(ProductUpdateCommand updateCommandDto, UUID id) {
+    public BaseProductServiceDto update(ProductServiceUpdateCommand updateCommandDto, UUID id) {
         if (updateCommandDto.getArticle() != null) {
             checkArticleUnique(updateCommandDto.getArticle(), id);
         }
@@ -112,7 +112,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public Page<ProductServiceResponse> simpleSearch(SimpleSearchDto simpleSearchDto) {
+    public Page<BaseProductServiceDto> simpleSearch(SimpleSearchDto simpleSearchDto) {
         var specification = productSpecification.buildSimpleSpecification(simpleSearchDto);
         var filteredProducts = productRepository.findAll(
                 specification,
@@ -128,7 +128,7 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public Page<ProductServiceResponse> advancedSearch(Pageable pageable, List<AdvancedSearchParam<?>> filterParams) {
+    public Page<BaseProductServiceDto> advancedSearch(Pageable pageable, List<AdvancedSearchParam<?>> filterParams) {
         var specification = productSpecification.buildAdvancedSpecification(filterParams);
         var filteredProducts = productRepository.findAll(specification, pageable);
 
@@ -153,7 +153,7 @@ public class ProductServiceImpl implements ProductService {
 
     // ---------------- Private Update Helpers ---------------- //
 
-    private void updateProductEntity(ProductUpdateCommand updateCommandDto, ProductEntity entity) {
+    private void updateProductEntity(ProductServiceUpdateCommand updateCommandDto, ProductEntity entity) {
         updateName(updateCommandDto, entity);
         updateDescription(updateCommandDto, entity);
         updateCategory(updateCommandDto, entity);
@@ -162,35 +162,35 @@ public class ProductServiceImpl implements ProductService {
         updateQuantity(updateCommandDto, entity);
     }
 
-    private void updateName(ProductUpdateCommand command, ProductEntity entity) {
+    private void updateName(ProductServiceUpdateCommand command, ProductEntity entity) {
         Optional.ofNullable(command.getName())
                 .map(String::strip)
                 .ifPresent(entity::setName);
     }
 
-    private void updateDescription(ProductUpdateCommand command, ProductEntity entity) {
+    private void updateDescription(ProductServiceUpdateCommand command, ProductEntity entity) {
         Optional.ofNullable(command.getDescription())
                 .map(String::strip)
                 .ifPresent(entity::setDescription);
     }
 
-    private void updateCategory(ProductUpdateCommand command, ProductEntity entity) {
+    private void updateCategory(ProductServiceUpdateCommand command, ProductEntity entity) {
         Optional.ofNullable(command.getCategory())
                 .ifPresent(entity::setCategory);
     }
 
-    private void updateArticle(ProductUpdateCommand command, ProductEntity entity) {
+    private void updateArticle(ProductServiceUpdateCommand command, ProductEntity entity) {
         Optional.ofNullable(command.getArticle())
                 .map(String::strip)
                 .ifPresent(entity::setArticle);
     }
 
-    private void updatePrice(ProductUpdateCommand command, ProductEntity entity) {
+    private void updatePrice(ProductServiceUpdateCommand command, ProductEntity entity) {
         Optional.ofNullable(command.getPrice())
                 .ifPresent(entity::setPrice);
     }
 
-    private void updateQuantity(ProductUpdateCommand command, ProductEntity entity) {
+    private void updateQuantity(ProductServiceUpdateCommand command, ProductEntity entity) {
         Optional.ofNullable(command.getQuantity())
                 .ifPresent(quantity -> {
                     if (!Objects.equals(entity.getQuantity(), quantity)) {

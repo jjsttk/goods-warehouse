@@ -2,13 +2,14 @@ package com.jjsttk.goodswarehouse.testutil;
 
 import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
-import com.jjsttk.goodswarehouse.controller.response.GetPageProductResponse;
 import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
+import com.jjsttk.goodswarehouse.controller.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.enums.PriceCurrency;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.command.ProductCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.ProductServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -80,8 +81,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductCreateCommand getProductCreateCommand(ProductEntity productEntity) {
-        return Instancio.of(ProductCreateCommand.class)
+    public static ProductServiceCreateCommand getProductCreateCommand(ProductEntity productEntity) {
+        return Instancio.of(ProductServiceCreateCommand.class)
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
                 .set(field("category"), productEntity.getCategory())
@@ -91,8 +92,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductUpdateCommand getProductUpdateCommand(ProductEntity productEntity) {
-        return Instancio.of(ProductUpdateCommand.class)
+    public static ProductServiceUpdateCommand getProductUpdateCommand(ProductEntity productEntity) {
+        return Instancio.of(ProductServiceUpdateCommand.class)
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
                 .set(field("category"), productEntity.getCategory())
@@ -102,8 +103,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceResponse getProductServiceResponse(ProductEntity productEntity) {
-        return Instancio.of(ProductServiceResponse.class)
+    public static BaseProductServiceDto getProductServiceResponse(ProductEntity productEntity) {
+        return Instancio.of(BaseProductServiceDto.class)
                 .set(field("id"), productEntity.getId())
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
@@ -124,13 +125,13 @@ public class ProductTestDataFactory {
         return List.copyOf(list);
     }
 
-    public static List<ProductServiceResponse> getServiceResponsesList(List<ProductEntity> entities) {
+    public static List<BaseProductServiceDto> getServiceResponsesList(List<ProductEntity> entities) {
         return entities.stream()
                 .map(ProductTestDataFactory::getProductServiceResponse)
                 .toList();
     }
 
-    public static GetPageProductResponse<GetProductResponse> getGetPageProductResponse(
+    public static PageGetProductResponse<GetProductResponse> getGetPageProductResponse(
             Pageable pageable, List<ProductEntity> entities
     ) {
         var content = entities.stream()
@@ -143,7 +144,7 @@ public class ProductTestDataFactory {
         var pageSize = pageable.getPageSize();
         var currentPageSize = content.size();
 
-        return GetPageProductResponse.<GetProductResponse>builder()
+        return PageGetProductResponse.<GetProductResponse>builder()
                 .content(content)
                 .totalCount(totalElements)
                 .totalPages(totalPages)
@@ -155,5 +156,22 @@ public class ProductTestDataFactory {
 
     public static Specification<ProductEntity> getUnrestrictedProductSpecification() {
         return Specification.unrestricted();
+    }
+
+    public static ProductPriceExchangeServiceResponse getProductPriceExchangeServiceResponse(
+            ProductEntity productEntity
+    ) {
+        return Instancio.of(ProductPriceExchangeServiceResponse.class)
+                .set(field("id"), productEntity.getId())
+                .set(field("name"), productEntity.getName())
+                .set(field("article"), productEntity.getArticle())
+                .set(field("category"), productEntity.getCategory())
+                .set(field("quantity"), productEntity.getQuantity())
+                .set(field("price"), productEntity.getPrice())
+                .set(field("description"), productEntity.getDescription())
+                .set(field("currency"), PriceCurrency.RUB)
+                .set(field("createdAt"), productEntity.getCreatedAt())
+                .set(field("lastQuantityModified"), productEntity.getLastQuantityModified())
+                .create();
     }
 }
