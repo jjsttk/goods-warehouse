@@ -17,7 +17,7 @@ import java.time.Duration;
  */
 @Slf4j
 @Component
-public final class ExchangeWebClientStrategy {
+public final class ExchangeServiceWebClientStrategy {
 
     /**
      * Creates a retry filter for read timeout errors.

@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.configuration;
 
 import com.jjsttk.goodswarehouse.configuration.property.service.exchange.ExchangeServiceProperties;
-import com.jjsttk.goodswarehouse.configuration.service.exchange.ExchangeWebClientStrategy;
+import com.jjsttk.goodswarehouse.configuration.service.exchange.ExchangeServiceWebClientStrategy;
 import io.netty.channel.ChannelOption;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -24,13 +24,13 @@ public class WebClientConfig {
      * and configures the underlying HTTP client.
      *
      * @param properties                the exchange service configuration properties
-     * @param exchangeWebClientStrategy contains pre-configured retry strategies
+     * @param exchangeServiceWebClientStrategy contains pre-configured retry strategies
      * @return configured WebClient instance for exchange rate API calls
      */
     @Bean
     public WebClient exchangeServiceWebClient(
             ExchangeServiceProperties properties,
-            ExchangeWebClientStrategy exchangeWebClientStrategy
+            ExchangeServiceWebClientStrategy exchangeServiceWebClientStrategy
     ) {
         var timeoutSettings = properties.getTimeout();
 
@@ -50,10 +50,10 @@ public class WebClientConfig {
         // Connect timeout
         var connectTimeoutDuration = timeoutSettings.getConnect();
 
-        var readTimeoutRetryFilter = exchangeWebClientStrategy.getReadTimeoutRetryFilterFunction(
+        var readTimeoutRetryFilter = exchangeServiceWebClientStrategy.getReadTimeoutRetryFilterFunction(
                 readTimeoutRetryMaxAttempts, readTimeoutRetryBackoffDuration
         );
-        var serverFailureRetryFilter = exchangeWebClientStrategy.getServerErrorRetryFilterFunction(
+        var serverFailureRetryFilter = exchangeServiceWebClientStrategy.getServerErrorRetryFilterFunction(
                 serverErrorRetryMaxAttempts, serverErrorRetryBackoffDuration
         );
 

@@ -52,7 +52,7 @@ app:
 
   cache:
     exchange-rate-client:
-      expire-after-write: 30s
+      expire-after-write: 1m
       record-stats: true
 
   rest:
