@@ -1,11 +1,11 @@
 package com.jjsttk.goodswarehouse.service.product;
 
-import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

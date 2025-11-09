@@ -1,12 +1,12 @@
 package com.jjsttk.goodswarehouse.service.product.price.exchange;
 
-import com.jjsttk.goodswarehouse.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.ExchangeRateNotFoundException;
 import com.jjsttk.goodswarehouse.service.exchange.currency.provider.CurrencyProvider;
 import com.jjsttk.goodswarehouse.service.exchange.provider.ExchangeRateProvider;
-import com.jjsttk.goodswarehouse.service.exchange.request.ExchangeData;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.response.ProductPriceExchangeServiceResponse;
-import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -104,7 +104,6 @@ public class ProductPriceExchangeServiceImpl
                     .orElseThrow(() -> new ExchangeRateNotFoundException(currency));
 
         } catch (ExchangeRateNotFoundException e) {
-            log.error("Failed to get exchange rate for currency: {}. Using RUB as fallback.", currency);
             return BigDecimal.ONE;
         }
     }

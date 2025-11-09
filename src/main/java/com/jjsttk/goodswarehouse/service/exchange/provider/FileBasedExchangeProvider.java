@@ -1,11 +1,12 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
-import com.jjsttk.goodswarehouse.configuration.property.service.exchange.ExchangeServiceProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.service.exchange.ExchangeServiceProperties;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
-import com.jjsttk.goodswarehouse.service.exchange.request.ExchangeData;
-import com.jjsttk.goodswarehouse.service.util.JsonResourceLoader;
+import com.jjsttk.goodswarehouse.exception.service.exchange.provider.FileContainsEmptyRatesException;
+import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderRequestFailedException;
+import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.shared.util.JsonResourceLoader;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -28,8 +29,8 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(2)
 @RequiredArgsConstructor
-@Slf4j
 public class FileBasedExchangeProvider implements ExchangeRateProvider {
+    private static final String PROVIDER_NAME = "FILE_BASED";
     private final JsonResourceLoader jsonResourceLoader;
     private final ExchangeServiceProperties properties;
 
@@ -43,27 +44,23 @@ public class FileBasedExchangeProvider implements ExchangeRateProvider {
      *
      * @return the exchange data loaded from file
      * @throws ExchangeRateProviderException if the file cannot be loaded, parsed,
-     *         or contains empty rates data
+     *                                       or contains empty rates data
      */
     @Override
     public ExchangeData getExchangeData() {
         var fallbackFileName = properties.getFallbackFile();
-        log.info("Loading exchange rates from file: {}", fallbackFileName);
 
         try {
             var result = jsonResourceLoader.loadObject(fallbackFileName, ExchangeData.class);
 
             if (result.rates() == null || result.rates().isEmpty()) {
-                throw new ExchangeRateProviderException(
-                        String.format("File: %s, contains empty rates.", fallbackFileName));
+                throw new FileContainsEmptyRatesException(fallbackFileName);
             }
 
-            log.info("Successfully loaded {} rates from file {}", result.rates().size(), fallbackFileName);
             return result;
 
         } catch (Exception e) {
-            log.error(e.getMessage());
-            throw new ExchangeRateProviderException(e.getMessage(), e);
+            throw new ProviderRequestFailedException(e.getMessage(), e);
         }
     }
 
@@ -74,6 +71,6 @@ public class FileBasedExchangeProvider implements ExchangeRateProvider {
      */
     @Override
     public String getProviderName() {
-        return "FILE_BASED";
+        return PROVIDER_NAME;
     }
 }

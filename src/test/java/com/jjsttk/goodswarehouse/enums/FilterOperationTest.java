@@ -1,5 +1,6 @@
 package com.jjsttk.goodswarehouse.enums;
 
+import com.jjsttk.goodswarehouse.shared.enums.FilterOperation;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

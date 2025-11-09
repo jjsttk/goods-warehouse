@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.service.product.search.simple;
 
-import com.jjsttk.goodswarehouse.controller.request.validation.NotBlankOrNull;
+import com.jjsttk.goodswarehouse.controller.validation.NotBlankOrNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;

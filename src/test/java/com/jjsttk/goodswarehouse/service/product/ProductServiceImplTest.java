@@ -1,16 +1,16 @@
 package com.jjsttk.goodswarehouse.service.product;
 
-import com.jjsttk.goodswarehouse.enums.Category;
-import com.jjsttk.goodswarehouse.enums.FilterOperation;
+import com.jjsttk.goodswarehouse.shared.enums.product.Category;
+import com.jjsttk.goodswarehouse.shared.enums.FilterOperation;
 import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.mapper.ProductConverter;
+import com.jjsttk.goodswarehouse.mapper.product.ProductConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
-import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
-import com.jjsttk.goodswarehouse.service.product.search.ProductSpecification;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.service.product.search.specification.ProductSpecification;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringParam;

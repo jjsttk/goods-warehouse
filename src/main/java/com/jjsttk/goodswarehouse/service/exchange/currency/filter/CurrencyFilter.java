@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.service.exchange.currency.filter;
 
-import com.jjsttk.goodswarehouse.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
 import com.jjsttk.goodswarehouse.service.exchange.currency.provider.CurrencyProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -54,7 +54,7 @@ public class CurrencyFilter extends OncePerRequestFilter {
             try {
                 currencyProvider.setCurrency(PriceCurrency.fromValue(headerValue));
             } catch (Exception e) {
-                log.warn("Invalid currency provided: {}, return default RUB", headerValue);
+                log.debug("Invalid currency provided: {}, return default RUB", headerValue);
                 currencyProvider.setCurrency(PriceCurrency.RUB);
             }
         }

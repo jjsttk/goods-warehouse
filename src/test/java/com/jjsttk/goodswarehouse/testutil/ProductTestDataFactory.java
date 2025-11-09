@@ -1,15 +1,15 @@
 package com.jjsttk.goodswarehouse.testutil;
 
-import com.jjsttk.goodswarehouse.controller.request.CreateProductRequest;
-import com.jjsttk.goodswarehouse.controller.request.UpdateProductRequest;
-import com.jjsttk.goodswarehouse.controller.response.GetProductResponse;
-import com.jjsttk.goodswarehouse.controller.response.PageGetProductResponse;
-import com.jjsttk.goodswarehouse.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.controller.product.dto.request.CreateProductRequest;
+import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductRequest;
+import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
+import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
+import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
 import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.response.ProductPriceExchangeServiceResponse;
-import com.jjsttk.goodswarehouse.service.product.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;

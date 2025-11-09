@@ -1,11 +1,9 @@
 package com.jjsttk.goodswarehouse.exception.service.exchange.deserializer;
 
-import lombok.Getter;
-
-@Getter
 public class ExchangeRateParsingException extends RuntimeException {
+    public static final String EXCEPTION_MESSAGE = "Failed to parse exchange rates JSON";
 
     public ExchangeRateParsingException(Throwable cause) {
-        super("Failed to parse exchange rates JSON", cause);
+        super(EXCEPTION_MESSAGE, cause);
     }
 }
