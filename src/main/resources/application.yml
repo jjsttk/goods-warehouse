@@ -29,20 +29,9 @@ logging:
     com:
       jjsttk:
         goodswarehouse:
-          configuration:
-            service:
-              exchange: debug
-
-
           service:
             exchange:
                provider: debug
-
-
-
-    org.springframework.cache: DEBUG
-
-
 
 app:
   mapper:
@@ -72,7 +61,7 @@ app:
   rest:
     exchange-service:
       host: http://localhost:8088
-      fallback-file: backupRates.jso
+      fallback-file: backupRates.json
       methods:
         currencies: /api/v1/currencies
       timeout:
@@ -80,8 +69,8 @@ app:
         read: 3s
         retry:
           read-timeout:
-            max-attempts: 3
+            max-attempts: 10
             backoff: 2s
           server-errors:
-            max-attempts: 2
+            max-attempts: 1
             backoff: 5s
