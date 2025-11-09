@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.persistence.entity;
 
-import com.jjsttk.goodswarehouse.enums.Category;
+import com.jjsttk.goodswarehouse.shared.enums.product.Category;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;

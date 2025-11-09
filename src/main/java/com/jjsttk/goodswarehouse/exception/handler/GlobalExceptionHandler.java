@@ -1,8 +1,9 @@
 package com.jjsttk.goodswarehouse.exception.handler;
 
-import com.jjsttk.goodswarehouse.exception.ErrorResponse;
-import com.jjsttk.goodswarehouse.exception.NotUniqueArticleException;
-import com.jjsttk.goodswarehouse.exception.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
+import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
+import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.exception.dto.response.ErrorResponse;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -22,6 +23,11 @@ public final class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
+    }
+
+    @ExceptionHandler(ExchangeRateProviderException.class)
+    public ResponseEntity<ErrorResponse> handleExchangeRateProviderException(ExchangeRateProviderException ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
     }
 

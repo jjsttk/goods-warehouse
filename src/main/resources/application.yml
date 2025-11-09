@@ -10,9 +10,39 @@ spring:
     deserialization:
       fail-on-unknown-properties: false
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,caches,info
+  endpoint:
+    metrics:
+      access: read_only
+    caches:
+      access: read_only
+    health:
+      access: read_only
+
 logging:
   level:
     root: info
+    com:
+      jjsttk:
+        goodswarehouse:
+          configuration:
+            service:
+              exchange: debug
+
+
+          service:
+            exchange:
+               provider: debug
+
+
+
+    org.springframework.cache: DEBUG
+
+
 
 app:
   mapper:
@@ -30,3 +60,28 @@ app:
       enabled: false
       use-exclusive-lock: true
       output-file-name: scheduling-db-result.log
+
+  exchange-rate-client:
+    implementation: real
+
+  cache:
+    exchange-rate-client:
+      expire-after-write: 1m
+      record-stats: true
+
+  rest:
+    exchange-service:
+      host: http://localhost:8088
+      fallback-file: backupRates.jso
+      methods:
+        currencies: /api/v1/currencies
+      timeout:
+        connect: 5s
+        read: 3s
+        retry:
+          read-timeout:
+            max-attempts: 3
+            backoff: 2s
+          server-errors:
+            max-attempts: 2
+            backoff: 5s
