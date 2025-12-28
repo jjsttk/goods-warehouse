@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.exception.service.exchange.deserializer;
 
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import lombok.Getter;
 
 @Getter

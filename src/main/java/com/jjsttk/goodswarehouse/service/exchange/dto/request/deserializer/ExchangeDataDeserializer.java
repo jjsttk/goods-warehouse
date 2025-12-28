@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.ExchangeRateParsingException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.UnknownCurrencyException;
 import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;

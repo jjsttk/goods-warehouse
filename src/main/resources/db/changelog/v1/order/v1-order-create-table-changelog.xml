@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="v1-1-create-order-table" author="Konstantinov Aleksandr">
+        <comment>Create order table</comment>
+        <createTable tableName="order">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_order" nullable="false"/>
+            </column>
+            <column name="customer_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)">
+                <constraints nullable="false" checkConstraint="LENGTH(status) > 0" />
+            </column>
+            <column name="delivery_address" type="VARCHAR(150)">
+                <constraints nullable="false" checkConstraint="LENGTH(delivery_address) > 0"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="order"
+                                 baseColumnNames="customer_id"
+                                 constraintName="fk_order_customer"
+                                 referencedTableName="customer"
+                                 referencedColumnNames="id" />
+
+
+    </changeSet>
+</databaseChangeLog>

@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.product.search.specification;
 
-import com.jjsttk.goodswarehouse.shared.enums.FilterOperation;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.shared.enums.search.FilterOperation;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.BigDecimalParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.LocalDateParam;

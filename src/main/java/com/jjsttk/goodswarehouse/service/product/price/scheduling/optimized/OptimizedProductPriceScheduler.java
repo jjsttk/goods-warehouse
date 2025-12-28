@@ -61,7 +61,8 @@ public class OptimizedProductPriceScheduler implements ProductPriceScheduler {
      *     then locks the `product` table in ACCESS EXCLUSIVE mode.</li>
      *     <li>Updates the prices of all products using SQL {@code UPDATE ... RETURNING *}.</li>
      *     <li>Writes all updated rows in file with default name {@code default: scheduling-result.log}.</li>
-     *     <p>File name can be changed here {@code app.scheduling.optimization.output-file-name=your.name}</p>
+     *     <p>File name can be changed here
+     *     {@code app.scheduling.optimization.output-file-name=your.name}</p>
      * </ol>
      * </p>
      *

@@ -1,8 +1,8 @@
 package com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response;
 
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
 import com.jjsttk.goodswarehouse.shared.enums.product.Category;
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
-import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import lombok.Builder;
 
 import java.math.BigDecimal;
@@ -20,14 +20,15 @@ public record ProductPriceExchangeServiceResponse(
         BigDecimal price,
         BigDecimal quantity,
         PriceCurrency currency,
+        Boolean isAvailable,
         OffsetDateTime lastQuantityModified,
         LocalDate createdAt
 ) {
     /**
-     * Creates a new response from BaseProductServiceResponse with converted price and currency.
+     * Creates a new response from ProductServiceProductDetailedResponse with converted price and currency.
      */
     public static ProductPriceExchangeServiceResponse from(
-            BaseProductServiceDto baseResponse,
+            ProductServiceProductDetailedResponse baseResponse,
             BigDecimal convertedPrice,
             PriceCurrency currency
     ) {
@@ -40,6 +41,7 @@ public record ProductPriceExchangeServiceResponse(
                 convertedPrice,
                 baseResponse.quantity(),
                 currency,
+                baseResponse.isAvailable(),
                 baseResponse.lastQuantityModified(),
                 baseResponse.createdAt()
         );

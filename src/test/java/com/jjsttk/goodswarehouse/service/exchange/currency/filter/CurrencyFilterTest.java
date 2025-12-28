@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.service.exchange.currency.filter;
 
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.service.exchange.currency.provider.CurrencyProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
