@@ -1,16 +1,17 @@
 package com.jjsttk.goodswarehouse.exception.service;
 
-import lombok.Getter;
-
 import java.util.UUID;
 
-@Getter
 public class ResourceNotFoundException extends RuntimeException {
-    private static final String EXCEPTION_MESSAGE_FORMAT = "Resource with id = %s not found";
-    private final UUID resourceId;
+    private static final String EXCEPTION_MESSAGE_FORMAT = "Resource %s with id = %s not found";
 
-    public ResourceNotFoundException(UUID id) {
-        super(String.format(EXCEPTION_MESSAGE_FORMAT, id));
-        this.resourceId = id;
+    public ResourceNotFoundException(Class<?> resourceClass, UUID id) {
+        super(String.format(EXCEPTION_MESSAGE_FORMAT, resourceClass.getSimpleName(), id));
     }
+
+    public ResourceNotFoundException(Class<?> resourceClass, Long id) {
+        super(String.format(EXCEPTION_MESSAGE_FORMAT, resourceClass.getSimpleName(), id));
+    }
+
+
 }

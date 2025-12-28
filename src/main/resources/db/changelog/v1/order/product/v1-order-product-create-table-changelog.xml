@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="v1-1-create-order-product-table" author="Konstantinov Aleksandr">
+        <comment>Create order_product table</comment>
+        <createTable tableName="order_product">
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="DECIMAL(10,2)">
+                <constraints nullable="false" checkConstraint="price > 0"/>
+            </column>
+            <column name="ordered_quantity" type="DECIMAL(11,3)">
+                <constraints nullable="false" checkConstraint="ordered_quantity > 0"/>
+            </column>
+        </createTable>
+
+        <addPrimaryKey tableName="order_product"
+                       columnNames="order_id, product_id"
+                       constraintName="pk_order_product"/>
+        
+        <addForeignKeyConstraint baseTableName="order_product"
+                                 baseColumnNames="order_id"
+                                 constraintName="fk_order_product_order"
+                                 referencedTableName="order"
+                                 referencedColumnNames="id"/>
+        
+        <addForeignKeyConstraint baseTableName="order_product"
+                                 baseColumnNames="product_id"
+                                 constraintName="fk_order_product_product"
+                                 referencedTableName="product"
+                                 referencedColumnNames="id"/>
+        
+    </changeSet>
+</databaseChangeLog>

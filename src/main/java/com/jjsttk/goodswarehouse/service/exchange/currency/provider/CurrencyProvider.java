@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.service.exchange.currency.provider;
 
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.Setter;

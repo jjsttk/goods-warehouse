@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Getter
 public class NotUniqueArticleException extends RuntimeException {
-    private static final String EXCEPTION_MESSAGE_FORMAT = "Product with id = %s already uses this article";
+    private static final String EXCEPTION_MESSAGE_FORMAT = "Product with productId = %s already uses this article";
     private final UUID productId;
 
     public NotUniqueArticleException(UUID id) {

@@ -2,7 +2,7 @@ package com.jjsttk.goodswarehouse.controller.product.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jjsttk.goodswarehouse.shared.enums.product.Category;
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
@@ -53,9 +53,16 @@ public record GetProductResponse(
 
         @Schema(
                 description = "Quantity of product available in stock",
-                example = "150"
+                example = "150.123"
         )
         BigDecimal quantity,
+
+        @Schema(
+                description = "Is this product available to order",
+                examples = {"true", "false"},
+                allowableValues = {"true", "false"}
+        )
+        Boolean isAvailable,
 
         @Schema(
                 description = "Short name of currency",
