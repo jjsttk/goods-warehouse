@@ -7,7 +7,7 @@ import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
 import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
+import com.jjsttk.goodswarehouse.service.order.price.dto.response.OrderPriceExchangeServiceResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -33,7 +33,7 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
 
     @Override
     @Mapping(target = "id", source = "orderId")
-    public abstract GetOrderResponse toResponse(BaseOrderServiceResponse serviceResponse);
+    public abstract GetOrderResponse toResponse(OrderPriceExchangeServiceResponse serviceResponse);
 
     @Override
     @Mapping(

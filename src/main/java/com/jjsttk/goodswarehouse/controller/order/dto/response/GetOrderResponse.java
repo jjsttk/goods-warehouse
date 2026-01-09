@@ -1,6 +1,7 @@
 package com.jjsttk.goodswarehouse.controller.order.dto.response;
 
 import com.jjsttk.goodswarehouse.controller.order.dto.response.product.GetOrderProductResponse;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -27,6 +28,12 @@ public record GetOrderResponse(
         @Schema(
                 description = "The price of the order at the time of placement"
         )
-        BigDecimal totalPrice
+        BigDecimal totalPrice,
+
+        @Schema(
+                description = "Short name of currency",
+                example = "EUR"
+        )
+        PriceCurrency currency
 ) {
 }

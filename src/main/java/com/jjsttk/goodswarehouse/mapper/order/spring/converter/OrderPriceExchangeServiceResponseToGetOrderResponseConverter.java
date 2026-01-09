@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.mapper.order.spring.converter;
 
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
+import com.jjsttk.goodswarehouse.service.order.price.dto.response.OrderPriceExchangeServiceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
@@ -12,13 +12,13 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public final class BaseOrderServiceResponseToGetOrderResponseConverter
-        implements Converter<BaseOrderServiceResponse, GetOrderResponse> {
+public final class OrderPriceExchangeServiceResponseToGetOrderResponseConverter
+        implements Converter<OrderPriceExchangeServiceResponse, GetOrderResponse> {
 
     private final OrderServiceProductInOrderResponseToGetOrderProductResponseConverter converter;
 
     @Override
-    public GetOrderResponse convert(BaseOrderServiceResponse source) {
+    public GetOrderResponse convert(OrderPriceExchangeServiceResponse source) {
         var products = source.products();
 
         return products.stream()
@@ -39,6 +39,7 @@ public final class BaseOrderServiceResponseToGetOrderResponseConverter
                                 .id(source.orderId())
                                 .products(convertedProducts)
                                 .totalPrice(total.setScale(2, RoundingMode.HALF_UP))
+                                .currency(source.currency())
                                 .build()
                 ));
     }

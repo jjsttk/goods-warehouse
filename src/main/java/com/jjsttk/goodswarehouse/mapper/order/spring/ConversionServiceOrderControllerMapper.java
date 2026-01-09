@@ -6,7 +6,7 @@ import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
 import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
+import com.jjsttk.goodswarehouse.service.order.price.dto.response.OrderPriceExchangeServiceResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ public final class ConversionServiceOrderControllerMapper implements OrderContro
     }
 
     @Override
-    public GetOrderResponse toResponse(BaseOrderServiceResponse serviceResponse) {
+    public GetOrderResponse toResponse(OrderPriceExchangeServiceResponse serviceResponse) {
         return conversionService.convert(serviceResponse, GetOrderResponse.class);
     }
 }

@@ -6,9 +6,9 @@ import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductRespo
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.ProductPriceExchangeService;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.ProductPriceExchangeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,8 +43,8 @@ import java.util.UUID;
 public class ProductControllerImpl implements ProductController {
 
     private final ProductService productService;
-    private final ProductPriceExchangeService productPricePriceExchangeService;
     private final ProductControllerConverter mapper;
+    private final ProductPriceExchangeService productExchangeService;
 
     /**
      * {@inheritDoc}
@@ -53,8 +53,10 @@ public class ProductControllerImpl implements ProductController {
     @GetMapping
     // Pageable defaults: page=0, size=20, sort=productId,asc (defined in interface)
     public PageGetProductResponse<GetProductResponse> getAllProducts(Pageable controllerPageableRequest) {
-        var pageBaseProductServiceDto = productService.getAll(controllerPageableRequest);
-        var pageExchangeServiceResponse = productPricePriceExchangeService.exchange(pageBaseProductServiceDto);
+        var pageBaseProductServiceDto =
+                productService.getAll(controllerPageableRequest);
+        var pageExchangeServiceResponse =
+                productExchangeService.exchange(pageBaseProductServiceDto);
 
         return mapper.toResponse(pageExchangeServiceResponse);
     }
@@ -65,8 +67,10 @@ public class ProductControllerImpl implements ProductController {
     @Override
     @GetMapping("/search")
     public PageGetProductResponse<GetProductResponse> search(@Valid SimpleSearchDto simpleSearchDto) {
-        var pageBaseProductServiceDto = productService.simpleSearch(simpleSearchDto);
-        var pageExchangeServiceResponse = productPricePriceExchangeService.exchange(pageBaseProductServiceDto);
+        var pageBaseProductServiceDto =
+                productService.simpleSearch(simpleSearchDto);
+        var pageExchangeServiceResponse =
+                productExchangeService.exchange(pageBaseProductServiceDto);
 
         return mapper.toResponse(pageExchangeServiceResponse);
     }
@@ -81,10 +85,12 @@ public class ProductControllerImpl implements ProductController {
             Pageable pageable,
             @Valid @RequestBody List<AdvancedSearchParam<?>> advancedSearchParams
     ) {
-        var pageBaseProductServiceDto = productService.advancedSearch(pageable, advancedSearchParams);
-        var exchangeServiceResponse = productPricePriceExchangeService.exchange(pageBaseProductServiceDto);
+        var pageBaseProductServiceDto =
+                productService.advancedSearch(pageable, advancedSearchParams);
+        var pageExchangeServiceResponse =
+                productExchangeService.exchange(pageBaseProductServiceDto);
 
-        return mapper.toResponse(exchangeServiceResponse);
+        return mapper.toResponse(pageExchangeServiceResponse);
     }
 
     /**
@@ -94,10 +100,9 @@ public class ProductControllerImpl implements ProductController {
     @GetMapping("/{id}")
     public GetProductResponse getProductById(@PathVariable UUID id) {
         var baseProductServiceDto = productService.getById(id);
-        var priceExchangeServiceResponse =
-                productPricePriceExchangeService.exchange(baseProductServiceDto);
+        var exchangeServiceResponse = productExchangeService.exchange(baseProductServiceDto);
 
-        return mapper.toResponse(priceExchangeServiceResponse);
+        return mapper.toResponse(exchangeServiceResponse);
     }
 
     /**
