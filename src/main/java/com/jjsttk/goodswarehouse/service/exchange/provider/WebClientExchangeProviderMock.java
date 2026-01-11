@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -16,7 +16,7 @@ import java.util.Random;
         name = "app.exchange-rate-client.implementation",
         havingValue = "mock"
 )
-public final class WebClientExchangeProviderMock implements ExchangeRateProvider {
+public final class WebClientExchangeProviderMock implements ExchangeDataProvider {
     private static final String PROVIDER_NAME = "MOCK_BASED";
 
     @Override

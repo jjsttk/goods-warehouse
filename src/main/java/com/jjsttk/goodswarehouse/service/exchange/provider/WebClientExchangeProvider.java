@@ -4,7 +4,7 @@ import com.jjsttk.goodswarehouse.shared.configuration.property.service.exchange.
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderEmptyResponseException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderRequestFailedException;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.Cacheable;
@@ -41,7 +41,7 @@ import org.springframework.web.reactive.function.client.WebClient;
         matchIfMissing = true
 )
 @RequiredArgsConstructor
-public class WebClientExchangeProvider implements ExchangeRateProvider {
+public class WebClientExchangeProvider implements ExchangeDataProvider {
     private static final String PROVIDER_NAME = "WEB_CLIENT_API";
     private final WebClient exchangeServiceWebClient;
     private final ExchangeServiceProperties props;

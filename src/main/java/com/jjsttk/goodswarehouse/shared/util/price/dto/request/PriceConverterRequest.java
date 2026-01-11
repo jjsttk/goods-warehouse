@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.service.exchange.util.converter.dto.request;
+package com.jjsttk.goodswarehouse.shared.util.price.dto.request;
 
 import lombok.Builder;
 

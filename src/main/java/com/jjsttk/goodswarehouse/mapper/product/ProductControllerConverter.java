@@ -4,9 +4,10 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.CreateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
 import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
 import org.springframework.data.domain.Page;
 
 public interface ProductControllerConverter {
@@ -16,10 +17,12 @@ public interface ProductControllerConverter {
     ProductServiceUpdateCommand toCommand(UpdateProductRequest updateRequest);
 
     PageGetProductResponse<GetProductResponse> toResponse(
-            Page<ProductPriceExchangeServiceResponse> serviceResponse
+            Page<ProductServiceProductDetailedResponse> serviceResponse,
+            ExchangeRate exchangeRate
     );
 
     GetProductResponse toResponse(
-            ProductPriceExchangeServiceResponse serviceResponse
+            ProductServiceProductDetailedResponse serviceResponse,
+            ExchangeRate exchangeRate
     );
 }

@@ -10,14 +10,12 @@ import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCom
 import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
 import com.jjsttk.goodswarehouse.service.order.dto.response.OrderServiceProductInOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.price.dto.response.OrderPriceExchangeServiceResponse;
 import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import org.instancio.Instancio;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -97,22 +95,12 @@ public class OrderTestDataFactory {
     }
 
     public static BaseOrderServiceResponse getBaseOrderServiceResponse(OrderEntity orderEntity) {
-        var mappedProducts = orderEntity.getOrderProducts().stream()
-                .map(OrderProductTestDataFactory::getOrderProductServiceProductSummaryBasedOn)
-                .map(OrderTestDataFactory::getOrderServiceProductInOrderResponseBasedOn)
-                .toList();
-        var totalPrice = mappedProducts.stream()
-                .map(product -> product.price().multiply(product.quantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
-
         return BaseOrderServiceResponse.builder()
                 .orderId(orderEntity.getId())
                 .products(orderEntity.getOrderProducts().stream()
                         .map(OrderProductTestDataFactory::getOrderProductServiceProductSummaryBasedOn)
                         .map(OrderTestDataFactory::getOrderServiceProductInOrderResponseBasedOn)
                         .toList())
-                .totalPrice(totalPrice)
                 .build();
     }
 
@@ -144,31 +132,30 @@ public class OrderTestDataFactory {
         return list;
     }
 
-    public static GetOrderResponse getOrderResponseRubCurrency(OrderPriceExchangeServiceResponse serviceResponseStub) {
-        return GetOrderResponse.builder()
-                .id(serviceResponseStub.orderId())
-                .currency(PriceCurrency.RUB)
-                .products(serviceResponseStub.products().stream()
-                        .map(it -> GetOrderProductResponse.builder()
+    public static GetOrderResponse getOrderResponseRubCurrency(BaseOrderServiceResponse serviceResponseStub) {
+        return serviceResponseStub.products().stream().collect(Collectors.teeing(
+
+                Collectors.mapping(it -> GetOrderProductResponse.builder()
                                 .productId(it.productId())
                                 .name(it.name())
                                 .price(it.price())
                                 .quantity(it.quantity())
-                                .build())
-                        .toList())
-                .totalPrice(serviceResponseStub.totalPrice())
-                .build();
-    }
+                                .build(),
+                        Collectors.toList()),
 
-    public static OrderPriceExchangeServiceResponse getOrderPriceExchangeServiceResponseRubBased(
-            BaseOrderServiceResponse serviceResponseStub
-    ) {
-        return OrderPriceExchangeServiceResponse.builder()
-                .orderId(serviceResponseStub.orderId())
-                .products(serviceResponseStub.products())
-                .totalPrice(serviceResponseStub.totalPrice())
-                .currency(PriceCurrency.RUB)
-                .build();
+                Collectors.reducing(
+                        BigDecimal.ZERO,
+                        it -> it.price().multiply(it.quantity()),
+                        BigDecimal::add
+                ),
+
+                (convertedProducts, totalPrice) -> GetOrderResponse.builder()
+                        .id(serviceResponseStub.orderId())
+                        .currency(PriceCurrency.RUB)
+                        .products(convertedProducts)
+                        .totalPrice(totalPrice)
+                        .build()
+        ));
     }
 
     public static OrderServiceCreateCommand getOrderServiceCreateCommand(OrderCreateRequest createRequestStub) {

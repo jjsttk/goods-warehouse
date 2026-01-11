@@ -9,7 +9,6 @@ import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReser
 import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
 import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
 import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
@@ -139,23 +138,6 @@ public class ProductTestDataFactory {
 
     public static Specification<ProductEntity> getUnrestrictedProductSpecification() {
         return Specification.unrestricted();
-    }
-
-    public static ProductPriceExchangeServiceResponse getProductPriceExchangeServiceResponse(
-            ProductEntity productEntity
-    ) {
-        return Instancio.of(ProductPriceExchangeServiceResponse.class)
-                .set(field("id"), productEntity.getId())
-                .set(field("name"), productEntity.getName())
-                .set(field("article"), productEntity.getArticle())
-                .set(field("category"), productEntity.getCategory())
-                .set(field("quantity"), productEntity.getQuantity())
-                .set(field("price"), productEntity.getPrice())
-                .set(field("description"), productEntity.getDescription())
-                .set(field("currency"), PriceCurrency.RUB)
-                .set(field("createdAt"), productEntity.getCreatedAt())
-                .set(field("lastQuantityModified"), productEntity.getLastQuantityModified())
-                .create();
     }
 
     public static ProductServiceReservationCommand getReservationCommand(Map<UUID, BigDecimal> productQuantities) {

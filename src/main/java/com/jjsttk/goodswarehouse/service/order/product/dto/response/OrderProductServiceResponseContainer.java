@@ -2,10 +2,10 @@ package com.jjsttk.goodswarehouse.service.order.product.dto.response;
 
 import lombok.Builder;
 
-import java.util.Collection;
+import java.util.List;
 
 @Builder
 public record OrderProductServiceResponseContainer<T>(
-        Collection<T> orderProducts
+        List<T> orderProducts
 ) {
 }

@@ -5,10 +5,10 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
+import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.ProductPriceExchangeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class ProductControllerImpl implements ProductController {
 
     private final ProductService productService;
     private final ProductControllerConverter mapper;
-    private final ProductPriceExchangeService productExchangeService;
+    private final ExchangeRateService exchangeRateService;
 
     /**
      * {@inheritDoc}
@@ -55,10 +55,10 @@ public class ProductControllerImpl implements ProductController {
     public PageGetProductResponse<GetProductResponse> getAllProducts(Pageable controllerPageableRequest) {
         var pageBaseProductServiceDto =
                 productService.getAll(controllerPageableRequest);
-        var pageExchangeServiceResponse =
-                productExchangeService.exchange(pageBaseProductServiceDto);
+        var sessionCurrencyRate =
+                exchangeRateService.getCurrentSessionExchangeRate();
 
-        return mapper.toResponse(pageExchangeServiceResponse);
+        return mapper.toResponse(pageBaseProductServiceDto, sessionCurrencyRate);
     }
 
     /**
@@ -69,10 +69,10 @@ public class ProductControllerImpl implements ProductController {
     public PageGetProductResponse<GetProductResponse> search(@Valid SimpleSearchDto simpleSearchDto) {
         var pageBaseProductServiceDto =
                 productService.simpleSearch(simpleSearchDto);
-        var pageExchangeServiceResponse =
-                productExchangeService.exchange(pageBaseProductServiceDto);
+        var sessionCurrencyRate =
+                exchangeRateService.getCurrentSessionExchangeRate();
 
-        return mapper.toResponse(pageExchangeServiceResponse);
+        return mapper.toResponse(pageBaseProductServiceDto, sessionCurrencyRate);
     }
 
     /**
@@ -87,10 +87,10 @@ public class ProductControllerImpl implements ProductController {
     ) {
         var pageBaseProductServiceDto =
                 productService.advancedSearch(pageable, advancedSearchParams);
-        var pageExchangeServiceResponse =
-                productExchangeService.exchange(pageBaseProductServiceDto);
+        var sessionCurrencyRate =
+                exchangeRateService.getCurrentSessionExchangeRate();
 
-        return mapper.toResponse(pageExchangeServiceResponse);
+        return mapper.toResponse(pageBaseProductServiceDto, sessionCurrencyRate);
     }
 
     /**
@@ -100,9 +100,10 @@ public class ProductControllerImpl implements ProductController {
     @GetMapping("/{id}")
     public GetProductResponse getProductById(@PathVariable UUID id) {
         var baseProductServiceDto = productService.getById(id);
-        var exchangeServiceResponse = productExchangeService.exchange(baseProductServiceDto);
+        var sessionCurrencyRate =
+                exchangeRateService.getCurrentSessionExchangeRate();
 
-        return mapper.toResponse(exchangeServiceResponse);
+        return mapper.toResponse(baseProductServiceDto, sessionCurrencyRate);
     }
 
     /**

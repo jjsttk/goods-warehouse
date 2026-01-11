@@ -18,8 +18,10 @@ import com.jjsttk.goodswarehouse.exception.service.order.product.ProductsToOrder
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
+import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.order.OrderService;
-import com.jjsttk.goodswarehouse.service.order.price.OrderPriceExchangeService;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import com.jjsttk.goodswarehouse.testutil.OrderTestDataFactory;
 import com.jjsttk.goodswarehouse.testutil.StringTestUtils;
@@ -63,7 +65,7 @@ class OrderControllerTest {
     private OrderService orderServiceMock;
 
     @Mock
-    private OrderPriceExchangeService exchangeServiceMock;
+    private ExchangeRateService exchangeServiceMock;
 
     @Mock
     private OrderControllerConverter mapperMock;
@@ -98,14 +100,17 @@ class OrderControllerTest {
         var baseOrderServiceResponseStub =
                 OrderTestDataFactory.getBaseOrderServiceResponse(orderEntity);
         var exchangeServiceResponseStub =
-                OrderTestDataFactory.getOrderPriceExchangeServiceResponseRubBased(baseOrderServiceResponseStub);
-        var sutResponseStub = OrderTestDataFactory.getOrderResponseRubCurrency(exchangeServiceResponseStub);
+                ExchangeRate.builder()
+                        .rate(BigDecimal.ONE)
+                        .currency(PriceCurrency.RUB)
+                        .build();
+        var sutResponseStub = OrderTestDataFactory.getOrderResponseRubCurrency(baseOrderServiceResponseStub);
 
         when(orderServiceMock.getById(CUSTOMER_ID_HEADER, ORDER_ID))
                 .thenReturn(baseOrderServiceResponseStub);
-        when(exchangeServiceMock.exchange(baseOrderServiceResponseStub))
+        when(exchangeServiceMock.getCurrentSessionExchangeRate())
                 .thenReturn(exchangeServiceResponseStub);
-        when(mapperMock.toResponse(exchangeServiceResponseStub))
+        when(mapperMock.toResponse(baseOrderServiceResponseStub, exchangeServiceResponseStub))
                 .thenReturn(sutResponseStub);
 
         var responseJson = mockMvc.perform(get("/api/v1/orders/{id}", ORDER_ID)
@@ -133,7 +138,7 @@ class OrderControllerTest {
         }
 
         verify(orderServiceMock, times(1)).getById(CUSTOMER_ID_HEADER, ORDER_ID);
-        verify(mapperMock, times(1)).toResponse(exchangeServiceResponseStub);
+        verify(mapperMock, times(1)).toResponse(baseOrderServiceResponseStub, exchangeServiceResponseStub);
     }
 
     // getOrderById 404 Order not found

@@ -4,7 +4,7 @@ import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEn
 import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceResponseContainer;
 import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 public interface OrderProductConverter {
@@ -18,7 +18,7 @@ public interface OrderProductConverter {
             ProductServiceReservedProductInfo updateInfo
     );
 
-    default <T> OrderProductServiceResponseContainer<T> toResponse(Collection<T> productSummariesByOrderId) {
+    default <T> OrderProductServiceResponseContainer<T> toResponse(List<T> productSummariesByOrderId) {
         return new OrderProductServiceResponseContainer<>(productSummariesByOrderId);
     }
 }

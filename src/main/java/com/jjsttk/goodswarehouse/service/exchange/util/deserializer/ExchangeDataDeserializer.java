@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.service.exchange.dto.request.deserializer;
+package com.jjsttk.goodswarehouse.service.exchange.util.deserializer;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.ExchangeRateParsingException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.UnknownCurrencyException;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 
 import java.io.IOException;
 import java.math.BigDecimal;

@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.shared.util;
+package com.jjsttk.goodswarehouse.shared.util.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jjsttk.goodswarehouse.exception.service.util.ResourceLoadingException;

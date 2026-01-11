@@ -13,13 +13,7 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.reducing;
-import static java.util.stream.Collectors.toList;
 
 @Component
 @RequiredArgsConstructor
@@ -43,24 +37,11 @@ public final class ConversionServiceOrderServiceMapper implements OrderServiceCo
             @NonNull UUID orderId,
             @NonNull OrderProductServiceResponseContainer<OrderProductServiceProductSummary> serviceResponse
     ) {
-        return serviceResponse.orderProducts().stream()
-                .collect(Collectors.teeing(
-
-                        Collectors.mapping(
-                                summary -> conversionService.convert(summary, OrderServiceProductInOrderResponse.class),
-                                toList()
-                        ),
-
-                        Collectors.mapping(
-                                summary -> summary.price().multiply(summary.quantity()),
-                                reducing(BigDecimal.ZERO, BigDecimal::add)
-                        ),
-
-                        (products, totalPrice) -> BaseOrderServiceResponse.builder()
-                                .orderId(orderId)
-                                .products(products)
-                                .totalPrice(totalPrice.setScale(2, RoundingMode.HALF_UP))
-                                .build()
-                ));
+        return BaseOrderServiceResponse.builder()
+                .orderId(orderId)
+                .products(serviceResponse.orderProducts().stream()
+                        .map(it -> conversionService.convert(it, OrderServiceProductInOrderResponse.class))
+                        .toList())
+                .build();
     }
 }

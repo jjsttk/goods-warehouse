@@ -3,6 +3,7 @@ package com.jjsttk.goodswarehouse.service.exchange.dto.request.deserializer;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jjsttk.goodswarehouse.service.exchange.util.deserializer.ExchangeDataDeserializer;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.ExchangeRateParsingException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.UnknownCurrencyException;

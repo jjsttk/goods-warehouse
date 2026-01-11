@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.AllExchangeProvidersFailedException;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
@@ -16,7 +16,7 @@ import java.util.List;
  * A primary exchange rate provider that coordinates a chain of providers to ensure high availability.
  * <p>
  * This implementation acts as a failover wrapper. It iterates through all registered
- * {@link ExchangeRateProvider} beans in their order of precedence, attempting to fetch
+ * {@link ExchangeDataProvider} beans in their order of precedence, attempting to fetch
  * data from the first available and functional provider.
  * <p>
  * Marked as {@link Primary} to be the default choice for injection when multiple
@@ -26,7 +26,7 @@ import java.util.List;
 @Primary
 @Slf4j
 @RequiredArgsConstructor
-public class PrimaryExchangeRateProvider implements ExchangeRateProvider {
+public class PrimaryExchangeDataProvider implements ExchangeDataProvider {
     private static final String PROVIDER_NAME = "FALLBACK_STRATEGY";
     private static final String UNAVAILABLE_PROVIDER_FORMAT = "[%s] (unavailable)";
     private static final String FAILED_PROVIDER_FORMAT = "[%s] %s";
@@ -34,7 +34,7 @@ public class PrimaryExchangeRateProvider implements ExchangeRateProvider {
     /**
      * List of all available exchange rate providers, automatically injected by Spring.
      */
-    private final List<ExchangeRateProvider> providers;
+    private final List<ExchangeDataProvider> providers;
 
     /**
      * Executes the failover strategy to obtain exchange rates.
@@ -52,7 +52,7 @@ public class PrimaryExchangeRateProvider implements ExchangeRateProvider {
     @Override
     public ExchangeData getExchangeData() {
         var providerErrorList = new ArrayList<String>();
-        for (ExchangeRateProvider provider : providers) {
+        for (ExchangeDataProvider provider : providers) {
             // Self-exclusion to prevent infinite recursion if this list contains the Primary provider itself
             if (provider == this) {
                 continue;

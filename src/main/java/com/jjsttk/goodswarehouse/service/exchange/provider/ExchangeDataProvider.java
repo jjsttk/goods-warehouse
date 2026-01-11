@@ -1,13 +1,13 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 
 /**
  * Provider interface for retrieving currency exchange rate data from various sources.
  * Defines the contract for obtaining current exchange rates from different data sources.
  */
-public interface ExchangeRateProvider {
+public interface ExchangeDataProvider {
 
     /**
      * Fetches current exchange rate data from the provider's data source.
