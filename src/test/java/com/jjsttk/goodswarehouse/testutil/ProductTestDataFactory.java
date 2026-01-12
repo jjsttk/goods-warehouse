@@ -96,7 +96,7 @@ public class ProductTestDataFactory {
         for (int i = 0; i < length; i++) {
             list.add(getProductEntityWithoutGeneratedId());
         }
-        return List.copyOf(list);
+        return list;
     }
 
     public static List<ProductEntity> getProductsListWithId(int length) {
@@ -104,7 +104,7 @@ public class ProductTestDataFactory {
         for (int i = 0; i < length; i++) {
             list.add(getProductEntityWithGeneratedId());
         }
-        return List.copyOf(list);
+        return list;
     }
 
     public static List<ProductServiceProductDetailedResponse> getServiceResponsesList(List<ProductEntity> entities) {
