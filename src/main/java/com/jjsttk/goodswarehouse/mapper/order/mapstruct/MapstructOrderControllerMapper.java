@@ -24,6 +24,7 @@ import org.mapstruct.ReportingPolicy;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,6 @@ import java.util.stream.Collectors;
 
 @Mapper(
         imports = {PriceConverterRequest.class, PriceConverter.class},
-        uses = MapstructOrderServiceMapper.class,
         componentModel = MappingConstants.ComponentModel.SPRING,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
@@ -60,11 +60,16 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
             BaseOrderServiceResponse serviceResponse,
             @Context ExchangeRate exchangeRate
     ) {
-        var convertedProducts = serviceResponse.products().stream()
-                .map(it -> mapOrderProductResponse(it, exchangeRate.rate()))
-                .toList();
+        var totalPrice = BigDecimal.ZERO;
+        var convertedProducts = new ArrayList<GetOrderProductResponse>(serviceResponse.products().size());
 
-        var totalPrice = calculateTotal(convertedProducts);
+        for (var src : serviceResponse.products()) {
+            var converted = mapOrderProductResponse(src, exchangeRate.rate());
+            convertedProducts.add(converted);
+
+            var itemTotal = converted.price().multiply(converted.quantity());
+            totalPrice = totalPrice.add(itemTotal);
+        }
 
         return GetOrderResponse.builder()
                 .id(serviceResponse.orderId())
@@ -148,12 +153,5 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
                         .actualRate(rateValue)
                         .build()
         );
-    }
-
-    private BigDecimal calculateTotal(List<GetOrderProductResponse> products) {
-        return products.stream()
-                .map(p -> p.price().multiply(p.quantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
     }
 }

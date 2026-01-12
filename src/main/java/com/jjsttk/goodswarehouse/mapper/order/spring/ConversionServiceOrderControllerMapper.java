@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,14 +50,17 @@ public final class ConversionServiceOrderControllerMapper implements OrderContro
             BaseOrderServiceResponse serviceResponse,
             ExchangeRate exchangeRate
     ) {
-        var convertedProducts = serviceResponse.products().stream()
-                .map(it -> elementToResponse(it, exchangeRate.rate()))
-                .toList();
 
-        var totalPrice = convertedProducts.stream()
-                .map(p -> p.price().multiply(p.quantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
+        var totalPrice = BigDecimal.ZERO;
+        var convertedProducts = new ArrayList<GetOrderProductResponse>(serviceResponse.products().size());
+
+        for (var src : serviceResponse.products()) {
+            var converted = elementToResponse(src, exchangeRate.rate());
+            convertedProducts.add(converted);
+
+            var itemTotal = converted.price().multiply(converted.quantity());
+            totalPrice = totalPrice.add(itemTotal);
+        }
 
         return GetOrderResponse.builder()
                 .id(serviceResponse.orderId())
