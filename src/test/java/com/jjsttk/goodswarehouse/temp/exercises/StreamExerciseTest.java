@@ -1,5 +1,10 @@
 package com.jjsttk.goodswarehouse.temp.exercises;
 
+import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
+import com.jjsttk.goodswarehouse.controller.order.dto.response.product.GetOrderProductResponse;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
+import com.jjsttk.goodswarehouse.testutil.OrderTestDataFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.Pair;
@@ -7,6 +12,8 @@ import org.instancio.Instancio;
 import org.instancio.Select;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +74,45 @@ class StreamExerciseTest {
         secondOptionUsingStreamWithToMap(ordsForBench);
         sw.stop();
         log.info("ToMap time: {} ms", sw.getTime(TimeUnit.MILLISECONDS));
+    }
+
+    @Test
+    void usingTeeingExample() {
+        var orderEntity = OrderTestDataFactory.getOrderEntityWithIdByLengthAndStatus(
+                5,
+                OrderStatus.CREATED,
+                BigDecimal.TEN,
+                true
+        );
+        var orderServiceResponse = OrderTestDataFactory.getBaseOrderServiceResponse(orderEntity);
+
+        var orderControllerResponse =
+                orderServiceResponse.products().stream()
+                        .collect(Collectors.teeing(
+                                // (mappedProds)
+                                Collectors.mapping(it -> GetOrderProductResponse.builder()
+                                                .productId(it.productId())
+                                                .name(it.name())
+                                                .quantity(it.quantity())
+                                                .price(it.price())
+                                                .build(),
+                                        Collectors.toList()),
+
+                                // (totalOrderPrice)
+                                Collectors.reducing(
+                                        BigDecimal.ZERO,
+                                        it -> it.price().multiply(it.quantity()),
+                                        BigDecimal::add
+                                ),
+
+                                // merge fn
+                                (mappedProds, totalOrderPrice) -> GetOrderResponse.builder()
+                                        .id(orderServiceResponse.orderId())
+                                        .currency(PriceCurrency.RUB)
+                                        .products(mappedProds)
+                                        .totalPrice(totalOrderPrice.setScale(2, RoundingMode.HALF_UP))
+                                        .build()
+                        ));
     }
 
     Map<String, List<UUID>> firstOptionUsingStreamWithGroupBy(List<Ord> ords) {

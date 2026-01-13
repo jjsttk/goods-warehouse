@@ -16,6 +16,7 @@ import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import org.instancio.Instancio;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -153,7 +154,7 @@ public class OrderTestDataFactory {
                         .id(serviceResponseStub.orderId())
                         .currency(PriceCurrency.RUB)
                         .products(convertedProducts)
-                        .totalPrice(totalPrice)
+                        .totalPrice(totalPrice.setScale(2, RoundingMode.HALF_UP))
                         .build()
         ));
     }
