@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:src/main/java/com/jjsttk/goodswarehouse/service/exchange/util/deserializer/ExchangeDataDeserializer.java
 package com.jjsttk.goodswarehouse.service.exchange.util.deserializer;
+========
+package com.jjsttk.goodswarehouse.service.exchange.dto.response.deserializer;
+>>>>>>>> develop:src/main/java/com/jjsttk/goodswarehouse/service/exchange/dto/response/deserializer/ExchangeDataDeserializer.java
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
