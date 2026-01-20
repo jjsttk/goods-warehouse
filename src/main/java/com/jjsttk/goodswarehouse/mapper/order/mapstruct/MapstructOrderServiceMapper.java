@@ -11,20 +11,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.Mappings;
-import org.mapstruct.Named;
 import org.mapstruct.NullValueCheckStrategy;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Collection;
 import java.util.UUID;
 
 @Mapper(
-        uses = {
-                MapstructReferenceMapper.class
-        },
+        uses = MapstructReferenceMapper.class,
         imports = OrderStatus.class,
         componentModel = MappingConstants.ComponentModel.SPRING,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
@@ -50,26 +44,9 @@ public abstract class MapstructOrderServiceMapper implements OrderServiceConvert
     @Override
     @Mappings({
             @Mapping(target = "products", source = "serviceResponse.orderProducts"),
-            @Mapping(target = "totalPrice", source = "serviceResponse.orderProducts",
-                    qualifiedByName = "calculateTotalPrice")
     })
     public abstract BaseOrderResponse toResponse(
             UUID orderId,
             OrderProductResponseContainer<OrderProductProjection> serviceResponse
     );
-
-    /**
-     * Calculates total price from list of product summaries.
-     * Sums price × quantity for each product and rounds to 2 decimal places.
-     *
-     * @param products list of product summaries
-     * @return total price rounded to 2 decimal places
-     */
-    @Named("calculateTotalPrice")
-    protected BigDecimal calculateTotalPrice(Collection<OrderProductProjection> products) {
-        return products.stream()
-                .map(it -> it.price().multiply(it.quantity()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
-    }
 }

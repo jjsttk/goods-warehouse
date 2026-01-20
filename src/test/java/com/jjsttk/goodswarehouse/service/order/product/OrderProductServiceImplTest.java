@@ -42,7 +42,7 @@ class OrderProductServiceImplTest {
                 );
 
         var responseContainerStub =
-                OrderProductTestDataFactory.getServiceResponseBasedEntity(orderEntityStub);
+                OrderProductTestDataFactory.getResponseContainedWithProjectionBasedOnEntity(orderEntityStub);
 
         var summariesListStub =
                 (List<OrderProductProjection>) responseContainerStub.orderProducts();

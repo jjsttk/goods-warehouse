@@ -12,14 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.reducing;
-import static java.util.stream.Collectors.toList;
 
 @Component
 @RequiredArgsConstructor
@@ -43,30 +37,11 @@ public final class ConversionServiceOrderServiceMapper implements OrderServiceCo
             UUID orderId,
             OrderProductResponseContainer<OrderProductProjection> serviceResponse
     ) {
-        return serviceResponse.orderProducts().stream()
-                .collect(Collectors.teeing(
-
-                        Collectors.mapping(
-                                summary ->
-                                        Objects.requireNonNull(
-                                                conversionService.convert(
-                                                        summary,
-                                                        BaseProductInOrderResponse.class
-                                                )
-                                        ),
-                                toList()
-                        ),
-
-                        Collectors.mapping(
-                                summary -> summary.price().multiply(summary.quantity()),
-                                reducing(BigDecimal.ZERO, BigDecimal::add)
-                        ),
-
-                        (products, totalPrice) -> BaseOrderResponse.builder()
-                                .orderId(orderId)
-                                .products(products)
-                                .totalPrice(totalPrice.setScale(2, RoundingMode.HALF_UP))
-                                .build()
-                ));
+        return BaseOrderResponse.builder()
+                .orderId(orderId)
+                .products(serviceResponse.orderProducts().stream()
+                        .map(it -> Objects.requireNonNull(conversionService.convert(it, BaseProductInOrderResponse.class)))
+                        .toList())
+                .build();
     }
 }

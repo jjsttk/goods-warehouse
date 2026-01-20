@@ -28,7 +28,7 @@ repositories {
 dependencies {
     implementation("io.projectreactor:reactor-core:3.6.3")
     implementation("com.github.ben-manes.caffeine:caffeine:3.2.2")
-    implementation ("org.mapstruct:mapstruct:1.6.2")
+    implementation("org.mapstruct:mapstruct:1.6.2")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.liquibase:liquibase-core")
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -39,10 +39,10 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:postgresql")
-    annotationProcessor ("org.mapstruct:mapstruct-processor:1.6.2")
-    implementation ("org.instancio:instancio-junit:5.0.2")
-    implementation ("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
-    annotationProcessor ("org.projectlombok:lombok-mapstruct-binding:0.2.0")
+    annotationProcessor("org.mapstruct:mapstruct-processor:1.6.2")
+    implementation("org.instancio:instancio-junit:5.0.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+    annotationProcessor("org.projectlombok:lombok-mapstruct-binding:0.2.0")
 
 
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -56,9 +56,12 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    testCompileOnly("org.projectlombok:lombok")
+    testAnnotationProcessor("org.projectlombok:lombok")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    systemProperty ("spring.profiles.active", "test")
+    systemProperty("spring.profiles.active", "test")
 }

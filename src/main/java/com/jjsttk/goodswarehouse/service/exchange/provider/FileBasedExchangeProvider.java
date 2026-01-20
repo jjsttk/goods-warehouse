@@ -5,7 +5,7 @@ import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRat
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.FileContainsEmptyRatesException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderRequestFailedException;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
-import com.jjsttk.goodswarehouse.shared.util.JsonResourceLoader;
+import com.jjsttk.goodswarehouse.shared.util.json.JsonResourceLoader;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -29,7 +29,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(2)
 @RequiredArgsConstructor
-public class FileBasedExchangeProvider implements ExchangeRateProvider {
+public class FileBasedExchangeProvider implements ExchangeDataProvider {
     private static final String PROVIDER_NAME = "FILE_BASED";
     private final JsonResourceLoader jsonResourceLoader;
     private final ExchangeServiceProperties properties;

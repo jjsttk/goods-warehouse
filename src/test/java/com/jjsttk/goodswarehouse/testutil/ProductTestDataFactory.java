@@ -9,7 +9,6 @@ import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductComma
 import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
 import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
 import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
@@ -68,7 +67,7 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static CreateProductCommandInfo getProductCreateCommand(ProductEntity productEntity) {
+    public static CreateProductCommandInfo getCreateProductCommand(ProductEntity productEntity) {
         return Instancio.of(CreateProductCommandInfo.class)
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
@@ -79,7 +78,7 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductDetailedResponse getProductServiceResponse(ProductEntity productEntity) {
+    public static ProductDetailedResponse getProductDetailedResponse(ProductEntity productEntity) {
         return Instancio.of(ProductDetailedResponse.class)
                 .set(field("id"), productEntity.getId())
                 .set(field("name"), productEntity.getName())
@@ -98,7 +97,7 @@ public class ProductTestDataFactory {
         for (int i = 0; i < length; i++) {
             list.add(getProductEntityWithoutGeneratedId());
         }
-        return List.copyOf(list);
+        return list;
     }
 
     public static List<ProductEntity> getProductsListWithId(int length) {
@@ -106,16 +105,16 @@ public class ProductTestDataFactory {
         for (int i = 0; i < length; i++) {
             list.add(getProductEntityWithGeneratedId());
         }
-        return List.copyOf(list);
+        return list;
     }
 
-    public static List<ProductDetailedResponse> getServiceResponsesList(List<ProductEntity> entities) {
+    public static List<ProductDetailedResponse> getResponsesList(List<ProductEntity> entities) {
         return entities.stream()
-                .map(ProductTestDataFactory::getProductServiceResponse)
+                .map(ProductTestDataFactory::getProductDetailedResponse)
                 .toList();
     }
 
-    public static PageGetProductResponse<GetProductResponse> getGetPageProductResponse(
+    public static PageGetProductResponse<GetProductResponse> getPageGetProductResponse(
             Pageable pageable, List<ProductEntity> entities
     ) {
         var content = entities.stream()
@@ -142,24 +141,7 @@ public class ProductTestDataFactory {
         return Specification.unrestricted();
     }
 
-    public static ExchangeProductPriceResponse getProductPriceExchangeServiceResponse(
-            ProductEntity productEntity
-    ) {
-        return Instancio.of(ExchangeProductPriceResponse.class)
-                .set(field("id"), productEntity.getId())
-                .set(field("name"), productEntity.getName())
-                .set(field("article"), productEntity.getArticle())
-                .set(field("category"), productEntity.getCategory())
-                .set(field("quantity"), productEntity.getQuantity())
-                .set(field("price"), productEntity.getPrice())
-                .set(field("description"), productEntity.getDescription())
-                .set(field("currency"), PriceCurrency.RUB)
-                .set(field("createdAt"), productEntity.getCreatedAt())
-                .set(field("lastQuantityModified"), productEntity.getLastQuantityModified())
-                .create();
-    }
-
-    public static ReserveProductCommandInfo getReservationCommand(Map<UUID, BigDecimal> productQuantities) {
+    public static ReserveProductCommandInfo getReserveProductCommandInfo(Map<UUID, BigDecimal> productQuantities) {
         return ReserveProductCommandInfo.builder()
                 .productQuantities(productQuantities)
                 .build();

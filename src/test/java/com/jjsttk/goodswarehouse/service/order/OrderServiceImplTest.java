@@ -116,8 +116,8 @@ class OrderServiceImplTest {
     ) {
         UUID orderId = orderEntity.getId();
 
-        var productsResponse = OrderProductTestDataFactory.getServiceResponseBasedEntity(orderEntity);
-        var expectedResponse = OrderTestDataFactory.getBaseOrderServiceResponse(orderEntity);
+        var productsResponse = OrderProductTestDataFactory.getResponseContainedWithProjectionBasedOnEntity(orderEntity);
+        var expectedResponse = OrderTestDataFactory.getBaseOrderResponse(orderEntity);
 
         when(orderRepositoryMock.existsByIdAndCustomerId(orderId, customerId))
                 .thenReturn(true);
@@ -165,7 +165,7 @@ class OrderServiceImplTest {
                 = OrderProductTestDataFactory.getOrderProductEntityWithoutOrderIdRandomProduct(BigDecimal.ONE);
 
         var productServiceReservationCommandStub =
-                ProductTestDataFactory.getReservationCommand(createCommand.productQuantities());
+                ProductTestDataFactory.getReserveProductCommandInfo(createCommand.productQuantities());
 
         var productServiceReservationResponseStub =
                 ProductTestDataFactory.getReservationResponseWithEmptyProblemsMap(

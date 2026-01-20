@@ -4,10 +4,16 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.create.OrderCreate
 import com.jjsttk.goodswarehouse.controller.order.dto.request.create.product.OrderProductCreateRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.OrderProductUpdateRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
+import com.jjsttk.goodswarehouse.controller.order.dto.response.product.GetOrderProductResponse;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
 import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
+import com.jjsttk.goodswarehouse.shared.util.price.PriceConverter;
+import com.jjsttk.goodswarehouse.shared.util.price.dto.request.PriceConverterRequest;
+import org.mapstruct.Context;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -17,6 +23,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.mapstruct.ReportingPolicy;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +32,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Mapper(
+        imports = {PriceConverterRequest.class, PriceConverter.class},
         componentModel = MappingConstants.ComponentModel.SPRING,
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE,
         nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
@@ -31,9 +40,44 @@ import java.util.stream.Collectors;
 )
 public abstract class MapstructOrderControllerMapper implements OrderControllerConverter {
 
+    /**
+     * Maps the service response to a controller response, performing currency conversion
+     * for each product and calculating the order's total price.
+     * <p>
+     * The process includes:
+     * <ul>
+     *     <li>Converting individual product prices using the provided {@code exchangeRate}.</li>
+     *     <li>Aggregating the sum of all products (price * quantity).</li>
+     *     <li>Rounding the total price to 2 decimal places.</li>
+     * </ul>
+     *
+     * @param serviceResponse the source order data from the service layer
+     * @param exchangeRate    the context containing the target currency and its rate value
+     * @return a {@link GetOrderResponse} with converted prices and calculated total
+     */
     @Override
-    @Mapping(target = "id", source = "orderId")
-    public abstract GetOrderResponse toResponse(BaseOrderResponse serviceResponse);
+    public GetOrderResponse toResponse(
+            BaseOrderResponse serviceResponse,
+            @Context ExchangeRate exchangeRate
+    ) {
+        var totalPrice = BigDecimal.ZERO;
+        var convertedProducts = new ArrayList<GetOrderProductResponse>(serviceResponse.products().size());
+
+        for (var src : serviceResponse.products()) {
+            var converted = mapOrderProductResponse(src, exchangeRate.rate());
+            convertedProducts.add(converted);
+
+            var itemTotal = converted.price().multiply(converted.quantity());
+            totalPrice = totalPrice.add(itemTotal);
+        }
+
+        return GetOrderResponse.builder()
+                .id(serviceResponse.orderId())
+                .products(convertedProducts)
+                .totalPrice(totalPrice.setScale(2, RoundingMode.HALF_UP))
+                .currency(exchangeRate.currency())
+                .build();
+    }
 
     @Override
     @Mapping(
@@ -41,6 +85,22 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
             qualifiedByName = "requestProductsListToProductQuantities"
     )
     public abstract CreateOrderCommandInfo toServiceCommand(OrderCreateRequest createRequest);
+
+    @Override
+    @Mapping(source = "request", target = "productQuantities", qualifiedByName = "mapListToQuantitiesMap")
+    public abstract UpdateOrderCommandInfo toServiceCommand(
+            UUID orderId,
+            Collection<OrderProductUpdateRequest> request
+    );
+
+    // ------------------------------------ HELPERS -------------------------------------------
+
+
+    @Mapping(target = "price", source = "price", qualifiedByName = "exchangePrice")
+    protected abstract GetOrderProductResponse mapOrderProductResponse(
+            BaseProductInOrderResponse src,
+            @Context BigDecimal rateValue
+    );
 
     /**
      * Converts list of product create requests to quantity map.
@@ -60,14 +120,6 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
         ));
     }
 
-
-    @Override
-    @Mapping(source = "request", target = "productQuantities", qualifiedByName = "mapListToQuantitiesMap")
-    public abstract UpdateOrderCommandInfo toServiceCommand(
-            UUID orderId,
-            Collection<OrderProductUpdateRequest> request
-    );
-
     /**
      * Converts collection of product update requests to quantity map.
      * Aggregates quantities for duplicate product IDs.
@@ -86,5 +138,20 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
         ));
     }
 
-
+    /**
+     * Converts the source price to a target currency using the provided exchange rate.
+     *
+     * @param sourcePrice the original price in base currency
+     * @param rateValue   the exchange rate provided via @Context
+     * @return converted price
+     */
+    @Named("exchangePrice")
+    protected BigDecimal exchangePrice(BigDecimal sourcePrice, @Context BigDecimal rateValue) {
+        return PriceConverter.convert(
+                PriceConverterRequest.builder()
+                        .sourcePrice(sourcePrice)
+                        .actualRate(rateValue)
+                        .build()
+        );
+    }
 }

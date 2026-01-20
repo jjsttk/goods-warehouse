@@ -5,21 +5,18 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
 import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
-import lombok.RequiredArgsConstructor;
-import org.springframework.core.convert.ConversionService;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.shared.util.price.PriceConverter;
+import com.jjsttk.goodswarehouse.shared.util.price.dto.request.PriceConverterRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
-
 @Component
-@RequiredArgsConstructor
 public final class ConversionServiceProductControllerConverter implements ProductControllerConverter {
-    private final ConversionService conversionService;
 
     @Override
     public CreateProductCommandInfo toCommand(CreateProductRequest createRequest) {
@@ -49,15 +46,14 @@ public final class ConversionServiceProductControllerConverter implements Produc
 
     @Override
     public PageGetProductResponse<GetProductResponse> toResponse(
-            Page<ExchangeProductPriceResponse> serviceResponse
+            Page<ProductDetailedResponse> serviceResponse,
+            ExchangeRate exchangeRate
     ) {
-        var convertedContent = serviceResponse.getContent().stream()
-                .map(it -> conversionService.convert(it, GetProductResponse.class))
-                .toList();
-
         return PageGetProductResponse.<GetProductResponse>builder()
-                .content(convertedContent)
                 .totalCount(serviceResponse.getTotalElements())
+                .content(serviceResponse.getContent().stream()
+                        .map(it -> toResponse(it, exchangeRate))
+                        .toList())
                 .totalPages(serviceResponse.getTotalPages())
                 .currentPage(serviceResponse.getNumber())
                 .pageSize(serviceResponse.getSize())
@@ -66,8 +62,29 @@ public final class ConversionServiceProductControllerConverter implements Produc
     }
 
     @Override
-    public GetProductResponse toResponse(ExchangeProductPriceResponse serviceResponse) {
-        return Objects.requireNonNull(conversionService.convert(serviceResponse, GetProductResponse.class));
+    public GetProductResponse toResponse(
+            ProductDetailedResponse serviceResponse,
+            ExchangeRate exchangeRate
+    ) {
+        return GetProductResponse.builder()
+                .id(serviceResponse.id())
+                .name(serviceResponse.name())
+                .article(serviceResponse.article())
+                .description(serviceResponse.description())
+                .category(serviceResponse.category())
+                .price(PriceConverter.convert(
+                        PriceConverterRequest.builder()
+                                .sourcePrice(serviceResponse.price())
+                                .actualRate(exchangeRate.rate())
+                                .build()
+                ))
+                .currency(exchangeRate.currency())
+                .quantity(serviceResponse.quantity())
+                .lastQuantityModified(serviceResponse.lastQuantityModified())
+                .description(serviceResponse.description())
+                .isAvailable(serviceResponse.isAvailable())
+                .createdAt(serviceResponse.createdAt())
+                .build();
     }
 
     /**

@@ -38,17 +38,17 @@ public class OrderProductTestDataFactory {
                 .create();
     }
 
-    public static OrderProductResponseContainer<OrderProductProjection> getServiceResponseBasedEntity(
+    public static OrderProductResponseContainer<OrderProductProjection> getResponseContainedWithProjectionBasedOnEntity(
             OrderEntity order
     ) {
         return OrderProductResponseContainer.<OrderProductProjection>builder()
                 .orderProducts(order.getOrderProducts().stream()
-                        .map(OrderProductTestDataFactory::getOrderProductServiceProductSummaryBasedOn)
+                        .map(OrderProductTestDataFactory::getOrderProductProjectionBasedOn)
                         .toList())
                 .build();
     }
 
-    public static OrderProductProjection getOrderProductServiceProductSummaryBasedOn(
+    public static OrderProductProjection getOrderProductProjectionBasedOn(
             OrderProductEntity orderProduct
     ) {
         return Instancio.of(OrderProductProjection.class)

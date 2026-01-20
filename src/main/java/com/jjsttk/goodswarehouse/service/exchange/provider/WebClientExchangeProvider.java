@@ -41,7 +41,7 @@ import org.springframework.web.reactive.function.client.WebClient;
         matchIfMissing = true
 )
 @RequiredArgsConstructor
-public class WebClientExchangeProvider implements ExchangeRateProvider {
+public class WebClientExchangeProvider implements ExchangeDataProvider {
     private static final String PROVIDER_NAME = "WEB_CLIENT_API";
     private final WebClient exchangeServiceWebClient;
     private final ExchangeServiceProperties props;

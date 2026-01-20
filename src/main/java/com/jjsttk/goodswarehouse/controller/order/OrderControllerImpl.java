@@ -5,6 +5,7 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.Ord
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.status.OrderUpdateStatusRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
+import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
 import com.jjsttk.goodswarehouse.service.order.OrderService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -34,6 +35,7 @@ import java.util.UUID;
 public class OrderControllerImpl implements OrderController {
     private final OrderService orderService;
     private final OrderControllerConverter mapper;
+    private final ExchangeRateService exchangeRateService;
 
     /**
      * {@inheritDoc}
@@ -46,7 +48,9 @@ public class OrderControllerImpl implements OrderController {
             @PathVariable UUID orderId
     ) {
         var orderServiceResponse = orderService.getById(customerId, orderId);
-        return mapper.toResponse(orderServiceResponse);
+        var sessionCurrencyRate = exchangeRateService.getCurrentSessionExchangeRate();
+
+        return mapper.toResponse(orderServiceResponse, sessionCurrencyRate);
     }
 
     /**

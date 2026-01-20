@@ -73,8 +73,8 @@ class ProductServiceImplTest {
     void setUp() {
         specificationStub = ProductTestDataFactory.getUnrestrictedProductSpecification();
         productEntityStub = ProductTestDataFactory.getProductEntityWithGeneratedId();
-        createCommandStub = ProductTestDataFactory.getProductCreateCommand(productEntityStub);
-        serviceResponseStub = ProductTestDataFactory.getProductServiceResponse(productEntityStub);
+        createCommandStub = ProductTestDataFactory.getCreateProductCommand(productEntityStub);
+        serviceResponseStub = ProductTestDataFactory.getProductDetailedResponse(productEntityStub);
         pageable = PageRequest.of(1, 5, Sort.by("name").ascending());
     }
 
@@ -150,7 +150,7 @@ class ProductServiceImplTest {
         var entitiesStub = ProductTestDataFactory.getProductsList(45);
         var entityPageStub = new PageImpl<>(entitiesStub, pageable, entitiesStub.size());
         var serviceResponsesStub =
-                ProductTestDataFactory.getServiceResponsesList(entitiesStub);
+                ProductTestDataFactory.getResponsesList(entitiesStub);
 
         when(repositoryMock.findAll(pageable))
                 .thenReturn(entityPageStub);
@@ -201,7 +201,7 @@ class ProductServiceImplTest {
         var entitiesStub = ProductTestDataFactory.getProductsList(5);
         var entityPageStub = new PageImpl<>(entitiesStub, pageable, entitiesStub.size());
         var simpleSearchDto = new SimpleSearchDto("product", BigDecimal.valueOf(100), BigDecimal.valueOf(10), 0, 20);
-        var pageServiceResponseStub = ProductTestDataFactory.getServiceResponsesList(entitiesStub);
+        var pageServiceResponseStub = ProductTestDataFactory.getResponsesList(entitiesStub);
 
         when(productSpecificationMock.buildSimpleSpecification(simpleSearchDto)).thenReturn(specificationStub);
 
@@ -231,7 +231,7 @@ class ProductServiceImplTest {
         var simpleSearchDto = new SimpleSearchDto(null, null, null, 0, 10);
         var entitiesStub = ProductTestDataFactory.getProductsList(5);
         var entityPageStub = new PageImpl<>(entitiesStub, pageable, entitiesStub.size());
-        var pageServiceResponseStub = ProductTestDataFactory.getServiceResponsesList(entitiesStub);
+        var pageServiceResponseStub = ProductTestDataFactory.getResponsesList(entitiesStub);
 
         when(productSpecificationMock.buildSimpleSpecification(simpleSearchDto)).thenReturn(specificationStub);
 
@@ -259,7 +259,7 @@ class ProductServiceImplTest {
     void advancedSearchShouldCallRepositoryAndMapResultsWhenFilterParamsProvided() {
         var entitiesStub = ProductTestDataFactory.getProductsList(5);
         var entityPageStub = new PageImpl<>(entitiesStub, pageable, entitiesStub.size());
-        var pageServiceResponseStub = ProductTestDataFactory.getServiceResponsesList(entitiesStub);
+        var pageServiceResponseStub = ProductTestDataFactory.getResponsesList(entitiesStub);
 
         List<AdvancedSearchParam<?>> filterParams = List.of(new StringParam("name", "test", FilterOperation.LIKE));
 

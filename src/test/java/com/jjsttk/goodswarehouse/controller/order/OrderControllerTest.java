@@ -16,7 +16,10 @@ import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeUpdatedExc
 import com.jjsttk.goodswarehouse.exception.service.product.ReservationException;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
+import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.order.OrderService;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import com.jjsttk.goodswarehouse.shared.enums.product.ReservationStatus;
 import com.jjsttk.goodswarehouse.testutil.OrderTestDataFactory;
@@ -62,6 +65,9 @@ class OrderControllerTest {
     private OrderService orderServiceMock;
 
     @Mock
+    private ExchangeRateService exchangeServiceMock;
+
+    @Mock
     private OrderControllerConverter mapperMock;
 
     @InjectMocks
@@ -91,13 +97,20 @@ class OrderControllerTest {
                         BigDecimal.TEN,
                         true
                 );
-        var serviceResponseStub =
-                OrderTestDataFactory.getBaseOrderServiceResponse(orderEntity);
-        var sutResponseStub = OrderTestDataFactory.getOrderResponse(serviceResponseStub);
+        var baseOrderServiceResponseStub =
+                OrderTestDataFactory.getBaseOrderResponse(orderEntity);
+        var exchangeServiceResponseStub =
+                ExchangeRate.builder()
+                        .rate(BigDecimal.ONE)
+                        .currency(PriceCurrency.RUB)
+                        .build();
+        var sutResponseStub = OrderTestDataFactory.getGetOrderResponseRubCurrency(baseOrderServiceResponseStub);
 
         when(orderServiceMock.getById(CUSTOMER_ID_HEADER, ORDER_ID))
-                .thenReturn(serviceResponseStub);
-        when(mapperMock.toResponse(serviceResponseStub))
+                .thenReturn(baseOrderServiceResponseStub);
+        when(exchangeServiceMock.getCurrentSessionExchangeRate())
+                .thenReturn(exchangeServiceResponseStub);
+        when(mapperMock.toResponse(baseOrderServiceResponseStub, exchangeServiceResponseStub))
                 .thenReturn(sutResponseStub);
 
         var responseJson = mockMvc.perform(get("/api/v1/orders/{id}", ORDER_ID)
@@ -125,7 +138,7 @@ class OrderControllerTest {
         }
 
         verify(orderServiceMock, times(1)).getById(CUSTOMER_ID_HEADER, ORDER_ID);
-        verify(mapperMock, times(1)).toResponse(serviceResponseStub);
+        verify(mapperMock, times(1)).toResponse(baseOrderServiceResponseStub, exchangeServiceResponseStub);
     }
 
     @Test
@@ -217,7 +230,7 @@ class OrderControllerTest {
         var customerIdHeader = orderEntityStub.getCustomer().getId();
         var createRequestStub =
                 OrderTestDataFactory.getOrderCreateRequestBasedOnExpectedEntity(orderEntityStub);
-        var serviceCommandStub = OrderTestDataFactory.getOrderServiceCreateCommand(createRequestStub);
+        var serviceCommandStub = OrderTestDataFactory.getCreateOrderCommandInfo(createRequestStub);
 
 
         when(mapperMock.toServiceCommand(createRequestStub))
@@ -287,7 +300,7 @@ class OrderControllerTest {
         var orderCreateRequestStub =
                 OrderTestDataFactory.getRandomOrderCreateRequest();
         var createCommandStub =
-                OrderTestDataFactory.getOrderServiceCreateCommand(orderCreateRequestStub);
+                OrderTestDataFactory.getCreateOrderCommandInfo(orderCreateRequestStub);
 
         when(mapperMock.toServiceCommand(orderCreateRequestStub))
                 .thenReturn(createCommandStub);
@@ -321,7 +334,7 @@ class OrderControllerTest {
     @Test
     void createShouldThrowReservationExceptionWhenProductToOrderNotFound() throws Exception {
         var createRequestStub = OrderTestDataFactory.getRandomOrderCreateRequest();
-        var createCommandStub = OrderTestDataFactory.getOrderServiceCreateCommand(createRequestStub);
+        var createCommandStub = OrderTestDataFactory.getCreateOrderCommandInfo(createRequestStub);
         var badProductId = createRequestStub.products().getFirst().id();
 
         when(mapperMock.toServiceCommand(createRequestStub))
@@ -358,7 +371,7 @@ class OrderControllerTest {
     @Test
     void createShouldThrowReservationExceptionWhenProductQuantityIsInsufficient() throws Exception {
         var createRequestStub = OrderTestDataFactory.getRandomOrderCreateRequest();
-        var createCommandStub = OrderTestDataFactory.getOrderServiceCreateCommand(createRequestStub);
+        var createCommandStub = OrderTestDataFactory.getCreateOrderCommandInfo(createRequestStub);
         var badProductId = createRequestStub.products().getFirst().id();
 
         when(mapperMock.toServiceCommand(createRequestStub))
@@ -395,10 +408,10 @@ class OrderControllerTest {
     // updateOrder 200
     @Test
     void updateOrderShouldUpdateOrderWhenRequestIsValidAndCustomerOwnsOrderAndIsActiveTrue() throws Exception {
-        var updateRequestStub = OrderTestDataFactory.getUpdateRequestList(2);
+        var updateRequestStub = OrderTestDataFactory.getOrderProductUpdateRequestList(2);
 
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
@@ -467,9 +480,9 @@ class OrderControllerTest {
     @Test
     void updateOrderShouldThrowNotYourOrderExceptionWhenCustomerIdNotEqualToOrderCustomerId() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
                 .thenReturn(updateCommandStub);
@@ -505,9 +518,9 @@ class OrderControllerTest {
     @Test
     void updateOrderShouldThrowReservationExceptionWhenProductIdsNotFound() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
         var badProductId = updateRequestStub.getFirst().id();
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
@@ -542,9 +555,9 @@ class OrderControllerTest {
     @Test
     void updateOrderShouldThrowResourceNotFoundExceptionWhenOrderNotExist() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
                 .thenReturn(updateCommandStub);
@@ -578,9 +591,9 @@ class OrderControllerTest {
     @Test
     void updateOrderShouldThrowOrderCannotBeUpdatedExceptionWhenOrderInWrongStatus() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))

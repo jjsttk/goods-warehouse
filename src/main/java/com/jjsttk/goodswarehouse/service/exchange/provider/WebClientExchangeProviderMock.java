@@ -16,7 +16,7 @@ import java.util.Random;
         name = "app.exchange-rate-client.implementation",
         havingValue = "mock"
 )
-public final class WebClientExchangeProviderMock implements ExchangeRateProvider {
+public final class WebClientExchangeProviderMock implements ExchangeDataProvider {
     private static final String PROVIDER_NAME = "MOCK_BASED";
 
     @Override

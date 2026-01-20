@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.exchange.dto.response;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.jjsttk.goodswarehouse.service.exchange.dto.response.deserializer.ExchangeDataDeserializer;
+import com.jjsttk.goodswarehouse.service.exchange.util.deserializer.ExchangeDataDeserializer;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import lombok.Builder;
 import org.springframework.lang.NonNull;
