@@ -1,10 +1,9 @@
 package com.jjsttk.goodswarehouse.controller.product;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jjsttk.goodswarehouse.controller.product.dto.request.CreateProductRequest;
 import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,15 +40,11 @@ class ProductControllerIntegrationTest {
     private ProductRepository productRepository;
 
     private ProductEntity entityStub;
-    private CreateProductRequest createDtoStub;
-    private UpdateProductRequest updateDtoStub;
 
     @BeforeEach
     void setUp() {
         productRepository.deleteAll();
         entityStub = ProductTestDataFactory.getProductEntityWithoutGeneratedId();
-        createDtoStub = ProductTestDataFactory.getCreateProductRequest(entityStub);
-        updateDtoStub = ProductTestDataFactory.getUpdateProductRequest(entityStub);
 
         productRepository.saveAndFlush(entityStub);
     }
@@ -57,6 +52,9 @@ class ProductControllerIntegrationTest {
     @Test
     void createProductShouldReturnId() throws Exception {
         productRepository.deleteAll();
+
+        var createDtoStub = ProductTestDataFactory.getCreateProductRequest(entityStub);
+
         var request = post("/api/v1/products")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDtoStub));
@@ -75,6 +73,7 @@ class ProductControllerIntegrationTest {
     @Test
     void getProductByIdShouldReturnGetProductResponse() throws Exception {
         var productId = entityStub.getId();
+        var createDtoStub = ProductTestDataFactory.getCreateProductRequest(entityStub);
 
         var response = mockMvc.perform(get("/api/v1/products/{id}", productId))
                 .andExpect(status().isOk())
@@ -83,23 +82,24 @@ class ProductControllerIntegrationTest {
 
         var result = objectMapper.readValue(response.getContentAsString(), GetProductResponse.class);
         assertThat(result.id()).isEqualTo(productId);
-        assertThat(result.name()).isEqualTo(createDtoStub.getName());
-        assertThat(result.quantity()).isEqualByComparingTo(createDtoStub.getQuantity());
-        assertThat(result.category()).isEqualTo(createDtoStub.getCategory());
-        assertThat(result.article()).isEqualTo(createDtoStub.getArticle());
-        assertThat(result.price()).isEqualByComparingTo(createDtoStub.getPrice());
-        assertThat(result.description()).isEqualTo(createDtoStub.getDescription());
+        assertThat(result.name()).isEqualTo(createDtoStub.name());
+        assertThat(result.quantity()).isEqualByComparingTo(createDtoStub.quantity());
+        assertThat(result.category()).isEqualTo(createDtoStub.category());
+        assertThat(result.article()).isEqualTo(createDtoStub.article());
+        assertThat(result.price()).isEqualByComparingTo(createDtoStub.price());
+        assertThat(result.description()).isEqualTo(createDtoStub.description());
     }
 
     @Test
     void updateShouldUpdateProductAndReturnId() throws Exception {
         var expectedQuantity = new BigDecimal("9999");
         var expectedDescription = "Updated test";
+        var updateDtoStub = UpdateProductRequest.builder()
+                .quantity(expectedQuantity)
+                .description(expectedDescription)
+                .build();
 
         var previousTime = entityStub.getLastQuantityModified();
-
-        updateDtoStub.setQuantity(expectedQuantity);
-        updateDtoStub.setDescription(expectedDescription);
 
         var updateRequest = patch("/api/v1/products/{id}", entityStub.getId())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -164,7 +164,7 @@ class ProductControllerIntegrationTest {
 
     @Test
     void shouldHandleUTCtimeZoneCorrectly() throws Exception {
-        OffsetDateTime utcTime = OffsetDateTime.parse("2023-01-01T12:00:00Z");
+        var utcTime = OffsetDateTime.parse("2023-01-01T12:00:00Z");
         entityStub.setLastQuantityModified(utcTime);
         productRepository.save(entityStub);
 

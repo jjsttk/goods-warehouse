@@ -1,36 +1,34 @@
 package com.jjsttk.goodswarehouse.testutil;
 
 import com.jjsttk.goodswarehouse.controller.product.dto.request.CreateProductRequest;
-import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.instancio.Select.field;
-import static org.instancio.Select.root;
 
 
 public class ProductTestDataFactory {
-
-
-    public static String getStringByLength(int length) {
-        return Instancio.of(String.class)
-                .generate(root(), gen -> gen.string().length(length))
-                .create();
-    }
 
     public static ProductEntity getProductEntityWithoutGeneratedId() {
         return Instancio.of(ProductEntity.class)
@@ -55,17 +53,6 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static UpdateProductRequest getUpdateProductRequest(ProductEntity productEntity) {
-        return Instancio.of(UpdateProductRequest.class)
-                .set(field("name"), productEntity.getName())
-                .set(field("article"), productEntity.getArticle())
-                .set(field("category"), productEntity.getCategory())
-                .set(field("quantity"), productEntity.getQuantity())
-                .set(field("price"), productEntity.getPrice())
-                .set(field("description"), productEntity.getDescription())
-                .create();
-    }
-
     public static GetProductResponse getGetProductResponse(ProductEntity productEntity) {
         return Instancio.of(GetProductResponse.class)
                 .set(field("id"), productEntity.getId())
@@ -81,8 +68,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceCreateCommand getProductCreateCommand(ProductEntity productEntity) {
-        return Instancio.of(ProductServiceCreateCommand.class)
+    public static CreateProductCommandInfo getProductCreateCommand(ProductEntity productEntity) {
+        return Instancio.of(CreateProductCommandInfo.class)
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
                 .set(field("category"), productEntity.getCategory())
@@ -92,19 +79,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceUpdateCommand getProductUpdateCommand(ProductEntity productEntity) {
-        return Instancio.of(ProductServiceUpdateCommand.class)
-                .set(field("name"), productEntity.getName())
-                .set(field("article"), productEntity.getArticle())
-                .set(field("category"), productEntity.getCategory())
-                .set(field("quantity"), productEntity.getQuantity())
-                .set(field("price"), productEntity.getPrice())
-                .set(field("description"), productEntity.getDescription())
-                .create();
-    }
-
-    public static BaseProductServiceDto getProductServiceResponse(ProductEntity productEntity) {
-        return Instancio.of(BaseProductServiceDto.class)
+    public static ProductDetailedResponse getProductServiceResponse(ProductEntity productEntity) {
+        return Instancio.of(ProductDetailedResponse.class)
                 .set(field("id"), productEntity.getId())
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
@@ -125,7 +101,15 @@ public class ProductTestDataFactory {
         return List.copyOf(list);
     }
 
-    public static List<BaseProductServiceDto> getServiceResponsesList(List<ProductEntity> entities) {
+    public static List<ProductEntity> getProductsListWithId(int length) {
+        var list = new ArrayList<ProductEntity>();
+        for (int i = 0; i < length; i++) {
+            list.add(getProductEntityWithGeneratedId());
+        }
+        return List.copyOf(list);
+    }
+
+    public static List<ProductDetailedResponse> getServiceResponsesList(List<ProductEntity> entities) {
         return entities.stream()
                 .map(ProductTestDataFactory::getProductServiceResponse)
                 .toList();
@@ -138,7 +122,7 @@ public class ProductTestDataFactory {
                 .map(ProductTestDataFactory::getGetProductResponse)
                 .toList();
 
-        var totalElements = entities.size();
+        var totalElements = (long) entities.size();
         var totalPages = (int) Math.ceil((double) totalElements / pageable.getPageSize());
         var currentPage = pageable.getPageNumber();
         var pageSize = pageable.getPageSize();
@@ -158,10 +142,10 @@ public class ProductTestDataFactory {
         return Specification.unrestricted();
     }
 
-    public static ProductPriceExchangeServiceResponse getProductPriceExchangeServiceResponse(
+    public static ExchangeProductPriceResponse getProductPriceExchangeServiceResponse(
             ProductEntity productEntity
     ) {
-        return Instancio.of(ProductPriceExchangeServiceResponse.class)
+        return Instancio.of(ExchangeProductPriceResponse.class)
                 .set(field("id"), productEntity.getId())
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
@@ -173,5 +157,27 @@ public class ProductTestDataFactory {
                 .set(field("createdAt"), productEntity.getCreatedAt())
                 .set(field("lastQuantityModified"), productEntity.getLastQuantityModified())
                 .create();
+    }
+
+    public static ReserveProductCommandInfo getReservationCommand(Map<UUID, BigDecimal> productQuantities) {
+        return ReserveProductCommandInfo.builder()
+                .productQuantities(productQuantities)
+                .build();
+    }
+
+    public static ProductReservationResponse getReservationResponseWithEmptyProblemsMap(
+            List<ProductEntity> productEntityList,
+            Map<UUID, BigDecimal> productQuantities
+    ) {
+        return ProductReservationResponse.builder()
+                .reservedProductsInfoMap(productEntityList.stream().collect(Collectors.toMap(
+                        ProductEntity::getId,
+                        v -> ReservedProductInfo.builder()
+                                .priceAtMoment(v.getPrice())
+                                .reservedQuantity(productQuantities.get(v.getId()))
+                                .build()
+                )))
+                .problemsMap(Collections.emptyMap())
+                .build();
     }
 }

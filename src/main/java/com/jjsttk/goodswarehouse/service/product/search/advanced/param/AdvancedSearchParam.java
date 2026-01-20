@@ -2,7 +2,7 @@ package com.jjsttk.goodswarehouse.service.product.search.advanced.param;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.jjsttk.goodswarehouse.shared.enums.FilterOperation;
+import com.jjsttk.goodswarehouse.shared.enums.search.FilterOperation;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

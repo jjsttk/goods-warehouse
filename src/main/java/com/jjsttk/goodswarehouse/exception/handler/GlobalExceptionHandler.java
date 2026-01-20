@@ -1,18 +1,26 @@
 package com.jjsttk.goodswarehouse.exception.handler;
 
-import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
-import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
-import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.dto.response.ErrorResponse;
+import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
+import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedException;
+import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
+import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
+import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeCancelledException;
+import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeUpdatedException;
+import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
+import com.jjsttk.goodswarehouse.exception.service.product.ReservationException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.time.OffsetDateTime;
 import java.util.stream.Collectors;
@@ -24,6 +32,36 @@ public final class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestHeader(Exception ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex);
+    }
+
+    @ExceptionHandler(CustomerBannedException.class)
+    public ResponseEntity<ErrorResponse> handleCustomerBanned(CustomerBannedException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex);
+    }
+
+    @ExceptionHandler(NotYourOrderException.class)
+    public ResponseEntity<ErrorResponse> handleNotYourOrder(NotYourOrderException ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex);
+    }
+
+    @ExceptionHandler(ReservationException.class)
+    public ResponseEntity<ErrorResponse> handleNotEnoughQuantity(ReservationException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex);
+    }
+
+    @ExceptionHandler(OrderCannotBeUpdatedException.class)
+    public ResponseEntity<ErrorResponse> handleOrderCannotBeUpdated(OrderCannotBeUpdatedException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex);
+    }
+
+    @ExceptionHandler(OrderCannotBeCancelledException.class)
+    public ResponseEntity<ErrorResponse> handleOrderCannotBeCancelled(OrderCannotBeCancelledException ex) {
+        return buildResponse(HttpStatus.CONFLICT, ex);
     }
 
     @ExceptionHandler(ExchangeRateProviderException.class)
@@ -39,6 +77,17 @@ public final class GlobalExceptionHandler {
                 .getFieldErrors()
                 .stream()
                 .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+
+        return buildResponse(HttpStatus.BAD_REQUEST, validationMessage, ex);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleHandlerMethodValidation(HandlerMethodValidationException ex) {
+        var allErrors = ex.getAllErrors();
+
+        String validationMessage = allErrors.stream()
+                .map(MessageSourceResolvable::getDefaultMessage)
                 .collect(Collectors.joining("; "));
 
         return buildResponse(HttpStatus.BAD_REQUEST, validationMessage, ex);

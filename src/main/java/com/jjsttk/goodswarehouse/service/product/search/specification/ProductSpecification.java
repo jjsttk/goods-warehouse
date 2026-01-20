@@ -9,7 +9,7 @@ import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedS
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.BigDecimalParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.LocalDateParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringParam;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
@@ -94,19 +94,13 @@ public class ProductSpecification {
             Strategy<T> strategy,
             AdvancedSearchParam<T> param
     ) {
-        if (param.value() == null) {
-            return (root, query, cb) -> cb.conjunction();
-        }
-
         return switch (param.operation()) {
-            case EQUAL ->
-                    (root, query, cb) -> strategy.equalTo(root.get(param.field()), param.value(), cb);
+            case EQUAL -> (root, query, cb) -> strategy.equalTo(root.get(param.field()), param.value(), cb);
             case GREATER_THAN_OR_EQUAL ->
                     (root, query, cb) -> strategy.greaterThanOrEqualTo(root.get(param.field()), param.value(), cb);
             case LESS_THAN_OR_EQUAL ->
                     (root, query, cb) -> strategy.lessThanOrEqualTo(root.get(param.field()), param.value(), cb);
-            case LIKE ->
-                    (root, query, cb) -> strategy.like(root.get(param.field()), param.value(), cb);
+            case LIKE -> (root, query, cb) -> strategy.like(root.get(param.field()), param.value(), cb);
         };
     }
 
@@ -138,8 +132,8 @@ public class ProductSpecification {
     /**
      * Creates a specification that filters by minimum product quantity (≥).
      *
-     * @param minQuantity the minimum quantity (null ignored)
-     * @return a specification for quantity filtering
+     * @param minQuantity the minimum orderedQuantity (null ignored)
+     * @return a specification for orderedQuantity filtering
      */
     private Specification<ProductEntity> withQuantityGreaterOrEqualTo(BigDecimal minQuantity) {
         return (root, query, cb) -> minQuantity == null ? cb.conjunction()

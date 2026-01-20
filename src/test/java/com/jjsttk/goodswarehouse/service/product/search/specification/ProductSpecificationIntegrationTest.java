@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.product.search.specification;
 
-import com.jjsttk.goodswarehouse.shared.enums.FilterOperation;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.shared.enums.search.FilterOperation;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.BigDecimalParam;
@@ -437,23 +437,6 @@ class ProductSpecificationIntegrationTest {
         assertThat(foundProduct.getPrice()).isEqualByComparingTo(productPrice);
         assertThat(foundProduct.getQuantity()).isEqualByComparingTo(productQuantity);
         assertThat(foundProduct.getCreatedAt()).isEqualTo(productDate);
-    }
-
-    @Test
-    @Transactional
-    public void buildAdvancedSpecificationShouldHandleNullValues() {
-        AdvancedSearchParam<?> stringParam = new StringParam(
-                "name", null, FilterOperation.EQUAL
-        );
-        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam(
-                "price", null, FilterOperation.GREATER_THAN_OR_EQUAL
-        );
-
-        var spec = specification.buildAdvancedSpecification(List.of(stringParam, bigDecimalParam));
-        var result = productRepository.findAll(spec);
-
-        // Should return all products since null params are ignored
-        assertThat(result).hasSize(productEntities.size());
     }
 
     @Test

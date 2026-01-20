@@ -3,7 +3,7 @@ package com.jjsttk.goodswarehouse.service.product.price.scheduling.simple;
 import com.jjsttk.goodswarehouse.service.product.price.scheduling.optimized.OptimizedProductPriceScheduler;
 import com.jjsttk.goodswarehouse.service.product.price.scheduling.ProductPriceScheduler;
 import com.jjsttk.goodswarehouse.shared.configuration.property.service.scheduling.SchedulingProperties;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

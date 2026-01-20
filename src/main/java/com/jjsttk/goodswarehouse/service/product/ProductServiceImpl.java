@@ -1,28 +1,38 @@
 package com.jjsttk.goodswarehouse.service.product;
 
-import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.mapper.product.ProductConverter;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
+import com.jjsttk.goodswarehouse.mapper.product.ProductServiceConverter;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
-import com.jjsttk.goodswarehouse.service.product.search.specification.ProductSpecification;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
+import com.jjsttk.goodswarehouse.service.product.search.specification.ProductSpecification;
+import com.jjsttk.goodswarehouse.shared.enums.product.ReservationStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.OffsetDateTime;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Service class for managing {@link ProductEntity} entities.
@@ -39,7 +49,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final ProductConverter productConverter;
+    private final ProductServiceConverter mapper;
     private final ProductSpecification productSpecification;
 
     /**
@@ -47,9 +57,8 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional(readOnly = true)
-    public Page<BaseProductServiceDto> getAll(Pageable pageable) {
-        return productRepository.findAll(pageable)
-                .map(productConverter::mapToServiceResponse);
+    public Page<ProductDetailedResponse> getAll(Pageable pageable) {
+        return productRepository.findAll(pageable).map(mapper::toResponse);
     }
 
     /**
@@ -57,10 +66,10 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional(readOnly = true)
-    public BaseProductServiceDto getById(UUID id) {
+    public ProductDetailedResponse getById(UUID id) {
         return productRepository.findById(id)
-                .map(productConverter::mapToServiceResponse)
-                .orElseThrow(() -> new ResourceNotFoundException(id));
+                .map(mapper::toResponse)
+                .orElseThrow(() -> new ResourceNotFoundException(ProductEntity.class, id));
     }
 
     /**
@@ -68,13 +77,12 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public BaseProductServiceDto create(ProductServiceCreateCommand createCommandDto) {
-        checkArticleUnique(createCommandDto.getArticle());
-        var entity = productConverter.mapToEntity(createCommandDto);
-        entity.setLastQuantityModified(OffsetDateTime.now());
+    public ProductDetailedResponse create(CreateProductCommandInfo createCommandDto) {
+        checkArticleUnique(createCommandDto.article());
+        var entity = mapper.toEntity(createCommandDto);
         productRepository.save(entity);
 
-        return productConverter.mapToServiceResponse(entity);
+        return mapper.toResponse(entity);
     }
 
     /**
@@ -82,17 +90,13 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public BaseProductServiceDto update(ProductServiceUpdateCommand updateCommandDto, UUID id) {
-        if (updateCommandDto.getArticle() != null) {
-            checkArticleUnique(updateCommandDto.getArticle(), id);
-        }
+    public ProductDetailedResponse update(UUID productId, UpdateProductCommandInfo updateCommandDto) {
+        var product = getProductForUpdate(productId);
+        validateArticleUniquenessIfChanged(product, updateCommandDto.article());
 
-        var entity = productRepository.findByIdLocked(id)
-                .orElseThrow(() -> new ResourceNotFoundException(id));
-        updateProductEntity(updateCommandDto, entity);
-        productRepository.save(entity);
+        mapper.update(product, updateCommandDto);
 
-        return productConverter.mapToServiceResponse(entity);
+        return mapper.toResponse(product);
     }
 
     /**
@@ -102,7 +106,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public void delete(UUID id) {
         var productEntity = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(id));
+                .orElseThrow(() -> new ResourceNotFoundException(ProductEntity.class, id));
 
         productRepository.delete(productEntity);
     }
@@ -112,15 +116,14 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public Page<BaseProductServiceDto> simpleSearch(SimpleSearchDto simpleSearchDto) {
+    public Page<ProductDetailedResponse> simpleSearch(SimpleSearchDto simpleSearchDto) {
         var specification = productSpecification.buildSimpleSpecification(simpleSearchDto);
         var filteredProducts = productRepository.findAll(
                 specification,
                 PageRequest.of(simpleSearchDto.page(), simpleSearchDto.size())
         );
 
-        return filteredProducts
-                .map(productConverter::mapToServiceResponse);
+        return filteredProducts.map(mapper::toResponse);
     }
 
     /**
@@ -128,14 +131,33 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     @Transactional
-    public Page<BaseProductServiceDto> advancedSearch(Pageable pageable, List<AdvancedSearchParam<?>> filterParams) {
+    public Page<ProductDetailedResponse> advancedSearch(
+            Pageable pageable, List<AdvancedSearchParam<?>> filterParams
+    ) {
         var specification = productSpecification.buildAdvancedSpecification(filterParams);
         var filteredProducts = productRepository.findAll(specification, pageable);
 
-        return filteredProducts.map(productConverter::mapToServiceResponse);
+        return filteredProducts.map(mapper::toResponse);
     }
 
-    // ------------------------------------------------------------------------------------------------------
+    // ---------------------------------- INTERACT METHODS FOR ORDER SERVICE -------------------------------------------
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public ProductReservationResponse reserveProductsWithLock(
+            ReserveProductCommandInfo reserveCommand
+    ) {
+        final var foundEntitiesList = productRepository.findAllByIdInAndIsAvailableIsTrue(
+                reserveCommand.productQuantities().keySet()
+        );
+
+        return processReservation(reserveCommand.productQuantities(), foundEntitiesList);
+    }
+
+// ---------------------------------- CURRENT SERVICE PRIVATE HELPERS --------------------------------------------------
 
     private void checkArticleUnique(String article) {
         var mbProduct = productRepository.findByArticle(article);
@@ -144,59 +166,84 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private void checkArticleUnique(String article, UUID id) {
-        var mbProduct = productRepository.findByArticle(article);
-        if (mbProduct.isPresent() && !mbProduct.get().getId().equals(id)) {
-            throw new NotUniqueArticleException(mbProduct.get().getId());
+    private void validateArticleUniquenessIfChanged(ProductEntity existingProduct, @Nullable String newArticle) {
+        if (newArticle == null || newArticle.equals(existingProduct.getArticle())) {
+            return;
         }
-    }
 
-    // ---------------- Private Update Helpers ---------------- //
-
-    private void updateProductEntity(ProductServiceUpdateCommand updateCommandDto, ProductEntity entity) {
-        updateName(updateCommandDto, entity);
-        updateDescription(updateCommandDto, entity);
-        updateCategory(updateCommandDto, entity);
-        updateArticle(updateCommandDto, entity);
-        updatePrice(updateCommandDto, entity);
-        updateQuantity(updateCommandDto, entity);
-    }
-
-    private void updateName(ProductServiceUpdateCommand command, ProductEntity entity) {
-        Optional.ofNullable(command.getName())
-                .map(String::strip)
-                .ifPresent(entity::setName);
-    }
-
-    private void updateDescription(ProductServiceUpdateCommand command, ProductEntity entity) {
-        Optional.ofNullable(command.getDescription())
-                .map(String::strip)
-                .ifPresent(entity::setDescription);
-    }
-
-    private void updateCategory(ProductServiceUpdateCommand command, ProductEntity entity) {
-        Optional.ofNullable(command.getCategory())
-                .ifPresent(entity::setCategory);
-    }
-
-    private void updateArticle(ProductServiceUpdateCommand command, ProductEntity entity) {
-        Optional.ofNullable(command.getArticle())
-                .map(String::strip)
-                .ifPresent(entity::setArticle);
-    }
-
-    private void updatePrice(ProductServiceUpdateCommand command, ProductEntity entity) {
-        Optional.ofNullable(command.getPrice())
-                .ifPresent(entity::setPrice);
-    }
-
-    private void updateQuantity(ProductServiceUpdateCommand command, ProductEntity entity) {
-        Optional.ofNullable(command.getQuantity())
-                .ifPresent(quantity -> {
-                    if (!Objects.equals(entity.getQuantity(), quantity)) {
-                        entity.setQuantity(quantity);
-                        entity.setLastQuantityModified(OffsetDateTime.now());
+        productRepository.findByArticle(newArticle)
+                .ifPresent(conflictingProduct -> {
+                    if (!conflictingProduct.getId().equals(existingProduct.getId())) {
+                        throw new NotUniqueArticleException(conflictingProduct.getId());
                     }
                 });
+    }
+
+    private ProductEntity getProductForUpdate(UUID id) {
+        return productRepository.findByIdLocked(id)
+                .orElseThrow(() -> new ResourceNotFoundException(ProductEntity.class, id));
+
+    }
+
+    private Map<UUID, ReservationStatus> getNotFoundIdsMap(Set<UUID> foundIdsSet, Set<UUID> requestedIdsSet) {
+        return requestedIdsSet.stream()
+                .filter(it -> !foundIdsSet.contains(it))
+                .collect(Collectors.toMap(
+                        Function.identity(),
+                        val -> ReservationStatus.NOT_FOUND
+                ));
+    }
+
+    private ProductReservationResponse processReservation(
+            Map<UUID, BigDecimal> requestedToReserveProductQuantitiesMap,
+            Collection<ProductEntity> foundEntitiesList
+    ) {
+        var reservedProductsResponseMap = new HashMap<UUID, ReservedProductInfo>();
+        var problemsMap = new HashMap<UUID, ReservationStatus>();
+
+        var isAllIdsFound = requestedToReserveProductQuantitiesMap.size() == foundEntitiesList.size();
+        if (!isAllIdsFound) {
+            var foundIds = foundEntitiesList.stream()
+                    .map(ProductEntity::getId)
+                    .collect(Collectors.toSet());
+
+            var notFoundIdsMap =
+                    getNotFoundIdsMap(foundIds, requestedToReserveProductQuantitiesMap.keySet());
+
+            problemsMap.putAll(notFoundIdsMap);
+        }
+
+        foundEntitiesList.forEach(it -> {
+            var valueToReserve = requestedToReserveProductQuantitiesMap.get(it.getId());
+            var isEnoughQuantity = it.getQuantity().compareTo(valueToReserve) >= 0;
+
+            if (!isEnoughQuantity) {
+                problemsMap.put(it.getId(), ReservationStatus.NOT_ENOUGH_QUANTITY);
+            } else {
+                var updateCommand = getChangeQuantityUpdateCommand(valueToReserve, it);
+                mapper.update(it, updateCommand);
+
+                reservedProductsResponseMap.put(
+                        it.getId(),
+                        mapper.toProductInfo(valueToReserve, it.getPrice())
+                );
+            }
+        });
+
+        return mapper.toResponse(reservedProductsResponseMap, problemsMap);
+    }
+
+// ---------------------------------- Private Update Helpers -----------------------------------------------------------
+
+    private UpdateProductCommandInfo getChangeQuantityUpdateCommand(
+            BigDecimal quantityToReserve,
+            ProductEntity entity
+    ) {
+        var stockQuantity = entity.getQuantity();
+        var quantityAfterReserve = stockQuantity.subtract(quantityToReserve);
+
+        return UpdateProductCommandInfo.builder()
+                .quantity(quantityAfterReserve)
+                .build();
     }
 }

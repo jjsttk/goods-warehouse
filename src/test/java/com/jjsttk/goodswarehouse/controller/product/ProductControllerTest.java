@@ -5,24 +5,25 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.CreateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductRequest;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
-import com.jjsttk.goodswarehouse.shared.enums.product.Category;
-import com.jjsttk.goodswarehouse.shared.enums.FilterOperation;
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
 import com.jjsttk.goodswarehouse.exception.handler.GlobalExceptionHandler;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
-import com.jjsttk.goodswarehouse.mapper.product.ProductConverter;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
 import com.jjsttk.goodswarehouse.service.product.price.exchange.ProductPriceExchangeService;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.product.Category;
+import com.jjsttk.goodswarehouse.shared.enums.search.FilterOperation;
 import com.jjsttk.goodswarehouse.testutil.ProductTestDataFactory;
+import com.jjsttk.goodswarehouse.testutil.StringTestUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,7 +65,7 @@ class ProductControllerTest {
     private ObjectMapper objectMapper;
 
     @Mock
-    private ProductConverter converterMock;
+    private ProductControllerConverter productControllerConverterMock;
 
     @Mock
     private ProductService productServiceMock;
@@ -76,13 +77,11 @@ class ProductControllerTest {
     private ProductControllerImpl sut;
 
     private CreateProductRequest controllerRequestStub;
-    private UpdateProductRequest controllerUpdateRequestStub;
     private GetProductResponse controllerResponseStub;
 
-    private ProductServiceCreateCommand createCommandStub;
-    private ProductServiceUpdateCommand updateCommandStub;
-    private BaseProductServiceDto serviceResponseStub;
-    private ProductPriceExchangeServiceResponse priceExchangeResponseStub;
+    private CreateProductCommandInfo createCommandStub;
+    private ProductDetailedResponse serviceResponseStub;
+    private ExchangeProductPriceResponse priceExchangeResponseStub;
 
     private ProductEntity productEntityStub;
 
@@ -97,11 +96,9 @@ class ProductControllerTest {
 
         productEntityStub = ProductTestDataFactory.getProductEntityWithGeneratedId();
         controllerRequestStub = ProductTestDataFactory.getCreateProductRequest(productEntityStub);
-        controllerUpdateRequestStub = ProductTestDataFactory.getUpdateProductRequest(productEntityStub);
         controllerResponseStub = ProductTestDataFactory.getGetProductResponse(productEntityStub);
 
         createCommandStub = ProductTestDataFactory.getProductCreateCommand(productEntityStub);
-        updateCommandStub = ProductTestDataFactory.getProductUpdateCommand(productEntityStub);
         serviceResponseStub = ProductTestDataFactory.getProductServiceResponse(productEntityStub);
         priceExchangeResponseStub = ProductTestDataFactory.getProductPriceExchangeServiceResponse(productEntityStub);
     }
@@ -110,11 +107,13 @@ class ProductControllerTest {
     void getProductByIdShouldReturn404WhenNotFound() throws Exception {
         var id = controllerResponseStub.id();
         when(productServiceMock.getById(id))
-                .thenThrow(new ResourceNotFoundException(id));
+                .thenThrow(new ResourceNotFoundException(ProductEntity.class, id));
 
         mockMvc.perform(get("/api/v1/products/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value(String.format("Resource with id = %s not found", id)))
+                .andExpect(jsonPath("$.message").value(
+                        String.format("Resource ProductEntity with id = %s not found", id))
+                )
                 .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty());
@@ -122,17 +121,17 @@ class ProductControllerTest {
 
     @Test
     void createProductShouldReturn400WhenJakartaValidationFails() throws Exception {
-        var request = controllerRequestStub;
-
-        when(productServiceMock.create(any()))
-                .thenThrow(new jakarta.validation.ValidationException("Jakarta validation failed"));
+        var nonValidCreateRequestStub = CreateProductRequest.builder()
+                .price(BigDecimal.TEN.negate()) // negate
+                .article(StringTestUtils.getStringByLength(151))
+                .build();
 
         mockMvc.perform(post("/api/v1/products")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(objectMapper.writeValueAsString(nonValidCreateRequestStub)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Jakarta validation failed"))
-                .andExpect(jsonPath("$.exception").value("ValidationException"))
+                .andExpect(jsonPath("$.message").isNotEmpty())
+                .andExpect(jsonPath("$.exception").value("MethodArgumentNotValidException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty());
     }
@@ -166,7 +165,7 @@ class ProductControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value(
-                        String.format("Product with id = %s already uses this article", id)
+                        String.format("Product with productId = %s already uses this article", id)
                 ))
                 .andExpect(jsonPath("$.exception").value("NotUniqueArticleException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
@@ -208,11 +207,12 @@ class ProductControllerTest {
     @Test
     void updateProductShouldReturn400WhenValidationFails() throws Exception {
         var id = UUID.randomUUID();
-        var invalidUpdate = controllerUpdateRequestStub;
-        invalidUpdate.setName("       ");
-        invalidUpdate.setPrice(new BigDecimal("-50"));
-        invalidUpdate.setArticle(ProductTestDataFactory.getStringByLength(101));
-        invalidUpdate.setQuantity(new BigDecimal("-110.05"));
+        var invalidUpdate = UpdateProductRequest.builder()
+                .name("       ")
+                .price(new BigDecimal("-50"))
+                .article(StringTestUtils.getStringByLength(101))
+                .quantity(new BigDecimal("-110.05"))
+                .build();
 
         mockMvc.perform(patch("/api/v1/products/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -232,7 +232,7 @@ class ProductControllerTest {
     void createProductShouldReturn201WhenValidRequest() throws Exception {
         var expectedResponse = controllerResponseStub;
 
-        when(converterMock.mapToServiceCommand(controllerRequestStub)).thenReturn(createCommandStub);
+        when(productControllerConverterMock.toCommand(controllerRequestStub)).thenReturn(createCommandStub);
         when(productServiceMock.create(createCommandStub)).thenReturn(serviceResponseStub);
 
         var response = mockMvc.perform(post("/api/v1/products")
@@ -249,16 +249,22 @@ class ProductControllerTest {
 
     @Test
     void updateProductShouldReturn200WhenValidRequest() throws Exception {
-        controllerUpdateRequestStub.setCategory(Category.CLOTHING);
+        var controllerUpdateRequest = UpdateProductRequest.builder()
+                .category(Category.CLOTHING)
+                .build();
 
-        when(converterMock.mapToServiceCommand(controllerUpdateRequestStub))
-                .thenReturn(updateCommandStub);
-        when(productServiceMock.update(updateCommandStub, productEntityStub.getId()))
+        var updateCommand = UpdateProductCommandInfo.builder()
+                .category(Category.CLOTHING)
+                .build();
+
+        when(productControllerConverterMock.toCommand(controllerUpdateRequest))
+                .thenReturn(updateCommand);
+        when(productServiceMock.update(productEntityStub.getId(), updateCommand))
                 .thenReturn(serviceResponseStub);
 
         var response = mockMvc.perform(patch("/api/v1/products/{id}", productEntityStub.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(controllerUpdateRequestStub)))
+                        .content(objectMapper.writeValueAsString(controllerUpdateRequest)))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse();
@@ -281,7 +287,7 @@ class ProductControllerTest {
 
         when(productServiceMock.getAll(any(Pageable.class))).thenReturn(servicePage);
         when(productPriceExchangeServiceMock.exchange(servicePage)).thenReturn(exchangeResponsePage);
-        when(converterMock.mapToControllerResponse(exchangeResponsePage))
+        when(productControllerConverterMock.toResponse(exchangeResponsePage))
                 .thenReturn(expectedPageResponse);
 
         mockMvc.perform(get("/api/v1/products")
@@ -302,13 +308,13 @@ class ProductControllerTest {
     @Test
     void getAllProductsShouldReturnEmptyPage() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<BaseProductServiceDto> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
+        Page<ProductDetailedResponse> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
         PageGetProductResponse<GetProductResponse> expectedPageResponse =
                 ProductTestDataFactory.getGetPageProductResponse(pageable, List.of());
 
         when(productServiceMock.getAll(any(Pageable.class))).thenReturn(emptyServicePage);
         when(productPriceExchangeServiceMock.exchange(emptyServicePage)).thenReturn(Page.empty());
-        when(converterMock.mapToControllerResponse(Page.empty())).thenReturn(expectedPageResponse);
+        when(productControllerConverterMock.toResponse(Page.empty())).thenReturn(expectedPageResponse);
 
         mockMvc.perform(get("/api/v1/products")
                         .param("page", "0")
@@ -336,12 +342,14 @@ class ProductControllerTest {
     void deleteProductShouldReturn404WhenNotExists() throws Exception {
         UUID id = UUID.randomUUID();
 
-        doThrow(new ResourceNotFoundException(id))
+        doThrow(new ResourceNotFoundException(ProductEntity.class, id))
                 .when(productServiceMock).delete(id);
 
         mockMvc.perform(delete("/api/v1/products/{id}", id))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value(String.format("Resource with id = %s not found", id)))
+                .andExpect(jsonPath("$.message").value(
+                        String.format("Resource ProductEntity with id = %s not found", id))
+                )
                 .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"));
 
         verify(productServiceMock).delete(id);
@@ -365,7 +373,7 @@ class ProductControllerTest {
 
         when(productServiceMock.simpleSearch(any(SimpleSearchDto.class))).thenReturn(servicePage);
         when(productPriceExchangeServiceMock.exchange(servicePage)).thenReturn(exchangeResponsePage);
-        when(converterMock.mapToControllerResponse(exchangeResponsePage)).thenReturn(expectedPageResponse);
+        when(productControllerConverterMock.toResponse(exchangeResponsePage)).thenReturn(expectedPageResponse);
 
         mockMvc.perform(get("/api/v1/products/search")
                         .param("page", "0")
@@ -381,7 +389,7 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.currentPageSize").value(1));
 
         verify(productServiceMock).simpleSearch(any(SimpleSearchDto.class));
-        verify(converterMock).mapToControllerResponse(exchangeResponsePage);
+        verify(productControllerConverterMock).toResponse(exchangeResponsePage);
     }
 
 
@@ -406,7 +414,7 @@ class ProductControllerTest {
 
         when(productServiceMock.advancedSearch(pageable, params)).thenReturn(servicePage);
         when(productPriceExchangeServiceMock.exchange(servicePage)).thenReturn(exchangeResponsePage);
-        when(converterMock.mapToControllerResponse(exchangeResponsePage)).thenReturn(expectedPageResponse);
+        when(productControllerConverterMock.toResponse(exchangeResponsePage)).thenReturn(expectedPageResponse);
 
 
         mockMvc.perform(post("/api/v1/products/search")
@@ -422,6 +430,6 @@ class ProductControllerTest {
                 .andExpect(jsonPath("$.currentPageSize").value(1));
 
         verify(productServiceMock).advancedSearch(pageable, params);
-        verify(converterMock).mapToControllerResponse(exchangeResponsePage);
+        verify(productControllerConverterMock).toResponse(exchangeResponsePage);
     }
 }

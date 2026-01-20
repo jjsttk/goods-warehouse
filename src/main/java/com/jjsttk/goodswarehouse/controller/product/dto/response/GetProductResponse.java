@@ -2,9 +2,10 @@ package com.jjsttk.goodswarehouse.controller.product.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jjsttk.goodswarehouse.shared.enums.product.Category;
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
+import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +38,7 @@ public record GetProductResponse(
                 description = "Product description",
                 example = "Apple smartphone with 256GB storage in black color"
         )
+        @Nullable
         String description,
 
         @Schema(
@@ -53,9 +55,16 @@ public record GetProductResponse(
 
         @Schema(
                 description = "Quantity of product available in stock",
-                example = "150"
+                example = "150.123"
         )
         BigDecimal quantity,
+
+        @Schema(
+                description = "Is this product available to order",
+                examples = {"true", "false"},
+                allowableValues = {"true", "false"}
+        )
+        Boolean isAvailable,
 
         @Schema(
                 description = "Short name of currency",

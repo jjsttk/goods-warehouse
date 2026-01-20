@@ -9,6 +9,14 @@ spring:
     property-naming-strategy: LOWER_CAMEL_CASE
     deserialization:
       fail-on-unknown-properties: false
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
 
 management:
   endpoints:
@@ -26,16 +34,13 @@ management:
 logging:
   level:
     root: info
-    com:
-      jjsttk:
-        goodswarehouse:
-          service:
-            exchange:
-               provider: debug
+    org.hibernate.SQL: DEBUG
+    org.hibernate.stat: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
 
 app:
   mapper:
-    type: conversion-service # Choose between: conversion-service, mapstruct
+    type: mapstruct # Choose between: conversion-service, mapstruct
 
   aspect:
     transactional:

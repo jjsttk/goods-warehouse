@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.product.search.specification;
 
-import com.jjsttk.goodswarehouse.shared.enums.FilterOperation;
-import com.jjsttk.goodswarehouse.persistence.entity.ProductEntity;
+import com.jjsttk.goodswarehouse.shared.enums.search.FilterOperation;
+import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.BigDecimalParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.LocalDateParam;
@@ -81,20 +81,6 @@ class ProductSpecificationTest {
         assertNotNull(predicate);
 
         verify(stringStrategy).like(any(), eq("test"), any());
-    }
-
-    @Test
-    void testApplyStrategyWhenValueIsNull() {
-        var param = new StringParam("name", null, FilterOperation.EQUAL);
-
-        var spec = sut.buildAdvancedSpecification(List.of(param));
-
-        when(cbMock.conjunction()).thenReturn(mock(Predicate.class));
-
-        var predicate = spec.toPredicate(root, query, cbMock);
-
-        assertNotNull(predicate);
-        verify(cbMock).conjunction();
     }
 
     @Test

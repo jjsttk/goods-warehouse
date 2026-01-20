@@ -1,12 +1,12 @@
 package com.jjsttk.goodswarehouse.service.product.price.exchange;
 
-import com.jjsttk.goodswarehouse.shared.enums.PriceCurrency;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.exception.service.exchange.deserializer.ExchangeRateNotFoundException;
 import com.jjsttk.goodswarehouse.service.exchange.currency.provider.CurrencyProvider;
 import com.jjsttk.goodswarehouse.service.exchange.provider.ExchangeRateProvider;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.BaseProductServiceDto;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -28,13 +28,13 @@ import java.util.Optional;
  * precise decimal arithmetic with rounding mode set to {@link RoundingMode#HALF_UP}.
  * </p>
  * <p>
- * Conversion results are returned as {@link ProductPriceExchangeServiceResponse}. Methods
+ * Conversion results are returned as {@link ExchangeProductPriceResponse}. Methods
  * support both single price conversion and batch conversion for a paginated list of prices.
  * </p>
  *
  * @see CurrencyProvider
  * @see ExchangeRateProvider
- * @see ProductPriceExchangeServiceResponse
+ * @see ExchangeProductPriceResponse
  */
 @Slf4j
 @Service
@@ -52,7 +52,7 @@ public class ProductPriceExchangeServiceImpl
      * @return a response object containing the product data with converted price and currency
      */
     @Override
-    public ProductPriceExchangeServiceResponse exchange(BaseProductServiceDto baseServiceDto) {
+    public ExchangeProductPriceResponse exchange(ProductDetailedResponse baseServiceDto) {
         PriceCurrency currency = currencyProvider.getCurrency();
         BigDecimal rate = getExchangeRateForCurrency(currency);
 
@@ -70,7 +70,9 @@ public class ProductPriceExchangeServiceImpl
      * @return a page of response objects with converted prices and currency
      */
     @Override
-    public Page<ProductPriceExchangeServiceResponse> exchange(Page<BaseProductServiceDto> baseProductServiceDtoPage) {
+    public Page<ExchangeProductPriceResponse> exchange(
+            Page<ProductDetailedResponse> baseProductServiceDtoPage
+    ) {
         if (!baseProductServiceDtoPage.hasContent()) {
             return Page.empty();
         }
@@ -116,8 +118,8 @@ public class ProductPriceExchangeServiceImpl
      * @param rate     exchange rate for conversion
      * @return response with converted price
      */
-    private ProductPriceExchangeServiceResponse convertProductPrice(
-            BaseProductServiceDto dto, PriceCurrency currency, BigDecimal rate) {
+    private ExchangeProductPriceResponse convertProductPrice(
+            ProductDetailedResponse dto, PriceCurrency currency, BigDecimal rate) {
 
         BigDecimal convertedPrice = convertPrice(dto.price(), rate);
         return createResponse(dto, convertedPrice, currency);
@@ -131,9 +133,9 @@ public class ProductPriceExchangeServiceImpl
      * @param currency the target currency
      * @return the assembled response DTO
      */
-    private ProductPriceExchangeServiceResponse createResponse(
-            BaseProductServiceDto dto, BigDecimal price, PriceCurrency currency) {
-        return ProductPriceExchangeServiceResponse.from(dto, price, currency);
+    private ExchangeProductPriceResponse createResponse(
+            ProductDetailedResponse dto, BigDecimal price, PriceCurrency currency) {
+        return ExchangeProductPriceResponse.from(dto, price, currency);
     }
 
     /**

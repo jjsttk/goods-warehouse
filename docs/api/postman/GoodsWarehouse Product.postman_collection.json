@@ -25,7 +25,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -40,7 +41,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Test Product 1\",\n  \"article\": 123456,\n  \"category\": \"ELECTRONICS\",\n  \"quantity\": 0,\n  \"price\": 99.99,\n  \"description\": null\n}",
+					"raw": "{\n  \"name\": \"Test Product 1\",\n  \"article\": 1234562,\n  \"category\": \"ELECTRONICS\",\n  \"quantity\": 10,\n  \"price\": 99.99,\n  \"description\": null,\n  \"isAvailable\": true\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -79,7 +80,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -94,7 +96,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Test Product 2\",\n  \"article\": 123457,\n  \"category\": \"elECtroNics\",\n  \"quantity\": 10,\n  \"price\": 99.90,\n  \"description\": \"Some description\"\n}",
+					"raw": "{\n  \"name\": \"Test Product 2\",\n  \"article\": 1234575,\n  \"category\": \"elECtroNics\",\n  \"quantity\": 0,\n  \"isAvailable\": true,\n  \"price\": 99.90,\n  \"description\": \"Some description\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -133,7 +135,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -148,7 +151,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Test Product 3\",\n  \"article\": 123458,\n  \"category\": \"elECtrONics\",\n  \"quantity\": 999.993,\n  \"price\": 99.90,\n  \"description\": \"Some description\"\n}",
+					"raw": "{\n  \"name\": \"Test Product 3\",\n  \"article\": 1234583,\n  \"category\": \"elECtrONics\",\n  \"quantity\": 11,\n  \"isAvailable\": true,\n  \"price\": 99.90,\n  \"description\": \"Some description\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -197,7 +200,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -289,7 +293,8 @@
 							""
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -328,7 +333,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -414,7 +420,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -459,7 +466,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -474,7 +482,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"article\": 123456,\n  \"description\": \" deskk\",\n  \"quantity\": 11.222\n}",
+					"raw": "{\n  \"article\": 1234562,\n  \"description\": \" des\",\n  \"quantity\": 12.255\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -513,7 +521,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -562,7 +571,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -606,7 +616,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -650,7 +661,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -703,7 +715,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -718,7 +731,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Test Product 1\",\n  \"article\": 123456,\n  \"category\": \"ELECTRONICS\",\n  \"quantity\": 0,\n  \"price\": 99.99,\n  \"description\": null\n}",
+					"raw": "{\n  \"name\": \"Test Product 1\",\n  \"article\": 1234562,\n  \"category\": \"ELECTRONICS\",\n  \"quantity\": 6,\n  \"price\": 99.99,\n  \"isAvailable\": true,\n  \"description\": null\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -749,7 +762,8 @@
 							""
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				},
 				{
@@ -766,7 +780,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -781,7 +796,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Test Product 4\",\n  \"article\": 123460,\n  \"category\": \"ELECTRONICS\",\n  \"quantity\": 2,\n  \"price\": 80,\n  \"description\": \"description 4\"\n}"
+					"raw": "{\n  \"name\": \"Test Product 4\",\n  \"article\": 123460,\n  \"category\": \"ELECTRONICS\",\n  \"quantity\": 10,\n  \"price\": 80,\n  \"isAvailable\": true,\n  \"description\": \"description 4\"\n}"
 				},
 				"url": {
 					"raw": "{{BaseUrl}}/api/v1/products",
@@ -807,7 +822,8 @@
 							""
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				},
 				{
@@ -824,7 +840,8 @@
 							"});"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -839,7 +856,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"Test Product 5\",\n  \"article\": 123461,\n  \"category\": \"TOYS\",\n  \"quantity\": 200,\n  \"price\": 2,\n  \"description\": \"description 5\"\n}"
+					"raw": "{\n  \"name\": \"Test Product 5\",\n  \"article\": 123461,\n  \"category\": \"TOYS\",\n  \"quantity\": 200,\n  \"isAvailable\": true,\n  \"price\": 2,\n  \"description\": \"description 5\"\n}"
 				},
 				"url": {
 					"raw": "{{BaseUrl}}/api/v1/products",
@@ -894,7 +911,8 @@
 							"})"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -905,6 +923,12 @@
 						"key": "Content-Type",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "currency",
+						"value": "EUR",
+						"type": "text",
+						"disabled": true
 					}
 				],
 				"url": {
@@ -974,7 +998,8 @@
 							"})"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -1054,7 +1079,8 @@
 							"})"
 						],
 						"type": "text/javascript",
-						"packages": {}
+						"packages": {},
+						"requests": {}
 					}
 				}
 			],
@@ -1271,6 +1297,843 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "currency",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct pagination structure\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(response).to.be.an(\"object\");",
+							"    pm.expect(response).to.have.property(\"content\").that.is.an(\"array\");",
+							"    pm.expect(response).to.have.property(\"totalCount\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"totalPages\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"currentPage\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"pageSize\").that.is.a(\"number\");",
+							"    pm.expect(response).to.have.property(\"currentPageSize\").that.is.a(\"number\");",
+							"});",
+							"",
+							"pm.test(\"Pagination metadata values are correct\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(response.totalCount).to.equal(5);",
+							"    pm.expect(response.totalPages).to.equal(1);",
+							"    pm.expect(response.currentPage).to.equal(0);",
+							"    pm.expect(response.pageSize).to.equal(20);",
+							"    pm.expect(response.currentPageSize).to.equal(5);",
+							"});",
+							"",
+							"pm.test(\"Content contains exactly 5 products\", function () {",
+							"    const response = pm.response.json();",
+							"    pm.expect(response.content).to.have.lengthOf(5);",
+							"})",
+							"",
+							"pm.test(\"All products have correct currency\", function () {",
+							"    const response = pm.response.json();",
+							"    const expectedCurrency = pm.request.headers.get(\"currency\");",
+							"    pm.expect(expectedCurrency).to.not.be.undefined;",
+							"    response.content.forEach(product => {",
+							"        pm.expect(product.currency).to.equal(expectedCurrency);",
+							"    });",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "currency",
+						"value": "EUR",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/products",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "metrics list",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseUrl}}/actuator/metrics",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"actuator",
+						"metrics"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cache HITS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseUrl}}/actuator/metrics/cache.gets?tag=name:exchangeRateClientCache&tag=result:hit",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"actuator",
+						"metrics",
+						"cache.gets"
+					],
+					"query": [
+						{
+							"key": "tag",
+							"value": "name:exchangeRateClientCache"
+						},
+						{
+							"key": "tag",
+							"value": "result:hit"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cache MISS",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseUrl}}/actuator/metrics/cache.gets?tag=name:exchangeRateClientCache&tag=result:miss",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"actuator",
+						"metrics",
+						"cache.gets"
+					],
+					"query": [
+						{
+							"key": "tag",
+							"value": "name:exchangeRateClientCache"
+						},
+						{
+							"key": "tag",
+							"value": "result:miss"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cache SIZE",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{BaseUrl}}/actuator/metrics/cache.size?tag=name:exchangeRateClientCache  ",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"actuator",
+						"metrics",
+						"cache.size"
+					],
+					"query": [
+						{
+							"key": "tag",
+							"value": "name:exchangeRateClientCache  "
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order1 with 0 quantity product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"deliveryAddress\": \"test address postman\",\n    \"products\": [\n        {\n            \"id\": \"{{firstProductId}}\",\n            \"quantity\": 0\n        },\n        {\n            \"id\": \"{{secondProductId}}\",\n            \"quantity\": 2\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has order ID\", function () {",
+							"    var orderId = pm.response.json();",
+							"    pm.expect(orderId).to.not.be.undefined;",
+							"    pm.collectionVariables.set(\"firstOrderId\", orderId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"deliveryAddress\": \"test address postman\",\n    \"products\": [\n        {\n            \"id\": \"{{thirdProductId}}\",\n            \"quantity\": 6\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Validate order response\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"    var json = pm.response.json();",
+							"    ",
+							"    pm.expect(json.products).to.be.an('array').with.lengthOf(1);",
+							"    ",
+							"    var calculatedTotal = json.products.reduce((sum, p) => {",
+							"        return sum + (p.price * p.quantity);",
+							"    }, 0);",
+							"    ",
+							"    calculatedTotal = Math.round(calculatedTotal * 100) / 100;",
+							"    ",
+							"    pm.expect(json.totalPrice).to.equal(calculatedTotal);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "currency",
+						"value": "rub",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/{{firstOrderId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{firstOrderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Cancel order1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/{{firstOrderId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{firstOrderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update cancelled order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"pm.test(\"[Business Rule] Cancelled order cannot be updated\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(pm.response.code).to.equal(409);",
+							"    pm.expect(response.message).to.include(\"cannot be updated\");",
+							"    pm.expect(response.message).to.include(\"CANCELLED\");",
+							"    pm.expect(response.exception).to.equal(\"OrderCannotBeUpdatedException\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"id\": \"{{secondProductId}}\",\n        \"quantity\": 1\n    },\n    {\n        \"id\": \"{{thirdProductId}}\",\n        \"quantity\": 100\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/{{firstOrderId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{firstOrderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has order ID\", function () {",
+							"    var orderId = pm.response.json();",
+							"    pm.expect(orderId).to.not.be.undefined;",
+							"    pm.collectionVariables.set(\"firstOrderId\", orderId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"deliveryAddress\": \"test address postman\",\n    \"products\": [\n        {\n            \"id\": \"{{firstProductId}}\",\n            \"quantity\": 1\n        },\n        {\n            \"id\": \"{{thirdProductId}}\",\n            \"quantity\": 5\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create with non valid request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"deliveryAddress\": \"test address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postmantest address postman\",\n    \"products\": [\n        {\n            \"id\": \"{{firstProductId}}\",\n            \"quantity\": -1\n        },\n        {\n            \"id\": \"{{thirdProductId}}\",\n            \"quantity\": -5\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update order1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"pm.test(\"Response has order ID\", function () {",
+							"    var orderId = pm.response.json();",
+							"    pm.expect(orderId).to.not.be.undefined;",
+							"    pm.expect(orderId).equals(pm.collectionVariables.get(\"firstOrderId\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"id\": \"{{thirdProductId}}\",\n        \"quantity\": 1\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/{{firstOrderId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{firstOrderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update again order1 for stockError",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"pm.test(\"[Business Rule] Not enough quantity in stock\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(pm.response.code).to.equal(409);",
+							"    pm.expect(response.message).to.include(\"NOT_ENOUGH_QUANTITY\");",
+							"    pm.expect(response.message).to.include(\"Problems occurred during reservation:\");",
+							"    pm.expect(response.message).to.include(\"Id:\");",
+							"    pm.expect(response.exception).to.equal(\"ReservationException\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"id\": \"{{secondProductId}}\",\n        \"quantity\": 1\n    },\n    {\n        \"id\": \"{{thirdProductId}}\",\n        \"quantity\": 1\n    },\n    {\n         \"id\": \"{{firstProductId}}\",\n        \"quantity\": 10\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/{{firstOrderId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{firstOrderId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update order status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"status\": \"DONE\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/{{firstOrderId}}/status",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{firstOrderId}}",
+						"status"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Order with DONE status",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 409\", function () {",
+							"    pm.response.to.have.status(409);",
+							"});",
+							"pm.test(\"[Business Rule] Cant update order because status != CREATED\", function () {",
+							"    const response = pm.response.json();",
+							"    ",
+							"    pm.expect(pm.response.code).to.equal(409);",
+							"    pm.expect(response.message).to.include(\"Order with id:\");",
+							"    pm.expect(response.message).to.include(\"cannot be updated, status is: DONE\");",
+							"    pm.expect(response.exception).to.equal(\"OrderCannotBeUpdatedException\");",
+							"});",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "[\n    {\n        \"id\": \"{{secondProductId}}\",\n        \"quantity\": 1\n    },\n    {\n        \"id\": \"{{thirdProductId}}\",\n        \"quantity\": 1\n    }\n]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/{{firstOrderId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"{{firstOrderId}}"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -1311,6 +2174,10 @@
 		{
 			"key": "BaseUrl",
 			"value": "http://localhost:8080"
+		},
+		{
+			"key": "firstOrderId",
+			"value": ""
 		}
 	]
 }
