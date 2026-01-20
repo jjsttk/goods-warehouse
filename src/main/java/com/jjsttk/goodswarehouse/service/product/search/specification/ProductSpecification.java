@@ -12,6 +12,7 @@ import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringPar
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -113,7 +114,7 @@ public class ProductSpecification {
      * @param mayContain the substring to search for (null ignored)
      * @return a specification for name filtering
      */
-    private Specification<ProductEntity> withNameContains(String mayContain) {
+    private Specification<ProductEntity> withNameContains(@Nullable String mayContain) {
         return (root, query, cb) -> mayContain == null ? cb.conjunction()
                 : cb.like(cb.lower(root.get("name")), "%" + mayContain.toLowerCase() + "%");
     }
@@ -124,7 +125,7 @@ public class ProductSpecification {
      * @param maxPrice the maximum price (null ignored)
      * @return a specification for price filtering
      */
-    private Specification<ProductEntity> withPriceLessOrEqualTo(BigDecimal maxPrice) {
+    private Specification<ProductEntity> withPriceLessOrEqualTo(@Nullable BigDecimal maxPrice) {
         return (root, query, cb) -> maxPrice == null ? cb.conjunction()
                 : cb.lessThanOrEqualTo(root.get("price"), maxPrice);
     }
@@ -135,7 +136,7 @@ public class ProductSpecification {
      * @param minQuantity the minimum orderedQuantity (null ignored)
      * @return a specification for orderedQuantity filtering
      */
-    private Specification<ProductEntity> withQuantityGreaterOrEqualTo(BigDecimal minQuantity) {
+    private Specification<ProductEntity> withQuantityGreaterOrEqualTo(@Nullable BigDecimal minQuantity) {
         return (root, query, cb) -> minQuantity == null ? cb.conjunction()
                 : cb.greaterThanOrEqualTo(root.get("quantity"), minQuantity);
     }

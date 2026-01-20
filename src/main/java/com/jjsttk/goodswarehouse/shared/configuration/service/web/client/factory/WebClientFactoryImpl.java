@@ -7,20 +7,16 @@ import com.jjsttk.goodswarehouse.shared.configuration.property.rest.RestServiceP
 import com.jjsttk.goodswarehouse.shared.util.webclient.WebClientRetryUtils;
 import io.netty.channel.ChannelOption;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.netty.http.client.HttpClient;
 
 import java.util.List;
 
-public abstract class WebClientAbstractFactory<T extends RestServiceProperties>
+@Component
+public class WebClientFactoryImpl
         implements WebClientFactory {
-
-    private final T properties;
-
-    protected WebClientAbstractFactory(T properties) {
-        this.properties = properties;
-    }
 
     /**
      * {@inheritDoc}
@@ -29,14 +25,14 @@ public abstract class WebClientAbstractFactory<T extends RestServiceProperties>
      * applies retry filters, and configures the base URL.
      */
     @Override
-    public WebClient create() {
+    public WebClient create(RestServiceProperties properties) {
         var timeout = properties.getTimeout();
         var httpClient = createHttpClient(timeout);
 
         var retry = properties.getRetry();
         var filterList = getFilters(retry);
 
-        return buildWebClient(httpClient, filterList);
+        return buildWebClient(httpClient, properties.getHost(), filterList);
     }
 
     private HttpClient createHttpClient(TimeoutSettings timeoutSettings) {
@@ -67,9 +63,9 @@ public abstract class WebClientAbstractFactory<T extends RestServiceProperties>
         );
     }
 
-    private WebClient buildWebClient(HttpClient httpClient, List<ExchangeFilterFunction> filters) {
+    private WebClient buildWebClient(HttpClient httpClient, String host, List<ExchangeFilterFunction> filters) {
         var builder = WebClient.builder()
-                .baseUrl(properties.getHost())
+                .baseUrl(host)
                 .clientConnector(new ReactorClientHttpConnector(httpClient));
 
         filters.forEach(builder::filter);
