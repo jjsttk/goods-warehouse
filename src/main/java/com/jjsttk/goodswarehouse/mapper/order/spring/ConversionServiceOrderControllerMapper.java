@@ -6,10 +6,10 @@ import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.product.GetOrderProductResponse;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
-import com.jjsttk.goodswarehouse.service.order.dto.response.OrderServiceProductInOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
 import com.jjsttk.goodswarehouse.shared.util.price.PriceConverter;
 import com.jjsttk.goodswarehouse.shared.util.price.dto.request.PriceConverterRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -29,13 +30,13 @@ public final class ConversionServiceOrderControllerMapper implements OrderContro
     private final ConversionService conversionService;
 
     @Override
-    public OrderServiceCreateCommand toServiceCommand(OrderCreateRequest createRequest) {
-        return conversionService.convert(createRequest, OrderServiceCreateCommand.class);
+    public CreateOrderCommandInfo toServiceCommand(OrderCreateRequest createRequest) {
+        return Objects.requireNonNull(conversionService.convert(createRequest, CreateOrderCommandInfo.class));
     }
 
     @Override
-    public OrderServiceUpdateCommand toServiceCommand(UUID orderId, Collection<OrderProductUpdateRequest> request) {
-        return OrderServiceUpdateCommand.builder()
+    public UpdateOrderCommandInfo toServiceCommand(UUID orderId, Collection<OrderProductUpdateRequest> request) {
+        return UpdateOrderCommandInfo.builder()
                 .orderId(orderId)
                 .productQuantities(request.stream().collect(Collectors.toMap(
                         OrderProductUpdateRequest::id,
@@ -47,7 +48,7 @@ public final class ConversionServiceOrderControllerMapper implements OrderContro
 
     @Override
     public GetOrderResponse toResponse(
-            BaseOrderServiceResponse serviceResponse,
+            BaseOrderResponse serviceResponse,
             ExchangeRate exchangeRate
     ) {
 
@@ -70,8 +71,8 @@ public final class ConversionServiceOrderControllerMapper implements OrderContro
                 .build();
     }
 
-    protected GetOrderProductResponse elementToResponse(
-            OrderServiceProductInOrderResponse src,
+    private GetOrderProductResponse elementToResponse(
+            BaseProductInOrderResponse src,
             BigDecimal actualCurrencyRate
     ) {
         return GetOrderProductResponse.builder()

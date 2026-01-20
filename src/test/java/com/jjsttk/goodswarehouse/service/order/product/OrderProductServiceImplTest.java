@@ -2,7 +2,7 @@ package com.jjsttk.goodswarehouse.service.order.product;
 
 import com.jjsttk.goodswarehouse.mapper.order.product.OrderProductConverter;
 import com.jjsttk.goodswarehouse.persistence.repository.OrderProductRepository;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import com.jjsttk.goodswarehouse.testutil.OrderProductTestDataFactory;
 import com.jjsttk.goodswarehouse.testutil.OrderTestDataFactory;
@@ -42,10 +42,10 @@ class OrderProductServiceImplTest {
                 );
 
         var responseContainerStub =
-                OrderProductTestDataFactory.getServiceResponseBasedEntity(orderEntityStub);
+                OrderProductTestDataFactory.getResponseContainedWithProjectionBasedOnEntity(orderEntityStub);
 
         var summariesListStub =
-                (List<OrderProductServiceProductSummary>) responseContainerStub.orderProducts();
+                (List<OrderProductProjection>) responseContainerStub.orderProducts();
 
         when(repositoryMock.findProductSummariesByOrderId(orderEntityStub.getId()))
                 .thenReturn(summariesListStub);

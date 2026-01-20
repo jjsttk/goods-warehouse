@@ -441,23 +441,6 @@ class ProductSpecificationIntegrationTest {
 
     @Test
     @Transactional
-    public void buildAdvancedSpecificationShouldHandleNullValues() {
-        AdvancedSearchParam<?> stringParam = new StringParam(
-                "name", null, FilterOperation.EQUAL
-        );
-        AdvancedSearchParam<?> bigDecimalParam = new BigDecimalParam(
-                "price", null, FilterOperation.GREATER_THAN_OR_EQUAL
-        );
-
-        var spec = specification.buildAdvancedSpecification(List.of(stringParam, bigDecimalParam));
-        var result = productRepository.findAll(spec);
-
-        // Should return all products since null params are ignored
-        assertThat(result).hasSize(productEntities.size());
-    }
-
-    @Test
-    @Transactional
     public void buildAdvancedSpecificationShouldReturnEmptyForNoMatches() {
         AdvancedSearchParam<?> stringParam = new StringParam(
                 "name", "NonExistentProductName", FilterOperation.EQUAL

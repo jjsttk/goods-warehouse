@@ -84,7 +84,7 @@ class StreamExerciseTest {
                 BigDecimal.TEN,
                 true
         );
-        var orderServiceResponse = OrderTestDataFactory.getBaseOrderServiceResponse(orderEntity);
+        var orderServiceResponse = OrderTestDataFactory.getBaseOrderResponse(orderEntity);
 
         var orderControllerResponse =
                 orderServiceResponse.products().stream()

@@ -1,6 +1,7 @@
 package com.jjsttk.goodswarehouse.shared.annotation;
 
 import org.springframework.boot.logging.LogLevel;
+import org.springframework.lang.NonNull;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -38,5 +39,5 @@ public @interface LogMethodExecutionTime {
      *
      * @return the desired {@link LogLevel}, defaults to {@link LogLevel#INFO}
      */
-    LogLevel value();
+    @NonNull LogLevel value();
 }

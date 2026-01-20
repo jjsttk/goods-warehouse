@@ -1,11 +1,11 @@
 package com.jjsttk.goodswarehouse.mapper.customer;
 
 import com.jjsttk.goodswarehouse.persistence.entity.customer.CustomerEntity;
-import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerServiceDto;
+import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerInfoDto;
 
 public interface CustomerConverter {
 
-    BaseCustomerServiceDto mapToServiceResponse(
+    BaseCustomerInfoDto mapToServiceResponse(
             CustomerEntity entity
     );
 }

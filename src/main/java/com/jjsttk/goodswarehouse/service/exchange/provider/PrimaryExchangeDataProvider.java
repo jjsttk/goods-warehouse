@@ -31,9 +31,6 @@ public class PrimaryExchangeDataProvider implements ExchangeDataProvider {
     private static final String UNAVAILABLE_PROVIDER_FORMAT = "[%s] (unavailable)";
     private static final String FAILED_PROVIDER_FORMAT = "[%s] %s";
 
-    /**
-     * List of all available exchange rate providers, automatically injected by Spring.
-     */
     private final List<ExchangeDataProvider> providers;
 
     /**

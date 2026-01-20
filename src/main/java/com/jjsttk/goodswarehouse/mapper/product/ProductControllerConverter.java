@@ -5,24 +5,24 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
 import org.springframework.data.domain.Page;
 
 public interface ProductControllerConverter {
 
-    ProductServiceCreateCommand toCommand(CreateProductRequest createRequest);
+    CreateProductCommandInfo toCommand(CreateProductRequest createRequest);
 
-    ProductServiceUpdateCommand toCommand(UpdateProductRequest updateRequest);
+    UpdateProductCommandInfo toCommand(UpdateProductRequest updateRequest);
 
     PageGetProductResponse<GetProductResponse> toResponse(
-            Page<ProductServiceProductDetailedResponse> serviceResponse,
+            Page<ProductDetailedResponse> serviceResponse,
             ExchangeRate exchangeRate
     );
 
     GetProductResponse toResponse(
-            ProductServiceProductDetailedResponse serviceResponse,
+            ProductDetailedResponse serviceResponse,
             ExchangeRate exchangeRate
     );
 }

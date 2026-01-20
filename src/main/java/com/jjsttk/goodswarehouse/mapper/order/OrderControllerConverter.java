@@ -4,16 +4,16 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.create.OrderCreate
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.OrderProductUpdateRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
 
 import java.util.Collection;
 import java.util.UUID;
 
 public interface OrderControllerConverter {
 
-    OrderServiceCreateCommand toServiceCommand(OrderCreateRequest createRequest);
-    OrderServiceUpdateCommand toServiceCommand(UUID orderId, Collection<OrderProductUpdateRequest> request);
-    GetOrderResponse toResponse(BaseOrderServiceResponse orderServiceResponse, ExchangeRate exchangeRate);
+    CreateOrderCommandInfo toServiceCommand(OrderCreateRequest createRequest);
+    UpdateOrderCommandInfo toServiceCommand(UUID orderId, Collection<OrderProductUpdateRequest> request);
+    GetOrderResponse toResponse(BaseOrderResponse orderServiceResponse, ExchangeRate exchangeRate);
 }

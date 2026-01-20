@@ -94,19 +94,13 @@ public class ProductSpecification {
             Strategy<T> strategy,
             AdvancedSearchParam<T> param
     ) {
-        if (param.value() == null) {
-            return (root, query, cb) -> cb.conjunction();
-        }
-
         return switch (param.operation()) {
-            case EQUAL ->
-                    (root, query, cb) -> strategy.equalTo(root.get(param.field()), param.value(), cb);
+            case EQUAL -> (root, query, cb) -> strategy.equalTo(root.get(param.field()), param.value(), cb);
             case GREATER_THAN_OR_EQUAL ->
                     (root, query, cb) -> strategy.greaterThanOrEqualTo(root.get(param.field()), param.value(), cb);
             case LESS_THAN_OR_EQUAL ->
                     (root, query, cb) -> strategy.lessThanOrEqualTo(root.get(param.field()), param.value(), cb);
-            case LIKE ->
-                    (root, query, cb) -> strategy.like(root.get(param.field()), param.value(), cb);
+            case LIKE -> (root, query, cb) -> strategy.like(root.get(param.field()), param.value(), cb);
         };
     }
 

@@ -11,7 +11,7 @@ public enum PriceCurrency {
     BGN;
 
     @JsonCreator
-    public static PriceCurrency fromValue(@Nullable String str) {
+    public static @Nullable PriceCurrency fromValue(@Nullable String str) {
         return str == null ? null : PriceCurrency.valueOf(str.strip().toUpperCase());
     }
 }

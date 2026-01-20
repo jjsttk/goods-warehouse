@@ -37,7 +37,7 @@ public enum Category {
     PETS;
 
     @JsonCreator
-    public static Category fromValue(@Nullable String str) {
+    public static @Nullable Category fromValue(@Nullable String str) {
         return str == null ? null : Category.valueOf(str.strip().toUpperCase());
     }
 }

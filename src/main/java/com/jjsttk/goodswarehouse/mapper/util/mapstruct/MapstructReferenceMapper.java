@@ -48,17 +48,15 @@ public abstract class MapstructReferenceMapper {
      *
      * @param <T>         the type of entity to retrieve, must extend {@link BaseEntity}
      * @param id          the UUID identifier of the entity to retrieve;
-     *                    if {@code null}, returns {@code null}
      * @param entityClass the target entity class, automatically resolved by MapStruct
      *                    via the {@link TargetType} annotation
-     * @return the managed entity instance if found, {@code null} if ID is {@code null}
-     *         or if no entity exists with the given ID
+     * @return the managed entity instance if found.
      *
      * @throws EntityNotFoundException if the entity does not exist
      *         (only when {@link EntityManager#find(Class, Object)} is configured to throw)
      */
     public <T extends BaseEntity> T toEntity(UUID id, @TargetType Class<T> entityClass) {
-        return id == null ? null : entityManager.getReference(entityClass, id);
+        return entityManager.getReference(entityClass, id);
     }
 
     /**
@@ -79,16 +77,14 @@ public abstract class MapstructReferenceMapper {
      *
      * @param <T>         the type of entity to retrieve, must extend {@link BaseEntity}
      * @param id          the Long identifier of the entity to retrieve;
-     *                    if {@code null}, returns {@code null}
      * @param entityClass the target entity class, automatically resolved by MapStruct
      *                    via the {@link TargetType} annotation
-     * @return the managed entity instance if found, {@code null} if ID is {@code null}
-     *         or if no entity exists with the given ID
+     * @return the managed entity instance if found.
      *
      * @throws EntityNotFoundException if the entity does not exist
      *         (only when {@link EntityManager#find(Class, Object)} is configured to throw)
      */
     public <T extends BaseEntity> T toEntity(Long id, @TargetType Class<T> entityClass) {
-        return id == null ? null : entityManager.getReference(entityClass, id);
+        return entityManager.getReference(entityClass, id);
     }
 }

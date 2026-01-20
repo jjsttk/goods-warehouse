@@ -1,14 +1,13 @@
 package com.jjsttk.goodswarehouse.service.exchange.currency.filter;
 
-import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.service.exchange.currency.provider.CurrencyProvider;
+import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -44,8 +43,8 @@ public class CurrencyFilter extends OncePerRequestFilter {
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         var headerValue = request.getHeader("currency");

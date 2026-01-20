@@ -923,6 +923,12 @@
 						"key": "Content-Type",
 						"value": "application/json",
 						"type": "text"
+					},
+					{
+						"key": "currency",
+						"value": "EUR",
+						"type": "text",
+						"disabled": true
 					}
 				],
 				"url": {
@@ -1673,6 +1679,11 @@
 						"key": "customerId",
 						"value": "1",
 						"type": "text"
+					},
+					{
+						"key": "currency",
+						"value": "rub",
+						"type": "text"
 					}
 				],
 				"url": {
@@ -1973,9 +1984,10 @@
 							"    const response = pm.response.json();",
 							"    ",
 							"    pm.expect(pm.response.code).to.equal(409);",
-							"    pm.expect(response.message).to.include(\"Not enough quantity in stock\");",
-							"    pm.expect(response.message).to.include(\"productId\");",
-							"    pm.expect(response.exception).to.equal(\"NotEnoughQuantityInStockException\");",
+							"    pm.expect(response.message).to.include(\"NOT_ENOUGH_QUANTITY\");",
+							"    pm.expect(response.message).to.include(\"Problems occurred during reservation:\");",
+							"    pm.expect(response.message).to.include(\"Id:\");",
+							"    pm.expect(response.exception).to.equal(\"ReservationException\");",
 							"});",
 							""
 						],
@@ -1996,7 +2008,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "[\n    {\n        \"id\": \"{{secondProductId}}\",\n        \"quantity\": 1\n    },\n    {\n        \"id\": \"{{thirdProductId}}\",\n        \"quantity\": 1\n    }\n]",
+					"raw": "[\n    {\n        \"id\": \"{{secondProductId}}\",\n        \"quantity\": 1\n    },\n    {\n        \"id\": \"{{thirdProductId}}\",\n        \"quantity\": 1\n    },\n    {\n         \"id\": \"{{firstProductId}}\",\n        \"quantity\": 10\n    }\n]",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -2038,13 +2050,7 @@
 			],
 			"request": {
 				"method": "PATCH",
-				"header": [
-					{
-						"key": "customerId",
-						"value": "1",
-						"type": "text"
-					}
-				],
+				"header": [],
 				"body": {
 					"mode": "raw",
 					"raw": "{\n    \"status\": \"DONE\"\n}",

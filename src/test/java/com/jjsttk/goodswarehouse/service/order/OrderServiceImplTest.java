@@ -2,10 +2,10 @@ package com.jjsttk.goodswarehouse.service.order;
 
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedException;
-import com.jjsttk.goodswarehouse.exception.service.order.NotEnoughQuantityInStockException;
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeCancelledException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeUpdatedException;
+import com.jjsttk.goodswarehouse.exception.service.product.ReservationException;
 import com.jjsttk.goodswarehouse.mapper.order.OrderServiceConverter;
 import com.jjsttk.goodswarehouse.mapper.order.product.OrderProductConverter;
 import com.jjsttk.goodswarehouse.mapper.product.ProductReservationConverter;
@@ -14,14 +14,14 @@ import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEn
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.key.OrderProductId;
 import com.jjsttk.goodswarehouse.persistence.repository.OrderRepository;
 import com.jjsttk.goodswarehouse.service.customer.CustomerService;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
 import com.jjsttk.goodswarehouse.service.order.product.OrderProductService;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReservationCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import com.jjsttk.goodswarehouse.testutil.CustomerTestDataFactory;
 import com.jjsttk.goodswarehouse.testutil.OrderProductTestDataFactory;
@@ -37,6 +37,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -85,52 +87,57 @@ class OrderServiceImplTest {
     private OrderProductService orderProductServiceMock;
 
     @ParameterizedTest
-    @MethodSource("provideGetByIdTestCases")
-    void getByIdShouldHandleAllScenarios(
-            boolean orderWithCustomerIdExists,
-            Class<? extends Exception> expectedException,
-            boolean shouldFetchProducts
+    @MethodSource("provideNotFoundTestCases")
+    void getByIdShouldThrowWhenOrderNotFound(
+            Long customerId,
+            UUID orderId,
+            boolean orderExists
     ) {
-        Long customerId = 1L;
+        // Arrange
+        when(orderRepositoryMock.existsByIdAndCustomerId(orderId, customerId))
+                .thenReturn(orderExists);
 
-        var orderEntityStub =
-                OrderTestDataFactory.getOrderEntityWithIdByLengthAndStatus(
-                        1,
-                        OrderStatus.CREATED,
-                        BigDecimal.ONE,
-                        true
-                );
-        var orderId = orderEntityStub.getId();
+        // Act & Assert
+        assertThrows(ResourceNotFoundException.class,
+                () -> sut.getById(customerId, orderId));
 
-        var orderProductServiceResponseContainerExpectedStub =
-                OrderProductTestDataFactory.getServiceResponseBasedEntity(orderEntityStub);
-        var sutResponse = OrderTestDataFactory.getBaseOrderServiceResponse(orderEntityStub);
+        // Verify
+        verify(orderRepositoryMock).existsByIdAndCustomerId(orderId, customerId);
+        verify(orderProductServiceMock, never()).getOrderedProducts(any());
+        verify(orderMapperMock, never()).toResponse(any(), any());
+    }
 
+    @ParameterizedTest
+    @MethodSource("provideFoundTestCases")
+    void getByIdShouldReturnResponseWhenOrderExists(
+            Long customerId,
+            OrderEntity orderEntity,
+            OrderStatus expectedStatus
+    ) {
+        UUID orderId = orderEntity.getId();
+
+        var productsResponse = OrderProductTestDataFactory.getResponseContainedWithProjectionBasedOnEntity(orderEntity);
+        var expectedResponse = OrderTestDataFactory.getBaseOrderResponse(orderEntity);
 
         when(orderRepositoryMock.existsByIdAndCustomerId(orderId, customerId))
-                .thenReturn(orderWithCustomerIdExists);
+                .thenReturn(true);
+        when(orderProductServiceMock.getOrderedProducts(orderId))
+                .thenReturn(productsResponse);
+        when(orderMapperMock.toResponse(orderId, productsResponse))
+                .thenReturn(expectedResponse);
 
+        // Act
+        var result = sut.getById(customerId, orderId);
 
-        if (shouldFetchProducts) {
-            when(orderProductServiceMock.getOrderedProducts(orderId))
-                    .thenReturn(orderProductServiceResponseContainerExpectedStub);
-            when(orderMapperMock.toResponse(orderId, orderProductServiceResponseContainerExpectedStub))
-                    .thenReturn(sutResponse);
-        }
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedResponse, result);
+        assertEquals(expectedStatus, orderEntity.getStatus());
 
-        if (expectedException != null) {
-            assertThrows(expectedException, () -> sut.getById(customerId, orderId));
-        } else {
-            var result = sut.getById(customerId, orderId);
-            assertEquals(sutResponse, result);
-
-            verify(orderProductServiceMock).getOrderedProducts(orderId);
-            verify(orderMapperMock).toResponse(orderId, orderProductServiceResponseContainerExpectedStub);
-        }
-
-        if (orderWithCustomerIdExists) {
-            verify(orderRepositoryMock).existsByIdAndCustomerId(orderId, customerId);
-        }
+        // Verify
+        verify(orderRepositoryMock).existsByIdAndCustomerId(orderId, customerId);
+        verify(orderProductServiceMock).getOrderedProducts(orderId);
+        verify(orderMapperMock).toResponse(orderId, productsResponse);
     }
 
     @Test
@@ -147,7 +154,7 @@ class OrderServiceImplTest {
         var orderedQuantityForProduct = productToOrderStub.getQuantity();
         var productQuantitiesEntry =
                 Map.entry(productToOrderStub.getId(), orderedQuantityForProduct);
-        var createCommand = OrderServiceCreateCommand.builder()
+        var createCommand = CreateOrderCommandInfo.builder()
                 .deliveryAddress(orderEntityWithoutProductsStub.getDeliveryAddress())
                 .productQuantities(
                         Map.ofEntries(productQuantitiesEntry)
@@ -158,10 +165,10 @@ class OrderServiceImplTest {
                 = OrderProductTestDataFactory.getOrderProductEntityWithoutOrderIdRandomProduct(BigDecimal.ONE);
 
         var productServiceReservationCommandStub =
-                ProductTestDataFactory.getReservationCommand(createCommand.productQuantities());
+                ProductTestDataFactory.getReserveProductCommandInfo(createCommand.productQuantities());
 
         var productServiceReservationResponseStub =
-                ProductTestDataFactory.getReservationResponse(
+                ProductTestDataFactory.getReservationResponseWithEmptyProblemsMap(
                         List.of(productToOrderStub),
                         createCommand.productQuantities()
                 );
@@ -173,7 +180,7 @@ class OrderServiceImplTest {
         when(productServiceMock.reserveProductsWithLock(eq(productServiceReservationCommandStub)))
                 .thenReturn(productServiceReservationResponseStub);
 
-        var reservedProductInfoStub = ProductServiceReservedProductInfo.builder()
+        var reservedProductInfoStub = ReservedProductInfo.builder()
                 .priceAtMoment(productToOrderStub.getPrice())
                 .reservedQuantity(orderedQuantityForProduct)
                 .build();
@@ -201,14 +208,13 @@ class OrderServiceImplTest {
         verify(customerServiceMock).getById(anyLong());
         verify(productReservationMapperMock).toReserveCommand(eq(createCommand.productQuantities()));
         verify(productServiceMock).reserveProductsWithLock(eq(productServiceReservationCommandStub));
-        verify(orderProductMapperMock).toEntity(any(UUID.class), any(ProductServiceReservedProductInfo.class));
+        verify(orderProductMapperMock).toEntity(any(UUID.class), any(ReservedProductInfo.class));
         verify(orderMapperMock).toEntity(anyLong(), anyString());
     }
 
     @Test
     void createShouldThrowCustomerBannedException() {
-
-        var createCommand = OrderServiceCreateCommand.builder()
+        var createCommand = CreateOrderCommandInfo.builder()
                 .deliveryAddress("deliveryAddress")
                 .productQuantities(
                         Map.of(UUID.randomUUID(), BigDecimal.ONE)
@@ -238,7 +244,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void updateShouldUpdateExistingProductsAndOrderProductsAndAddNewProduct() {
+    void updateShouldUpdateExistingProductsAndOrderDependenciesAndAddNewProduct() {
         // Prepare orderEntity
         var orderProductLengthBeforeUpdate = 2;
 
@@ -272,13 +278,13 @@ class OrderServiceImplTest {
         existingOrderProduct.getProduct().setQuantity(valueToAddToExistedProduct);
 
         // orderProductMap before update to comparison quantity change right, and change price if updated correctly
-        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductServiceProductSummary>();
+        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductProjection>();
         // productMap before update to comparison quantity change right
         var productIdQuantityMapBeforeUpdate = new HashMap<UUID, BigDecimal>();
         existingOrder.getOrderProducts().forEach(it -> {
             orderProductIdToSummaryMapBeforeUpdate.put(
                     it.getId().getProductId(),
-                    OrderProductServiceProductSummary.builder()
+                    OrderProductProjection.builder()
                             .productId(it.getId().getProductId())
                             .quantity(it.getOrderedQuantity())
                             .name(it.getProduct().getName())
@@ -297,7 +303,7 @@ class OrderServiceImplTest {
         var newProductToOrderEntry =
                 Map.entry(newProductToOrder.getId(), valueToReserveNewProduct);
 
-        var updateCommand = OrderServiceUpdateCommand.builder()
+        var updateCommand = com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo.builder()
                 .orderId(existingOrderId)
                 .productQuantities(Map.ofEntries(
                         existedProductToUpdateEntry,
@@ -308,22 +314,23 @@ class OrderServiceImplTest {
         when(orderRepositoryMock.findByIdForUpdate(existingOrderId))
                 .thenReturn(Optional.of(existingOrder));
 
-        var reservationCommandStub = ProductServiceReservationCommand.builder()
+        var reservationCommandStub = ReserveProductCommandInfo.builder()
                 .productQuantities(Map.ofEntries(newProductToOrderEntry))
                 .build();
 
         when(productReservationMapperMock.toReserveCommand(Map.ofEntries(newProductToOrderEntry)))
                 .thenReturn(reservationCommandStub);
 
-        var newProductProductInfo = ProductServiceReservedProductInfo.builder()
+        var newProductProductInfo = ReservedProductInfo.builder()
                 .reservedQuantity(valueToReserveNewProduct)
                 .priceAtMoment(newProductToOrder.getPrice())
                 .build();
-        var reservationResponseStub = ProductServiceReservationResponse.builder()
-                .productInfo(Map.of(
+        var reservationResponseStub = ProductReservationResponse.builder()
+                .reservedProductsInfoMap(Map.of(
                         newProductToOrder.getId(),
                         newProductProductInfo
                 ))
+                .problemsMap(Collections.emptyMap())
                 .build();
         when(productServiceMock.reserveProductsWithLock(reservationCommandStub))
                 .thenReturn(reservationResponseStub);
@@ -398,7 +405,7 @@ class OrderServiceImplTest {
                         true
                 );
         var existingOrderId = existingOrder.getId();
-        var updateCommandStub = OrderServiceUpdateCommand.builder()
+        var updateCommandStub = com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo.builder()
                 .orderId(existingOrderId)
                 .productQuantities(Map.of(UUID.randomUUID(), BigDecimal.ONE))
                 .build();
@@ -425,12 +432,11 @@ class OrderServiceImplTest {
                 BigDecimal.ONE,
                 true
         );
-        var customerIdHeader = orderEntityWithIdStub.getCustomer().getId();
 
         when(orderRepositoryMock.findById(orderEntityWithIdStub.getId()))
                 .thenReturn(Optional.of(orderEntityWithIdStub));
 
-        sut.updateOrderStatus(customerIdHeader, orderEntityWithIdStub.getId(), OrderStatus.DONE);
+        sut.updateOrderStatus(orderEntityWithIdStub.getId(), OrderStatus.DONE);
 
         verify(orderRepositoryMock).findById(orderEntityWithIdStub.getId());
         assertThat(orderEntityWithIdStub.getStatus()).isEqualTo(OrderStatus.DONE);
@@ -464,13 +470,13 @@ class OrderServiceImplTest {
         existingOrderProduct.getProduct().setQuantity(valueToAddToExistedProduct);
 
         // orderProductMap before update to comparison quantity change right, and change price if updated correctly
-        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductServiceProductSummary>();
+        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductProjection>();
         // productMap before update to comparison quantity change right
         var productIdQuantityMapBeforeUpdate = new HashMap<UUID, BigDecimal>();
         existingOrder.getOrderProducts().forEach(it -> {
             orderProductIdToSummaryMapBeforeUpdate.put(
                     it.getId().getProductId(),
-                    OrderProductServiceProductSummary.builder()
+                    OrderProductProjection.builder()
                             .productId(it.getId().getProductId())
                             .quantity(it.getOrderedQuantity())
                             .name(it.getProduct().getName())
@@ -487,7 +493,7 @@ class OrderServiceImplTest {
         var existedProductToUpdateEntry =
                 Map.entry(existingOrderProduct.getId().getProductId(), valueToAddToExistedProduct);
 
-        var updateCommand = OrderServiceUpdateCommand.builder()
+        var updateCommand = UpdateOrderCommandInfo.builder()
                 .orderId(existingOrderId)
                 .productQuantities(Map.ofEntries(
                         existedProductToUpdateEntry
@@ -533,7 +539,7 @@ class OrderServiceImplTest {
     }
 
     @Test
-    void updateShouldThrowNotEnoughQuantityInStockExceptionWhenProductEntityDoesntHaveQuantityToReserve() {
+    void updateShouldThrowReservationExceptionWhenProductEntityDoesntHaveQuantityToReserve() {
         // Prepare orderEntity
         var orderProductLengthBeforeUpdate = 2;
 
@@ -559,7 +565,7 @@ class OrderServiceImplTest {
         var existedProductToUpdateEntry =
                 Map.entry(existingOrderProduct.getId().getProductId(), valueToAddToExistedProduct);
 
-        var updateCommand = OrderServiceUpdateCommand.builder()
+        var updateCommand = com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo.builder()
                 .orderId(existingOrderId)
                 .productQuantities(Map.ofEntries(
                         existedProductToUpdateEntry
@@ -569,7 +575,7 @@ class OrderServiceImplTest {
         when(orderRepositoryMock.findByIdForUpdate(existingOrderId))
                 .thenReturn(Optional.of(existingOrder));
 
-        var result = assertThrows(NotEnoughQuantityInStockException.class,
+        var result = assertThrows(ReservationException.class,
                 () -> sut.update(existingOrder.getCustomer().getId(), updateCommand));
 
         // Assert
@@ -580,18 +586,18 @@ class OrderServiceImplTest {
         assertNotNull(existingOrderProduct.getId().getOrderId());
         assertNotNull(existingOrderProduct.getId().getProductId());
 
-        assertThat(result.getMessage()).contains("Not enough quantity in stock for product productId = ");
+        assertThat(result.getMessage()).contains("Problem: NOT_ENOUGH_QUANTITY");
     }
 
     @Test
     void updateOrderStatusShouldThrowExceptionWhenOrderIsNotFound() {
         var randomOrderIdStub = UUID.randomUUID();
-        var customerIdHeader = 1L;
+
         when(orderRepositoryMock.findById(randomOrderIdStub))
                 .thenReturn(Optional.empty());
 
         var exc = assertThrows(ResourceNotFoundException.class,
-                () -> sut.updateOrderStatus(customerIdHeader, randomOrderIdStub, OrderStatus.DONE));
+                () -> sut.updateOrderStatus(randomOrderIdStub, OrderStatus.DONE));
 
         assertThat(exc.getMessage()).contains("not found");
 
@@ -702,11 +708,38 @@ class OrderServiceImplTest {
         sut.confirm(1L, UUID.randomUUID());
     }
 
-    private static Stream<Arguments> provideGetByIdTestCases() {
+    private static Stream<Arguments> provideFoundTestCases() {
         return Stream.of(
-                // orderWithCustomerIdExists, expectedException, shouldFetchProducts
-                Arguments.of(false, ResourceNotFoundException.class, false),
-                Arguments.of(true, null, true)
+                Arguments.of(
+                        1L,
+                        OrderTestDataFactory.getOrderEntityWithIdByLengthAndStatus(
+                                1, OrderStatus.CREATED, BigDecimal.ONE, true
+                        ),
+                        OrderStatus.CREATED
+                ),
+                Arguments.of(
+                        2L,
+                        OrderTestDataFactory.getOrderEntityWithIdByLengthAndStatus(
+                                2, OrderStatus.CONFIRMED, new BigDecimal("99.99"), false
+                        ),
+                        OrderStatus.CONFIRMED
+                ),
+                Arguments.of(
+                        3L,
+                        OrderTestDataFactory.getOrderEntityWithIdByLengthAndStatus(
+                                3, OrderStatus.DONE, new BigDecimal("150.50"), true
+                        ),
+                        OrderStatus.DONE
+                )
+        );
+    }
+
+    private static Stream<Arguments> provideNotFoundTestCases() {
+        return Stream.of(
+                // customerId, orderId, orderExists
+                Arguments.of(1L, UUID.randomUUID(), false),
+                Arguments.of(2L, UUID.randomUUID(), false),
+                Arguments.of(999L, UUID.randomUUID(), false)
         );
     }
 }

@@ -1,11 +1,12 @@
 package com.jjsttk.goodswarehouse.mapper.product;
 
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
+import com.jjsttk.goodswarehouse.shared.enums.product.ReservationStatus;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -13,16 +14,17 @@ import java.util.UUID;
 
 public interface ProductServiceConverter {
 
-    ProductEntity toEntity(ProductServiceCreateCommand productServiceCreateCommand);
+    ProductEntity toEntity(CreateProductCommandInfo createProductCommandInfo);
 
-    void update(ProductEntity entity, ProductServiceUpdateCommand productServiceUpdateCommand);
+    void update(ProductEntity entity, UpdateProductCommandInfo updateProductCommandInfo);
 
-    ProductServiceReservedProductInfo toProductInfo(BigDecimal valueToReserve, BigDecimal price);
+    ReservedProductInfo toProductInfo(BigDecimal valueToReserve, BigDecimal price);
 
-    ProductServiceProductDetailedResponse toResponse(ProductEntity entity);
+    ProductDetailedResponse toResponse(ProductEntity entity);
 
-    ProductServiceReservationResponse toResponse(
-            Map<UUID, ProductServiceReservedProductInfo> reservedProductsResponseMap
+    ProductReservationResponse toResponse(
+            Map<UUID, ReservedProductInfo> reservedProductsResponseMap,
+            Map<UUID, ReservationStatus> problemMap
     );
 
 }

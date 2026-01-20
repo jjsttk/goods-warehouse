@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.mapper.product.spring;
 
 import com.jjsttk.goodswarehouse.mapper.product.ProductReservationConverter;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReservationCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,8 +14,8 @@ import java.util.UUID;
 public final class ConversionServiceProductReservationConverter implements ProductReservationConverter {
 
     @Override
-    public ProductServiceReservationCommand toReserveCommand(Map<UUID, BigDecimal> productQuantities) {
-        return ProductServiceReservationCommand.builder()
+    public ReserveProductCommandInfo toReserveCommand(Map<UUID, BigDecimal> productQuantities) {
+        return ReserveProductCommandInfo.builder()
                 .productQuantities(productQuantities)
                 .build();
     }

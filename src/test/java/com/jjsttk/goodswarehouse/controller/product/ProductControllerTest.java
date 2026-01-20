@@ -13,9 +13,9 @@ import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
@@ -79,8 +79,8 @@ class ProductControllerTest {
     private CreateProductRequest controllerRequestStub;
     private GetProductResponse controllerResponseStub;
 
-    private ProductServiceCreateCommand createCommandStub;
-    private ProductServiceProductDetailedResponse serviceResponseStub;
+    private CreateProductCommandInfo createCommandStub;
+    private ProductDetailedResponse serviceResponseStub;
     private ExchangeRate exchangeRateServiceResponseRubStub;
 
     private ProductEntity productEntityStub;
@@ -98,8 +98,8 @@ class ProductControllerTest {
         controllerRequestStub = ProductTestDataFactory.getCreateProductRequest(productEntityStub);
         controllerResponseStub = ProductTestDataFactory.getGetProductResponse(productEntityStub);
 
-        createCommandStub = ProductTestDataFactory.getProductCreateCommand(productEntityStub);
-        serviceResponseStub = ProductTestDataFactory.getProductServiceResponse(productEntityStub);
+        createCommandStub = ProductTestDataFactory.getCreateProductCommand(productEntityStub);
+        serviceResponseStub = ProductTestDataFactory.getProductDetailedResponse(productEntityStub);
         exchangeRateServiceResponseRubStub = ExchangeRate.builder()
                 .currency(PriceCurrency.RUB)
                 .rate(BigDecimal.ONE)
@@ -256,7 +256,7 @@ class ProductControllerTest {
                 .category(Category.CLOTHING)
                 .build();
 
-        var updateCommand = ProductServiceUpdateCommand.builder()
+        var updateCommand = UpdateProductCommandInfo.builder()
                 .category(Category.CLOTHING)
                 .build();
 
@@ -284,7 +284,7 @@ class ProductControllerTest {
         var servicePage = new PageImpl<>(List.of(serviceResponseStub), pageable, 1);
 
         var expectedPageResponse =
-                ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
+                ProductTestDataFactory.getPageGetProductResponse(pageable, List.of(productEntityStub));
 
         when(productServiceMock.getAll(any(Pageable.class))).thenReturn(servicePage);
         when(exchangeRateServiceMock.getCurrentSessionExchangeRate()).thenReturn(exchangeRateServiceResponseRubStub);
@@ -309,16 +309,16 @@ class ProductControllerTest {
     @Test
     void getAllProductsShouldReturnEmptyPage() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductServiceProductDetailedResponse> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
-        PageGetProductResponse<GetProductResponse> expectedEmptyPageResponse =
-                ProductTestDataFactory.getGetPageProductResponse(pageable, List.of());
+        Page<ProductDetailedResponse> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
+        PageGetProductResponse<GetProductResponse> expectedPageResponse =
+                ProductTestDataFactory.getPageGetProductResponse(pageable, List.of());
 
         when(productServiceMock.getAll(any(Pageable.class)))
                 .thenReturn(emptyServicePage);
         when(exchangeRateServiceMock.getCurrentSessionExchangeRate())
                 .thenReturn(exchangeRateServiceResponseRubStub);
         when(productControllerConverterMock.toResponse(emptyServicePage, exchangeRateServiceResponseRubStub))
-                .thenReturn(expectedEmptyPageResponse);
+                .thenReturn(expectedPageResponse);
 
         mockMvc.perform(get("/api/v1/products")
                         .param("page", "0")
@@ -368,7 +368,7 @@ class ProductControllerTest {
         );
 
         var expectedPageResponse =
-                ProductTestDataFactory.getGetPageProductResponse(pageable, List.of(productEntityStub));
+                ProductTestDataFactory.getPageGetProductResponse(pageable, List.of(productEntityStub));
 
         when(productServiceMock.simpleSearch(any(SimpleSearchDto.class)))
                 .thenReturn(servicePage);
@@ -406,7 +406,7 @@ class ProductControllerTest {
         );
 
         var expectedPageResponse =
-                ProductTestDataFactory.getGetPageProductResponse(pageableStub, List.of(productEntityStub));
+                ProductTestDataFactory.getPageGetProductResponse(pageableStub, List.of(productEntityStub));
 
         when(productServiceMock.advancedSearch(pageableStub, paramsStub))
                 .thenReturn(serviceResponsePageStub);

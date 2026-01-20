@@ -3,7 +3,7 @@ package com.jjsttk.goodswarehouse.mapper.order.product.mapstruct;
 import com.jjsttk.goodswarehouse.mapper.order.product.OrderProductConverter;
 import com.jjsttk.goodswarehouse.mapper.util.mapstruct.MapstructReferenceMapper;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -36,7 +36,7 @@ public abstract class MapstructOrderProductMapper implements OrderProductConvert
     })
     public abstract OrderProductEntity toEntity(
             UUID productId,
-            ProductServiceReservedProductInfo productInfo
+            ReservedProductInfo productInfo
     );
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -61,7 +61,7 @@ public abstract class MapstructOrderProductMapper implements OrderProductConvert
     })
     public void update(
             @MappingTarget OrderProductEntity orderProductEntity,
-            ProductServiceReservedProductInfo updateInfo
+            ReservedProductInfo updateInfo
     ) {
         var currentQuantity = orderProductEntity.getOrderedQuantity();
         var deltaQuantity = updateInfo.reservedQuantity();

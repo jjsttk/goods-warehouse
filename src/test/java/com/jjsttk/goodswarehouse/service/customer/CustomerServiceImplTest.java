@@ -4,7 +4,7 @@ import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.customer.spring.ConversionServiceCustomerMapper;
 import com.jjsttk.goodswarehouse.persistence.entity.customer.CustomerEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.CustomerRepository;
-import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerServiceDto;
+import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerInfoDto;
 import com.jjsttk.goodswarehouse.testutil.CustomerTestDataFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,13 +36,13 @@ class CustomerServiceImplTest {
     private ConversionServiceCustomerMapper mapperMock;
 
     private CustomerEntity customerEntityStub;
-    private BaseCustomerServiceDto baseCustomerServiceDtoStub;
+    private BaseCustomerInfoDto baseCustomerInfoDtoStub;
 
     @BeforeEach
     void setUp() {
         customerEntityStub =
                 CustomerTestDataFactory.getCustomerEntityWithGeneratedId(true);
-        baseCustomerServiceDtoStub =
+        baseCustomerInfoDtoStub =
                 CustomerTestDataFactory.getCustomerServiceDtoFromCustomerEntity(customerEntityStub);
     }
 
@@ -52,7 +52,7 @@ class CustomerServiceImplTest {
         when(repositoryMock.findById(id))
                 .thenReturn(Optional.of(customerEntityStub));
         when(mapperMock.mapToServiceResponse(customerEntityStub))
-                .thenReturn(baseCustomerServiceDtoStub);
+                .thenReturn(baseCustomerInfoDtoStub);
 
         sut.getById(id);
 

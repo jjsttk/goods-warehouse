@@ -7,9 +7,8 @@ import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRat
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeCancelledException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeUpdatedException;
-import com.jjsttk.goodswarehouse.exception.service.order.product.ProductsToOrderNotFoundException;
-import com.jjsttk.goodswarehouse.exception.service.order.NotEnoughQuantityInStockException;
 import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
+import com.jjsttk.goodswarehouse.exception.service.product.ReservationException;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSourceResolvable;
@@ -18,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
@@ -34,6 +34,11 @@ public final class GlobalExceptionHandler {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex);
     }
 
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestHeader(Exception ex) {
+        return buildResponse(HttpStatus.FORBIDDEN, ex);
+    }
+
     @ExceptionHandler(CustomerBannedException.class)
     public ResponseEntity<ErrorResponse> handleCustomerBanned(CustomerBannedException ex) {
         return buildResponse(HttpStatus.FORBIDDEN, ex);
@@ -44,8 +49,8 @@ public final class GlobalExceptionHandler {
         return buildResponse(HttpStatus.FORBIDDEN, ex);
     }
 
-    @ExceptionHandler(NotEnoughQuantityInStockException.class)
-    public ResponseEntity<ErrorResponse> handleNotEnoughQuantity(NotEnoughQuantityInStockException ex) {
+    @ExceptionHandler(ReservationException.class)
+    public ResponseEntity<ErrorResponse> handleNotEnoughQuantity(ReservationException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex);
     }
 
@@ -57,11 +62,6 @@ public final class GlobalExceptionHandler {
     @ExceptionHandler(OrderCannotBeCancelledException.class)
     public ResponseEntity<ErrorResponse> handleOrderCannotBeCancelled(OrderCannotBeCancelledException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex);
-    }
-
-    @ExceptionHandler(ProductsToOrderNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleProductToOrderNotFound(ProductsToOrderNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex);
     }
 
     @ExceptionHandler(ExchangeRateProviderException.class)

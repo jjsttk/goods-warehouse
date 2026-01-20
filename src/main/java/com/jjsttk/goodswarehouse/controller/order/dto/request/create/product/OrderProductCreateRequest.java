@@ -13,7 +13,7 @@ import java.util.UUID;
 @Builder
 @Schema(description = "Data of product picked to order")
 public record OrderProductCreateRequest(
-        @NotNull
+        @NotNull(message = "Id cannot be null")
         UUID id,
 
         @Schema(
@@ -22,7 +22,7 @@ public record OrderProductCreateRequest(
                 minimum = "0",
                 maximum = "99999999.999"
         )
-        @NotNull
+        @NotNull(message = "Quantity cannot be null")
         @Positive(message = "Quantity for ordering product must be positive")
         @Digits(integer = 9, fraction = 3, message = "Quantity must have up to 9 digits before decimal and 3 after")
         BigDecimal quantity

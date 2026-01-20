@@ -7,10 +7,10 @@ import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.product.GetOrderProductResponse;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
-import com.jjsttk.goodswarehouse.service.order.dto.response.OrderServiceProductInOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
 import com.jjsttk.goodswarehouse.shared.util.price.PriceConverter;
 import com.jjsttk.goodswarehouse.shared.util.price.dto.request.PriceConverterRequest;
 import org.mapstruct.Context;
@@ -57,7 +57,7 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
      */
     @Override
     public GetOrderResponse toResponse(
-            BaseOrderServiceResponse serviceResponse,
+            BaseOrderResponse serviceResponse,
             @Context ExchangeRate exchangeRate
     ) {
         var totalPrice = BigDecimal.ZERO;
@@ -84,11 +84,11 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
             target = "productQuantities", source = "createRequest.products",
             qualifiedByName = "requestProductsListToProductQuantities"
     )
-    public abstract OrderServiceCreateCommand toServiceCommand(OrderCreateRequest createRequest);
+    public abstract CreateOrderCommandInfo toServiceCommand(OrderCreateRequest createRequest);
 
     @Override
     @Mapping(source = "request", target = "productQuantities", qualifiedByName = "mapListToQuantitiesMap")
-    public abstract OrderServiceUpdateCommand toServiceCommand(
+    public abstract UpdateOrderCommandInfo toServiceCommand(
             UUID orderId,
             Collection<OrderProductUpdateRequest> request
     );
@@ -98,7 +98,7 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
 
     @Mapping(target = "price", source = "price", qualifiedByName = "exchangePrice")
     protected abstract GetOrderProductResponse mapOrderProductResponse(
-            OrderServiceProductInOrderResponse src,
+            BaseProductInOrderResponse src,
             @Context BigDecimal rateValue
     );
 

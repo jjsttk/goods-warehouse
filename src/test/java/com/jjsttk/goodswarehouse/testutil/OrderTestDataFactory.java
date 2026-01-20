@@ -6,11 +6,12 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.Ord
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.product.GetOrderProductResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
-import com.jjsttk.goodswarehouse.service.order.dto.response.OrderServiceProductInOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
+import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEntity;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import org.instancio.Instancio;
@@ -35,18 +36,17 @@ public class OrderTestDataFactory {
         var orderId = UUID.randomUUID();
         var customer = CustomerTestDataFactory.getCustomerEntityWithGeneratedId(isActiveCustomer);
         var products = ProductTestDataFactory.getProductsListWithId(orderedProductsLength);
-        var orderProducts = products.stream()
-                .map(it -> {
-                    var op =
-                            OrderProductTestDataFactory.getOrderProductEntityWithoutOrderIdProductBased(
-                                    it,
-                                    orderedQuantityForAll
-                            );
-                    op.getId().setOrderId(orderId);
+        var orderProducts = new ArrayList<OrderProductEntity>(products.size());
+        for (var product : products) {
+            var op = OrderProductTestDataFactory.getOrderProductEntityWithoutOrderIdProductBased(
+                    product,
+                    orderedQuantityForAll
+            );
 
-                    return op;
-                })
-                .toList();
+            op.getId().setOrderId(orderId);
+
+            orderProducts.add(op);
+        }
 
         var orderEntity = Instancio.of(OrderEntity.class)
                 .set(field("id"), orderId)
@@ -84,10 +84,10 @@ public class OrderTestDataFactory {
         return orderEntity;
     }
 
-    public static OrderServiceProductInOrderResponse getOrderServiceProductInOrderResponseBasedOn(
-            OrderProductServiceProductSummary orderProductSummary
+    public static BaseProductInOrderResponse getBaseProductInOrderResponseBasedOn(
+            OrderProductProjection orderProductSummary
     ) {
-        return Instancio.of(OrderServiceProductInOrderResponse.class)
+        return Instancio.of(BaseProductInOrderResponse.class)
                 .set(field("productId"), orderProductSummary.productId())
                 .set(field("name"), orderProductSummary.name())
                 .set(field("quantity"), orderProductSummary.quantity())
@@ -95,12 +95,12 @@ public class OrderTestDataFactory {
                 .create();
     }
 
-    public static BaseOrderServiceResponse getBaseOrderServiceResponse(OrderEntity orderEntity) {
-        return BaseOrderServiceResponse.builder()
+    public static BaseOrderResponse getBaseOrderResponse(OrderEntity orderEntity) {
+        return BaseOrderResponse.builder()
                 .orderId(orderEntity.getId())
                 .products(orderEntity.getOrderProducts().stream()
-                        .map(OrderProductTestDataFactory::getOrderProductServiceProductSummaryBasedOn)
-                        .map(OrderTestDataFactory::getOrderServiceProductInOrderResponseBasedOn)
+                        .map(OrderProductTestDataFactory::getOrderProductProjectionBasedOn)
+                        .map(OrderTestDataFactory::getBaseProductInOrderResponseBasedOn)
                         .toList())
                 .build();
     }
@@ -123,17 +123,13 @@ public class OrderTestDataFactory {
                 .create();
     }
 
-    public static List<OrderProductUpdateRequest> getUpdateRequestList(int length) {
-        var list = new ArrayList<OrderProductUpdateRequest>(length);
-
-        for (int i = 0; i < length; i++) {
-            list.add(Instancio.of(OrderProductUpdateRequest.class).create());
-        }
-
-        return list;
+    public static List<OrderProductUpdateRequest> getOrderProductUpdateRequestList(int length) {
+        return Instancio.ofList(OrderProductUpdateRequest.class)
+                .size(length)
+                .create();
     }
 
-    public static GetOrderResponse getOrderResponseRubCurrency(BaseOrderServiceResponse serviceResponseStub) {
+    public static GetOrderResponse getGetOrderResponseRubCurrency(BaseOrderResponse serviceResponseStub) {
         return serviceResponseStub.products().stream().collect(Collectors.teeing(
 
                 Collectors.mapping(it -> GetOrderProductResponse.builder()
@@ -159,8 +155,8 @@ public class OrderTestDataFactory {
         ));
     }
 
-    public static OrderServiceCreateCommand getOrderServiceCreateCommand(OrderCreateRequest createRequestStub) {
-        return OrderServiceCreateCommand.builder()
+    public static CreateOrderCommandInfo getCreateOrderCommandInfo(OrderCreateRequest createRequestStub) {
+        return CreateOrderCommandInfo.builder()
                 .deliveryAddress(createRequestStub.deliveryAddress())
                 .productQuantities(createRequestStub.products().stream().collect(Collectors.toMap(
                         OrderProductCreateRequest::id,
@@ -170,11 +166,11 @@ public class OrderTestDataFactory {
                 .build();
     }
 
-    public static OrderServiceUpdateCommand getOrderServiceUpdateCommand(
+    public static UpdateOrderCommandInfo getUpdateOrderCommandInfo(
             UUID orderId,
             List<OrderProductUpdateRequest> updateRequestStub
     ) {
-        return OrderServiceUpdateCommand.builder()
+        return UpdateOrderCommandInfo.builder()
                 .orderId(orderId)
                 .productQuantities(updateRequestStub.stream().collect(Collectors.toMap(
                         OrderProductUpdateRequest::id,

@@ -6,22 +6,21 @@ import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductRespo
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
 import com.jjsttk.goodswarehouse.shared.util.price.PriceConverter;
 import com.jjsttk.goodswarehouse.shared.util.price.dto.request.PriceConverterRequest;
 import org.springframework.data.domain.Page;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 @Component
 public final class ConversionServiceProductControllerConverter implements ProductControllerConverter {
 
     @Override
-    public ProductServiceCreateCommand toCommand(CreateProductRequest createRequest) {
-        return ProductServiceCreateCommand.builder()
+    public CreateProductCommandInfo toCommand(CreateProductRequest createRequest) {
+        return CreateProductCommandInfo.builder()
                 .name(stripOrNull(createRequest.name()))
                 .article(stripOrNull(createRequest.article()))
                 .description(stripOrNull(createRequest.description()))
@@ -33,8 +32,8 @@ public final class ConversionServiceProductControllerConverter implements Produc
     }
 
     @Override
-    public ProductServiceUpdateCommand toCommand(UpdateProductRequest updateRequest) {
-        return ProductServiceUpdateCommand.builder()
+    public UpdateProductCommandInfo toCommand(UpdateProductRequest updateRequest) {
+        return UpdateProductCommandInfo.builder()
                 .name(stripOrNull(updateRequest.name()))
                 .price(updateRequest.price())
                 .description(stripOrNull(updateRequest.description()))
@@ -47,7 +46,7 @@ public final class ConversionServiceProductControllerConverter implements Produc
 
     @Override
     public PageGetProductResponse<GetProductResponse> toResponse(
-            Page<ProductServiceProductDetailedResponse> serviceResponse,
+            Page<ProductDetailedResponse> serviceResponse,
             ExchangeRate exchangeRate
     ) {
         return PageGetProductResponse.<GetProductResponse>builder()
@@ -64,7 +63,7 @@ public final class ConversionServiceProductControllerConverter implements Produc
 
     @Override
     public GetProductResponse toResponse(
-            ProductServiceProductDetailedResponse serviceResponse,
+            ProductDetailedResponse serviceResponse,
             ExchangeRate exchangeRate
     ) {
         return GetProductResponse.builder()
@@ -95,10 +94,7 @@ public final class ConversionServiceProductControllerConverter implements Produc
      * @param str input string to normalize, may be null
      * @return trimmed string or null if input was null
      */
-    private String stripOrNull(String str) {
-        if (Objects.nonNull(str)) {
-            return str.strip();
-        }
-        return null;
+    private @Nullable String stripOrNull(@Nullable String str) {
+        return str == null ? null : str.strip();
     }
 }

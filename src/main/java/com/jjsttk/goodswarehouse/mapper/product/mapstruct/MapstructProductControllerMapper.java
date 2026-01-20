@@ -7,9 +7,9 @@ import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductRespo
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
 import com.jjsttk.goodswarehouse.shared.util.price.PriceConverter;
 import com.jjsttk.goodswarehouse.shared.util.price.dto.request.PriceConverterRequest;
 import org.mapstruct.Mapper;
@@ -47,7 +47,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
                     expression = "java(createRequest.description() == null"
                                  + " ? null : createRequest.description().strip())")
     })
-    public abstract ProductServiceCreateCommand toCommand(CreateProductRequest createRequest);
+    public abstract CreateProductCommandInfo toCommand(CreateProductRequest createRequest);
 
     @Override
     @Mappings({
@@ -63,7 +63,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
                     expression = "java(updateRequest.description() == null"
                                  + " ? null : updateRequest.description().strip())")
     })
-    public abstract ProductServiceUpdateCommand toCommand(UpdateProductRequest updateRequest);
+    public abstract UpdateProductCommandInfo toCommand(UpdateProductRequest updateRequest);
 
     @Override
     @Mappings({
@@ -77,7 +77,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
                                  + " : Collections.emptyList())")
     })
     public abstract PageGetProductResponse<GetProductResponse> toResponse(
-            Page<ProductServiceProductDetailedResponse> serviceResponse,
+            Page<ProductDetailedResponse> serviceResponse,
             ExchangeRate exchangeRate
     );
 
@@ -101,7 +101,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
             @Mapping(target = "createdAt", source = "source.createdAt")
     })
     public abstract GetProductResponse toResponse(
-            ProductServiceProductDetailedResponse source,
+            ProductDetailedResponse source,
             ExchangeRate exchangeRate
     );
 
@@ -110,7 +110,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
     /**
      * Maps a list of service responses to a list of API responses with currency conversion.
      *
-     * <p>This helper method converts each {@link ProductServiceProductDetailedResponse} to a
+     * <p>This helper method converts each {@link ProductDetailedResponse} to a
      * {@link GetProductResponse} using the provided exchange rate for price conversion.</p>
      *
      * @param serviceResponse list of detailed product responses from the service layer
@@ -118,7 +118,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
      * @return list of API response objects, empty if input is null or empty
      */
     protected List<GetProductResponse> mapContent(
-            List<ProductServiceProductDetailedResponse> serviceResponse,
+            List<ProductDetailedResponse> serviceResponse,
             ExchangeRate exchangeRate
     ) {
         return serviceResponse.stream().map(it -> toResponse(it, exchangeRate)).toList();

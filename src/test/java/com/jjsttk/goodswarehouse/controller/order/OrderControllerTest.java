@@ -10,19 +10,18 @@ import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.exception.handler.GlobalExceptionHandler;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedException;
-import com.jjsttk.goodswarehouse.exception.service.order.NotEnoughQuantityInStockException;
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeCancelledException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeUpdatedException;
-import com.jjsttk.goodswarehouse.exception.service.order.product.ProductsToOrderNotFoundException;
+import com.jjsttk.goodswarehouse.exception.service.product.ReservationException;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
-import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.order.OrderService;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
+import com.jjsttk.goodswarehouse.shared.enums.product.ReservationStatus;
 import com.jjsttk.goodswarehouse.testutil.OrderTestDataFactory;
 import com.jjsttk.goodswarehouse.testutil.StringTestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +36,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -98,13 +98,13 @@ class OrderControllerTest {
                         true
                 );
         var baseOrderServiceResponseStub =
-                OrderTestDataFactory.getBaseOrderServiceResponse(orderEntity);
+                OrderTestDataFactory.getBaseOrderResponse(orderEntity);
         var exchangeServiceResponseStub =
                 ExchangeRate.builder()
                         .rate(BigDecimal.ONE)
                         .currency(PriceCurrency.RUB)
                         .build();
-        var sutResponseStub = OrderTestDataFactory.getOrderResponseRubCurrency(baseOrderServiceResponseStub);
+        var sutResponseStub = OrderTestDataFactory.getGetOrderResponseRubCurrency(baseOrderServiceResponseStub);
 
         when(orderServiceMock.getById(CUSTOMER_ID_HEADER, ORDER_ID))
                 .thenReturn(baseOrderServiceResponseStub);
@@ -139,6 +139,19 @@ class OrderControllerTest {
 
         verify(orderServiceMock, times(1)).getById(CUSTOMER_ID_HEADER, ORDER_ID);
         verify(mapperMock, times(1)).toResponse(baseOrderServiceResponseStub, exchangeServiceResponseStub);
+    }
+
+    @Test
+    void getOrderByIdShouldReturnMissingRequestHeaderExceptionWhenHeaderNotProvided()
+            throws Exception {
+
+        var res = mockMvc.perform(get("/api/v1/orders/{id}", ORDER_ID))
+                .andExpect(status().isForbidden())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        assertThat(res).contains("is not present");
     }
 
     // getOrderById 404 Order not found
@@ -217,7 +230,7 @@ class OrderControllerTest {
         var customerIdHeader = orderEntityStub.getCustomer().getId();
         var createRequestStub =
                 OrderTestDataFactory.getOrderCreateRequestBasedOnExpectedEntity(orderEntityStub);
-        var serviceCommandStub = OrderTestDataFactory.getOrderServiceCreateCommand(createRequestStub);
+        var serviceCommandStub = OrderTestDataFactory.getCreateOrderCommandInfo(createRequestStub);
 
 
         when(mapperMock.toServiceCommand(createRequestStub))
@@ -287,7 +300,7 @@ class OrderControllerTest {
         var orderCreateRequestStub =
                 OrderTestDataFactory.getRandomOrderCreateRequest();
         var createCommandStub =
-                OrderTestDataFactory.getOrderServiceCreateCommand(orderCreateRequestStub);
+                OrderTestDataFactory.getCreateOrderCommandInfo(orderCreateRequestStub);
 
         when(mapperMock.toServiceCommand(orderCreateRequestStub))
                 .thenReturn(createCommandStub);
@@ -317,28 +330,27 @@ class OrderControllerTest {
         verifyNoMoreInteractions(orderServiceMock);
     }
 
-    // createOrder 404 product to order not found
+    // createOrder 409 product to order not found
     @Test
-    void createShouldThrowResourceNotFoundExceptionWithProductIdWhenProductToOrderNotFound() throws Exception {
+    void createShouldThrowReservationExceptionWhenProductToOrderNotFound() throws Exception {
         var createRequestStub = OrderTestDataFactory.getRandomOrderCreateRequest();
-        var createCommandStub = OrderTestDataFactory.getOrderServiceCreateCommand(createRequestStub);
+        var createCommandStub = OrderTestDataFactory.getCreateOrderCommandInfo(createRequestStub);
         var badProductId = createRequestStub.products().getFirst().id();
 
         when(mapperMock.toServiceCommand(createRequestStub))
                 .thenReturn(createCommandStub);
         when(orderServiceMock.create(CUSTOMER_ID_HEADER, createCommandStub))
-                .thenThrow(new ResourceNotFoundException(
-                        ProductEntity.class,
-                        badProductId
+                .thenThrow(new ReservationException(
+                        Map.of(badProductId, ReservationStatus.NOT_FOUND)
                 ));
 
         var result = mockMvc.perform(post("/api/v1/orders")
                         .header("customerId", CUSTOMER_ID_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRequestStub)))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").isNotEmpty())
-                .andExpect(jsonPath("$.exception").value("ResourceNotFoundException"))
+                .andExpect(jsonPath("$.exception").value("ReservationException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty())
                 .andReturn()
@@ -346,7 +358,7 @@ class OrderControllerTest {
                 .getContentAsString();
 
         assertThat(result).containsIgnoringCase(
-                "ProductEntity with id = " + badProductId + " not found"
+                "NOT_FOUND"
         );
 
         verify(mapperMock).toServiceCommand(createRequestStub);
@@ -357,15 +369,17 @@ class OrderControllerTest {
 
     // createOrder 409 when not enough product quantity in stock now
     @Test
-    void createShouldThrowNotEnoughQuantityExceptionWhenProductQuantityIsInsufficient() throws Exception {
+    void createShouldThrowReservationExceptionWhenProductQuantityIsInsufficient() throws Exception {
         var createRequestStub = OrderTestDataFactory.getRandomOrderCreateRequest();
-        var createCommandStub = OrderTestDataFactory.getOrderServiceCreateCommand(createRequestStub);
+        var createCommandStub = OrderTestDataFactory.getCreateOrderCommandInfo(createRequestStub);
         var badProductId = createRequestStub.products().getFirst().id();
 
         when(mapperMock.toServiceCommand(createRequestStub))
                 .thenReturn(createCommandStub);
         when(orderServiceMock.create(CUSTOMER_ID_HEADER, createCommandStub))
-                .thenThrow(new NotEnoughQuantityInStockException(badProductId));
+                .thenThrow(new ReservationException(
+                        Map.of(badProductId, ReservationStatus.NOT_ENOUGH_QUANTITY)
+                ));
 
         var result = mockMvc.perform(post("/api/v1/orders")
                         .header("customerId", CUSTOMER_ID_HEADER)
@@ -373,7 +387,7 @@ class OrderControllerTest {
                         .content(objectMapper.writeValueAsString(createRequestStub)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").isNotEmpty())
-                .andExpect(jsonPath("$.exception").value("NotEnoughQuantityInStockException"))
+                .andExpect(jsonPath("$.exception").value("ReservationException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty())
                 .andReturn()
@@ -381,7 +395,8 @@ class OrderControllerTest {
                 .getContentAsString();
 
         assertThat(result).containsIgnoringCase(
-                "Not enough quantity in stock for product productId = " + badProductId
+                "Problems occurred during reservation: "
+                + "Id: " + badProductId + ", Problem: NOT_ENOUGH_QUANTITY"
         );
 
         verify(mapperMock).toServiceCommand(createRequestStub);
@@ -393,10 +408,10 @@ class OrderControllerTest {
     // updateOrder 200
     @Test
     void updateOrderShouldUpdateOrderWhenRequestIsValidAndCustomerOwnsOrderAndIsActiveTrue() throws Exception {
-        var updateRequestStub = OrderTestDataFactory.getUpdateRequestList(2);
+        var updateRequestStub = OrderTestDataFactory.getOrderProductUpdateRequestList(2);
 
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
@@ -451,7 +466,7 @@ class OrderControllerTest {
                 .getContentAsString();
 
         assertThat(result).containsIgnoringCase(
-                "must not be null"
+                "Quantity cannot be null"
         );
         assertThat(result).containsIgnoringCase(
                 "Quantity for ordering product must be positive"
@@ -465,9 +480,9 @@ class OrderControllerTest {
     @Test
     void updateOrderShouldThrowNotYourOrderExceptionWhenCustomerIdNotEqualToOrderCustomerId() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
                 .thenReturn(updateCommandStub);
@@ -499,27 +514,27 @@ class OrderControllerTest {
         verifyNoMoreInteractions(orderServiceMock);
     }
 
-    // updateOrder 404 when product not found
+    // updateOrder 409 when product not found
     @Test
-    void updateOrderShouldThrowProductsToOrderNotFoundWhenProductIdsNotFound() throws Exception {
+    void updateOrderShouldThrowReservationExceptionWhenProductIdsNotFound() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
         var badProductId = updateRequestStub.getFirst().id();
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
                 .thenReturn(updateCommandStub);
         when(orderServiceMock.update(CUSTOMER_ID_HEADER, updateCommandStub))
-                .thenThrow(new ProductsToOrderNotFoundException(List.of(badProductId)));
+                .thenThrow(new ReservationException(Map.of(badProductId, ReservationStatus.NOT_FOUND)));
 
         var result = mockMvc.perform(patch("/api/v1/orders/{orderId}", ORDER_ID)
                         .header("customerId", CUSTOMER_ID_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequestStub)))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").isNotEmpty())
-                .andExpect(jsonPath("$.exception").value("ProductsToOrderNotFoundException"))
+                .andExpect(jsonPath("$.exception").value("ReservationException"))
                 .andExpect(jsonPath("$.source").isNotEmpty())
                 .andExpect(jsonPath("$.dateTime").isNotEmpty())
                 .andReturn()
@@ -527,7 +542,7 @@ class OrderControllerTest {
                 .getContentAsString();
 
         assertThat(result).containsIgnoringCase(
-                "Products not found with id`s: " + List.of(badProductId)
+                "Problems occurred during reservation: Id: " + badProductId + ", Problem: NOT_FOUND"
         );
 
         verify(mapperMock).toServiceCommand(ORDER_ID, updateRequestStub);
@@ -538,11 +553,11 @@ class OrderControllerTest {
 
     // updateOrder 404 when order not found
     @Test
-    void updateOrderShouldThrowResourceNotFoundOrderNotFound() throws Exception {
+    void updateOrderShouldThrowResourceNotFoundExceptionWhenOrderNotExist() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
                 .thenReturn(updateCommandStub);
@@ -576,9 +591,9 @@ class OrderControllerTest {
     @Test
     void updateOrderShouldThrowOrderCannotBeUpdatedExceptionWhenOrderInWrongStatus() throws Exception {
         var updateRequestStub =
-                OrderTestDataFactory.getUpdateRequestList(2);
+                OrderTestDataFactory.getOrderProductUpdateRequestList(2);
         var updateCommandStub =
-                OrderTestDataFactory.getOrderServiceUpdateCommand(ORDER_ID, updateRequestStub);
+                OrderTestDataFactory.getUpdateOrderCommandInfo(ORDER_ID, updateRequestStub);
 
 
         when(mapperMock.toServiceCommand(ORDER_ID, updateRequestStub))
@@ -727,19 +742,16 @@ class OrderControllerTest {
                 .build();
 
         doNothing().when(orderServiceMock).updateOrderStatus(
-                CUSTOMER_ID_HEADER,
                 ORDER_ID,
                 updateStatusRequestStub.status()
         );
 
         mockMvc.perform(patch("/api/v1/orders/{orderId}/status", ORDER_ID)
-                        .header("customerId", CUSTOMER_ID_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateStatusRequestStub)))
                 .andExpect(status().isOk());
 
         verify(orderServiceMock).updateOrderStatus(
-                CUSTOMER_ID_HEADER,
                 ORDER_ID,
                 updateStatusRequestStub.status());
 
@@ -754,50 +766,17 @@ class OrderControllerTest {
                 .status(OrderStatus.CONFIRMED)
                 .build();
 
-        doThrow(new ResourceNotFoundException(OrderEntity.class, ORDER_ID)).when(orderServiceMock).updateOrderStatus(
-                CUSTOMER_ID_HEADER,
-                ORDER_ID,
-                orderUpdateStatusRequestStub.status()
-        );
+        doThrow(new ResourceNotFoundException(OrderEntity.class, ORDER_ID))
+                .when(orderServiceMock).updateOrderStatus(ORDER_ID, orderUpdateStatusRequestStub.status());
 
         mockMvc.perform(patch("/api/v1/orders/{orderId}/status", ORDER_ID)
-                        .header("customerId", CUSTOMER_ID_HEADER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(orderUpdateStatusRequestStub)))
                 .andExpect(status().isNotFound());
 
         verify(orderServiceMock).updateOrderStatus(
-                CUSTOMER_ID_HEADER,
                 ORDER_ID,
                 orderUpdateStatusRequestStub.status());
-
-        verifyNoInteractions(mapperMock);
-        verifyNoMoreInteractions(orderServiceMock);
-    }
-
-    // updateOrderStatus 403 forbidden when customerId header not equal to order.customer.id
-    @Test
-    void updateOrderStatusShouldThrowNotYourOrderExceptionWhenCustomerNotOwnOrder() throws Exception {
-        var updateStatusRequestStub = OrderUpdateStatusRequest.builder()
-                .status(OrderStatus.CONFIRMED)
-                .build();
-
-        doThrow(new NotYourOrderException(CUSTOMER_ID_HEADER)).when(orderServiceMock).updateOrderStatus(
-                CUSTOMER_ID_HEADER,
-                ORDER_ID,
-                updateStatusRequestStub.status()
-        );
-
-        mockMvc.perform(patch("/api/v1/orders/{orderId}/status", ORDER_ID)
-                        .header("customerId", CUSTOMER_ID_HEADER)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(updateStatusRequestStub)))
-                .andExpect(status().isForbidden());
-
-        verify(orderServiceMock).updateOrderStatus(
-                CUSTOMER_ID_HEADER,
-                ORDER_ID,
-                updateStatusRequestStub.status());
 
         verifyNoInteractions(mapperMock);
         verifyNoMoreInteractions(orderServiceMock);

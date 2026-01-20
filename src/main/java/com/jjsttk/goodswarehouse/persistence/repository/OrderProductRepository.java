@@ -1,7 +1,8 @@
 package com.jjsttk.goodswarehouse.persistence.repository;
 
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEntity;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
+import com.jjsttk.goodswarehouse.persistence.entity.order.product.key.OrderProductId;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -10,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface OrderProductRepository extends JpaRepository<OrderProductEntity, UUID> {
+public interface OrderProductRepository extends JpaRepository<OrderProductEntity, OrderProductId> {
 
 
     @Query("SELECT product.id as productId, "
@@ -20,5 +21,5 @@ public interface OrderProductRepository extends JpaRepository<OrderProductEntity
            + "FROM OrderProductEntity orderProduct "
            + "JOIN orderProduct.product product "
            + "WHERE orderProduct.order.id = :orderId")
-    List<OrderProductServiceProductSummary> findProductSummariesByOrderId(UUID orderId);
+    List<OrderProductProjection> findProductSummariesByOrderId(UUID orderId);
 }

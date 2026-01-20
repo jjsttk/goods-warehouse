@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.customer;
 
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerServiceDto;
+import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerInfoDto;
 
 /**
  * Service interface for customer management operations.
@@ -21,7 +21,7 @@ public interface CustomerService {
      * @return customer data transfer object containing customer details
      * @throws ResourceNotFoundException if customer with given ID doesn't exist
      */
-    BaseCustomerServiceDto getById(Long id);
+    BaseCustomerInfoDto getById(Long id);
 
     /**
      * Verifies customer existence.

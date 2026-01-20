@@ -5,6 +5,7 @@ import com.jjsttk.goodswarehouse.shared.enums.product.Category;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
+import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,6 +38,7 @@ public record GetProductResponse(
                 description = "Product description",
                 example = "Apple smartphone with 256GB storage in black color"
         )
+        @Nullable
         String description,
 
         @Schema(

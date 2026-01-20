@@ -4,11 +4,11 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.CreateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReservationCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -66,8 +67,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceCreateCommand getProductCreateCommand(ProductEntity productEntity) {
-        return Instancio.of(ProductServiceCreateCommand.class)
+    public static CreateProductCommandInfo getCreateProductCommand(ProductEntity productEntity) {
+        return Instancio.of(CreateProductCommandInfo.class)
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
                 .set(field("category"), productEntity.getCategory())
@@ -77,8 +78,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceProductDetailedResponse getProductServiceResponse(ProductEntity productEntity) {
-        return Instancio.of(ProductServiceProductDetailedResponse.class)
+    public static ProductDetailedResponse getProductDetailedResponse(ProductEntity productEntity) {
+        return Instancio.of(ProductDetailedResponse.class)
                 .set(field("id"), productEntity.getId())
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
@@ -107,13 +108,13 @@ public class ProductTestDataFactory {
         return list;
     }
 
-    public static List<ProductServiceProductDetailedResponse> getServiceResponsesList(List<ProductEntity> entities) {
+    public static List<ProductDetailedResponse> getResponsesList(List<ProductEntity> entities) {
         return entities.stream()
-                .map(ProductTestDataFactory::getProductServiceResponse)
+                .map(ProductTestDataFactory::getProductDetailedResponse)
                 .toList();
     }
 
-    public static PageGetProductResponse<GetProductResponse> getGetPageProductResponse(
+    public static PageGetProductResponse<GetProductResponse> getPageGetProductResponse(
             Pageable pageable, List<ProductEntity> entities
     ) {
         var content = entities.stream()
@@ -140,24 +141,25 @@ public class ProductTestDataFactory {
         return Specification.unrestricted();
     }
 
-    public static ProductServiceReservationCommand getReservationCommand(Map<UUID, BigDecimal> productQuantities) {
-        return ProductServiceReservationCommand.builder()
+    public static ReserveProductCommandInfo getReserveProductCommandInfo(Map<UUID, BigDecimal> productQuantities) {
+        return ReserveProductCommandInfo.builder()
                 .productQuantities(productQuantities)
                 .build();
     }
 
-    public static ProductServiceReservationResponse getReservationResponse(
+    public static ProductReservationResponse getReservationResponseWithEmptyProblemsMap(
             List<ProductEntity> productEntityList,
             Map<UUID, BigDecimal> productQuantities
     ) {
-        return ProductServiceReservationResponse.builder()
-                .productInfo(productEntityList.stream().collect(Collectors.toMap(
+        return ProductReservationResponse.builder()
+                .reservedProductsInfoMap(productEntityList.stream().collect(Collectors.toMap(
                         ProductEntity::getId,
-                        v -> ProductServiceReservedProductInfo.builder()
+                        v -> ReservedProductInfo.builder()
                                 .priceAtMoment(v.getPrice())
                                 .reservedQuantity(productQuantities.get(v.getId()))
                                 .build()
                 )))
+                .problemsMap(Collections.emptyMap())
                 .build();
     }
 }
