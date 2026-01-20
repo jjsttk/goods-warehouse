@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:src/main/java/com/jjsttk/goodswarehouse/service/exchange/util/deserializer/ExchangeDataDeserializer.java
 package com.jjsttk.goodswarehouse.service.exchange.util.deserializer;
-========
-package com.jjsttk.goodswarehouse.service.exchange.dto.response.deserializer;
->>>>>>>> develop:src/main/java/com/jjsttk/goodswarehouse/service/exchange/dto/response/deserializer/ExchangeDataDeserializer.java
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -17,6 +13,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Custom Jackson deserializer for {@link ExchangeData}.
@@ -71,7 +68,7 @@ public class ExchangeDataDeserializer extends JsonDeserializer<ExchangeData> {
 
     private PriceCurrency toCurrencyOrThrow(String currencyCodeStr) {
         try {
-            return PriceCurrency.fromValue(currencyCodeStr);
+            return Objects.requireNonNull(PriceCurrency.fromValue(currencyCodeStr));
         } catch (Exception e) {
             throw new UnknownCurrencyException(currencyCodeStr);
         }
