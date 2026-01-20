@@ -5,9 +5,9 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.create.product.Ord
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.OrderProductUpdateRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -33,14 +33,14 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
 
     @Override
     @Mapping(target = "id", source = "orderId")
-    public abstract GetOrderResponse toResponse(BaseOrderServiceResponse serviceResponse);
+    public abstract GetOrderResponse toResponse(BaseOrderResponse serviceResponse);
 
     @Override
     @Mapping(
             target = "productQuantities", source = "createRequest.products",
             qualifiedByName = "requestProductsListToProductQuantities"
     )
-    public abstract OrderServiceCreateCommand toServiceCommand(OrderCreateRequest createRequest);
+    public abstract CreateOrderCommandInfo toServiceCommand(OrderCreateRequest createRequest);
 
     /**
      * Converts list of product create requests to quantity map.
@@ -63,7 +63,7 @@ public abstract class MapstructOrderControllerMapper implements OrderControllerC
 
     @Override
     @Mapping(source = "request", target = "productQuantities", qualifiedByName = "mapListToQuantitiesMap")
-    public abstract OrderServiceUpdateCommand toServiceCommand(
+    public abstract UpdateOrderCommandInfo toServiceCommand(
             UUID orderId,
             Collection<OrderProductUpdateRequest> request
     );

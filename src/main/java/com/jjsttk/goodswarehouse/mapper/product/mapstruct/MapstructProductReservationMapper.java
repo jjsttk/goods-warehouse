@@ -2,7 +2,7 @@ package com.jjsttk.goodswarehouse.mapper.product.mapstruct;
 
 
 import com.jjsttk.goodswarehouse.mapper.product.ProductReservationConverter;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReservationCommand;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -24,5 +24,5 @@ public abstract class MapstructProductReservationMapper implements ProductReserv
 
     @Override
     @Mapping(target = "productQuantities", source = "productQuantities")
-    public abstract ProductServiceReservationCommand toReserveCommand(Map<UUID, BigDecimal> productQuantities);
+    public abstract ReserveProductCommandInfo toReserveCommand(Map<UUID, BigDecimal> productQuantities);
 }

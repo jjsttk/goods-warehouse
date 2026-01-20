@@ -5,7 +5,7 @@ import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedExcept
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeCancelledException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeUpdatedException;
-import com.jjsttk.goodswarehouse.exception.service.order.NotEnoughQuantityInStockException;
+import com.jjsttk.goodswarehouse.exception.service.product.ReservationException;
 import com.jjsttk.goodswarehouse.mapper.order.OrderServiceConverter;
 import com.jjsttk.goodswarehouse.mapper.order.product.OrderProductConverter;
 import com.jjsttk.goodswarehouse.mapper.product.ProductReservationConverter;
@@ -14,14 +14,15 @@ import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEn
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.OrderRepository;
 import com.jjsttk.goodswarehouse.service.customer.CustomerService;
-import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerServiceDto;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
+import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerInfoDto;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
 import com.jjsttk.goodswarehouse.service.order.product.OrderProductService;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
+import com.jjsttk.goodswarehouse.shared.enums.product.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,17 +52,17 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Transactional(readOnly = true)
-    public BaseOrderServiceResponse getById(Long customerId, UUID orderId) {
+    public BaseOrderResponse getById(Long customerId, UUID orderId) {
         var orderExists = orderRepository.existsByIdAndCustomerId(orderId, customerId);
 
         if (!orderExists) {
             throw new ResourceNotFoundException(OrderEntity.class, orderId);
         }
 
-        final var summaries =
+        var result =
                 orderProductService.getOrderedProducts(orderId);
 
-        return orderMapper.toResponse(orderId, summaries);
+        return orderMapper.toResponse(orderId, result);
     }
 
     /**
@@ -69,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Transactional
-    public UUID create(Long customerId, OrderServiceCreateCommand createCommand) {
+    public UUID create(Long customerId, CreateOrderCommandInfo createCommand) {
         final var customer = customerService.getById(customerId);
         validateCustomerIsActive(customer);
         var orderEntity = assembleOrder(customer, createCommand);
@@ -82,7 +83,7 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Transactional
-    public UUID update(Long customerId, OrderServiceUpdateCommand updateCommand) {
+    public UUID update(Long customerId, UpdateOrderCommandInfo updateCommand) {
         final var orderEntity = getOrderForUpdate(updateCommand.orderId());
         validateOrderOwnership(orderEntity.getCustomer().getId(), customerId);
         validateOrderForUpdate(orderEntity);
@@ -90,15 +91,32 @@ public class OrderServiceImpl implements OrderService {
         var existingProducts = orderEntity.getOrderProducts();
         var updateMap = updateCommand.productQuantities();
 
-        var updatedIds = updateExistingProducts(existingProducts, updateMap);
+        var updateExistingReportMap =
+                updateExistingDependencies(existingProducts, updateMap);
 
-        var hasNewProductsToOrder = updatedIds.size() < updateMap.size();
+        var problemsWhileUpdateMap =
+                checkForProblems(updateExistingReportMap);
+
+
+        var hasNewProductsToOrder = updateExistingReportMap.size() < updateMap.size();
 
         if (hasNewProductsToOrder) {
-            var newProductsToOrderMap = filterUpdatedProducts(updatedIds, updateMap);
-            var reserveResponse = reserveProducts(newProductsToOrderMap);
+            var newProductsToOrderMap =
+                    filterUpdatedProducts(updateExistingReportMap.keySet(), updateMap);
+
+            var reserveResponse =
+                    reserveProducts(newProductsToOrderMap);
+
+            if (reserveResponse.hasProblems()) {
+                problemsWhileUpdateMap.putAll(reserveResponse.problemsMap());
+            }
+
             var createdOrderProductEntities = createOrderProducts(reserveResponse);
             orderEntity.addOrderProducts(createdOrderProductEntities);
+        }
+
+        if (!problemsWhileUpdateMap.isEmpty()) {
+            throw new ReservationException(problemsWhileUpdateMap);
         }
 
         return orderEntity.getId();
@@ -123,7 +141,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void confirm(Long customerId, UUID orderId) {
-        //TODO: stub nop
+        //TODO: stub
     }
 
     /**
@@ -131,17 +149,20 @@ public class OrderServiceImpl implements OrderService {
      */
     @Override
     @Transactional
-    public void updateOrderStatus(Long customerIdHeader, UUID orderId, OrderStatus status) {
+    public void updateOrderStatus(UUID orderId, OrderStatus status) {
         final var orderEntity = getOrderForUpdateOrderStatus(orderId);
-        validateOrderOwnership(orderEntity.getCustomer().getId(), customerIdHeader);
         orderEntity.setStatus(status);
     }
 
     // ---------------------------------- <CREATE> HELPER METHODS ------------------------------------------------------
 
-    private OrderEntity assembleOrder(BaseCustomerServiceDto customerDto, OrderServiceCreateCommand createCommand) {
+    private OrderEntity assembleOrder(BaseCustomerInfoDto customerDto, CreateOrderCommandInfo createCommand) {
         final var productReservationResponse
                 = reserveProducts(createCommand.productQuantities());
+
+        if (productReservationResponse.hasProblems()) {
+            throw new ReservationException(productReservationResponse.problemsMap());
+        }
 
         final var orderProductEntities
                 = createOrderProducts(productReservationResponse);
@@ -180,7 +201,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ---------------------------------- <UPDATE> HELPER METHODS ------------------------------------------------------
-
     private OrderEntity getOrderForUpdateOrderStatus(UUID orderId) {
         return orderRepository.findById(orderId).orElseThrow(
                 () -> new ResourceNotFoundException(OrderEntity.class, orderId)
@@ -199,19 +219,42 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-    private Set<UUID> updateExistingProducts(
+    private Map<UUID, ReservationStatus> updateExistingDependencies(
             List<OrderProductEntity> existingProducts,
             Map<UUID, BigDecimal> updateMap
     ) {
-        return existingProducts.stream()
-                .filter(entity -> updateMap.containsKey(entity.getId().getProductId()))
-                .peek(orderProductEntity -> {
-                    var deltaQuantity = updateMap.get(orderProductEntity.getId().getProductId());
-                    increaseProductReserveOrThrow(orderProductEntity.getProduct(), deltaQuantity);
+        var reportMap = new HashMap<UUID, ReservationStatus>();
+
+        existingProducts.forEach(orderProductEntity -> {
+            var productEntityId = orderProductEntity.getId().getProductId();
+            var isUpdateNeeded = updateMap.containsKey(productEntityId);
+
+            if (isUpdateNeeded) {
+                var currentProductQuantity = orderProductEntity.getProduct().getQuantity();
+                var deltaQuantity = updateMap.get(orderProductEntity.getId().getProductId());
+
+                var isEnoughInStock = currentProductQuantity.compareTo(deltaQuantity) >= 0;
+
+                if (isEnoughInStock) {
+                    increaseProductReserve(orderProductEntity.getProduct(), deltaQuantity);
                     increaseOrderProductQuantity(orderProductEntity, deltaQuantity);
-                })
-                .map(orderProductEntity -> orderProductEntity.getId().getProductId())
-                .collect(Collectors.toSet());
+                    reportMap.put(productEntityId, ReservationStatus.COMPLETE);
+                } else {
+                    reportMap.put(productEntityId, ReservationStatus.NOT_ENOUGH_QUANTITY);
+                }
+            }
+        });
+
+        return reportMap;
+    }
+
+    private Map<UUID, ReservationStatus> checkForProblems(Map<UUID, ReservationStatus> reportMap) {
+        return reportMap.entrySet().stream()
+                .filter(entry -> entry.getValue() != ReservationStatus.COMPLETE)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue
+                ));
     }
 
     private Map<UUID, BigDecimal> filterUpdatedProducts(Set<UUID> alreadyUpdatedIds, Map<UUID, BigDecimal> updateMap) {
@@ -229,28 +272,22 @@ public class OrderServiceImpl implements OrderService {
         orderProductEntity.setPrice(actualProductPrice);
     }
 
-    private void increaseProductReserveOrThrow(ProductEntity product, BigDecimal deltaQuantity) {
+    private void increaseProductReserve(ProductEntity product, BigDecimal deltaQuantity) {
         var currentProductQuantity = product.getQuantity();
-        var isEnoughInStock = currentProductQuantity.compareTo(deltaQuantity) >= 0;
-
-        if (!isEnoughInStock) {
-            throw new NotEnoughQuantityInStockException(product.getId());
-        }
-
         product.setQuantity(currentProductQuantity.subtract(deltaQuantity));
     }
 
     // ---------------------------------- <CREATE> / <UPDATE> USAGE ----------------------------------------------------
 
     private List<OrderProductEntity> createOrderProducts(
-            ProductServiceReservationResponse reservationResponse
+            ProductReservationResponse reservationResponse
     ) {
-        return reservationResponse.productInfo().entrySet().stream()
+        return reservationResponse.reservedProductsInfoMap().entrySet().stream()
                 .map(it -> orderProductMapper.toEntity(it.getKey(), it.getValue()))
                 .toList();
     }
 
-    private ProductServiceReservationResponse reserveProducts(Map<UUID, BigDecimal> productQuantities) {
+    private ProductReservationResponse reserveProducts(Map<UUID, BigDecimal> productQuantities) {
         final var reservationCommand
                 = productReservationMapper.toReserveCommand(productQuantities);
 
@@ -265,7 +302,7 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private void validateCustomerIsActive(BaseCustomerServiceDto customer) {
+    private void validateCustomerIsActive(BaseCustomerInfoDto customer) {
         if (!customer.isActive()) {
             throw new CustomerBannedException(customer.id());
         }

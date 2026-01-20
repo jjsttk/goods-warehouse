@@ -8,7 +8,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
@@ -37,22 +36,10 @@ public class OrderProductEntity implements BaseEntity {
 
     @MapsId("orderId")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "order_id",
-            referencedColumnName = "id",
-            nullable = false,
-            updatable = false
-    )
     private OrderEntity order;
 
     @MapsId("productId")
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "product_id",
-            referencedColumnName = "id",
-            nullable = false,
-            updatable = false
-    )
     private ProductEntity product;
 
     @Column(name = "ordered_quantity", nullable = false)

@@ -4,10 +4,9 @@ import com.jjsttk.goodswarehouse.mapper.order.product.OrderProductConverter;
 import com.jjsttk.goodswarehouse.mapper.util.converter.ReferenceConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -20,8 +19,8 @@ public final class ConversionServiceOrderProductMapper implements OrderProductCo
 
     @Override
     public OrderProductEntity toEntity(
-            @NonNull UUID productId,
-            @NonNull ProductServiceReservedProductInfo productInfo
+            UUID productId,
+            ReservedProductInfo productInfo
     ) {
 
         return OrderProductEntity.builder()
@@ -33,8 +32,8 @@ public final class ConversionServiceOrderProductMapper implements OrderProductCo
 
     @Override
     public void update(
-            @NonNull OrderProductEntity orderProductEntity,
-            @NonNull ProductServiceReservedProductInfo updateInfo
+            OrderProductEntity orderProductEntity,
+            ReservedProductInfo updateInfo
     ) {
         var currentQuantity = orderProductEntity.getOrderedQuantity();
         var deltaQuantity = updateInfo.reservedQuantity();

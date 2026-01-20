@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.order.product;
 
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceResponseContainer;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 
 import java.util.UUID;
 
@@ -18,7 +18,7 @@ public interface OrderProductService {
      * @param orderId UUID of the order to retrieve products for
      * @return container with list of order product summaries
      */
-    OrderProductServiceResponseContainer<OrderProductServiceProductSummary> getOrderedProducts(
+    OrderProductResponseContainer<OrderProductProjection> getOrderedProducts(
             UUID orderId
     );
 }

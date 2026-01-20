@@ -6,11 +6,11 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.Ord
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.product.GetOrderProductResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.command.OrderServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
-import com.jjsttk.goodswarehouse.service.order.dto.response.OrderServiceProductInOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
+import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import org.instancio.Instancio;
 
@@ -83,10 +83,10 @@ public class OrderTestDataFactory {
         return orderEntity;
     }
 
-    public static OrderServiceProductInOrderResponse getOrderServiceProductInOrderResponseBasedOn(
-            OrderProductServiceProductSummary orderProductSummary
+    public static BaseProductInOrderResponse getOrderServiceProductInOrderResponseBasedOn(
+            OrderProductProjection orderProductSummary
     ) {
-        return Instancio.of(OrderServiceProductInOrderResponse.class)
+        return Instancio.of(BaseProductInOrderResponse.class)
                 .set(field("productId"), orderProductSummary.productId())
                 .set(field("name"), orderProductSummary.name())
                 .set(field("quantity"), orderProductSummary.quantity())
@@ -94,8 +94,8 @@ public class OrderTestDataFactory {
                 .create();
     }
 
-    public static BaseOrderServiceResponse getBaseOrderServiceResponse(OrderEntity orderEntity) {
-        return BaseOrderServiceResponse.builder()
+    public static BaseOrderResponse getBaseOrderServiceResponse(OrderEntity orderEntity) {
+        return BaseOrderResponse.builder()
                 .orderId(orderEntity.getId())
                 .products(orderEntity.getOrderProducts().stream()
                         .map(OrderProductTestDataFactory::getOrderProductServiceProductSummaryBasedOn)
@@ -132,7 +132,7 @@ public class OrderTestDataFactory {
         return list;
     }
 
-    public static GetOrderResponse getOrderResponse(BaseOrderServiceResponse serviceResponseStub) {
+    public static GetOrderResponse getOrderResponse(BaseOrderResponse serviceResponseStub) {
         return serviceResponseStub.products().stream()
                 .collect(Collectors.teeing(
 
@@ -160,8 +160,8 @@ public class OrderTestDataFactory {
                 ));
     }
 
-    public static OrderServiceCreateCommand getOrderServiceCreateCommand(OrderCreateRequest createRequestStub) {
-        return OrderServiceCreateCommand.builder()
+    public static CreateOrderCommandInfo getOrderServiceCreateCommand(OrderCreateRequest createRequestStub) {
+        return CreateOrderCommandInfo.builder()
                 .deliveryAddress(createRequestStub.deliveryAddress())
                 .productQuantities(createRequestStub.products().stream().collect(Collectors.toMap(
                         OrderProductCreateRequest::id,
@@ -171,11 +171,11 @@ public class OrderTestDataFactory {
                 .build();
     }
 
-    public static OrderServiceUpdateCommand getOrderServiceUpdateCommand(
+    public static UpdateOrderCommandInfo getOrderServiceUpdateCommand(
             UUID orderId,
             List<OrderProductUpdateRequest> updateRequestStub
     ) {
-        return OrderServiceUpdateCommand.builder()
+        return UpdateOrderCommandInfo.builder()
                 .orderId(orderId)
                 .productQuantities(updateRequestStub.stream().collect(Collectors.toMap(
                         OrderProductUpdateRequest::id,

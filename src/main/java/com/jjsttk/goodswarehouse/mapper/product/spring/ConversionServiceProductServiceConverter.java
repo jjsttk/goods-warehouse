@@ -2,14 +2,14 @@ package com.jjsttk.goodswarehouse.mapper.product.spring;
 
 import com.jjsttk.goodswarehouse.mapper.product.ProductServiceConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
+import com.jjsttk.goodswarehouse.shared.enums.product.ReservationStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -26,7 +26,7 @@ public final class ConversionServiceProductServiceConverter implements ProductSe
 
     @Override
     public ProductEntity toEntity(
-            @NonNull ProductServiceCreateCommand createCommandDtO
+            CreateProductCommandInfo createCommandDtO
     ) {
         return ProductEntity.builder()
                 .name(createCommandDtO.name())
@@ -40,37 +40,39 @@ public final class ConversionServiceProductServiceConverter implements ProductSe
     }
 
     @Override
-    public ProductServiceProductDetailedResponse toResponse(
-            @NonNull ProductEntity entity
+    public ProductDetailedResponse toResponse(
+            ProductEntity entity
     ) {
-        return conversionService.convert(entity, ProductServiceProductDetailedResponse.class);
+        return Objects.requireNonNull(conversionService.convert(entity, ProductDetailedResponse.class));
     }
 
     @Override
-    public ProductServiceReservationResponse toResponse(
-            @NonNull Map<UUID, ProductServiceReservedProductInfo> reservedProductsResponseMap
+    public ProductReservationResponse toResponse(
+            Map<UUID, ReservedProductInfo> reservedProductsResponseMap,
+            Map<UUID, ReservationStatus> reservationProblemMap
     ) {
-        return ProductServiceReservationResponse.builder()
-                .productInfo(reservedProductsResponseMap)
+        return ProductReservationResponse.builder()
+                .reservedProductsInfoMap(reservedProductsResponseMap)
+                .problemsMap(reservationProblemMap)
                 .build();
     }
 
-    public ProductServiceReservedProductInfo toResponse(
-            @NonNull BigDecimal reservedQuantity,
-            @NonNull BigDecimal price
+    public ReservedProductInfo toResponse(
+            BigDecimal reservedQuantity,
+            BigDecimal price
     ) {
-        return ProductServiceReservedProductInfo.builder()
+        return ReservedProductInfo.builder()
                 .reservedQuantity(reservedQuantity)
                 .priceAtMoment(price)
                 .build();
     }
 
     @Override
-    public ProductServiceReservedProductInfo toProductInfo(
-            @NonNull BigDecimal valueToReserve,
-            @NonNull BigDecimal price
+    public ReservedProductInfo toProductInfo(
+            BigDecimal valueToReserve,
+            BigDecimal price
     ) {
-        return ProductServiceReservedProductInfo.builder()
+        return ReservedProductInfo.builder()
                 .reservedQuantity(valueToReserve)
                 .priceAtMoment(price)
                 .build();
@@ -78,50 +80,50 @@ public final class ConversionServiceProductServiceConverter implements ProductSe
 
     @Override
     public void update(
-            @NonNull ProductEntity entity,
-            @NonNull ProductServiceUpdateCommand productServiceUpdateCommand
+            ProductEntity entity,
+            UpdateProductCommandInfo updateProductCommandInfo
     ) {
-        updateEntity(entity, productServiceUpdateCommand);
+        updateEntity(entity, updateProductCommandInfo);
     }
 
     private void updateEntity(
-            @NonNull ProductEntity entity,
-            @NonNull ProductServiceUpdateCommand productServiceUpdateCommand
+            ProductEntity entity,
+            UpdateProductCommandInfo updateProductCommandInfo
     ) {
-        var nameFromUpdate = productServiceUpdateCommand.name();
+        var nameFromUpdate = updateProductCommandInfo.name();
         if (nameFromUpdate != null
             && !Objects.equals(nameFromUpdate, entity.getName())) {
-            entity.setName(productServiceUpdateCommand.name());
+            entity.setName(updateProductCommandInfo.name());
         }
 
-        var descriptionFromUpdate = productServiceUpdateCommand.description();
+        var descriptionFromUpdate = updateProductCommandInfo.description();
         if (descriptionFromUpdate != null
             && !Objects.equals(descriptionFromUpdate, entity.getDescription())) {
             entity.setDescription(descriptionFromUpdate);
         }
 
-        var articleFromUpdate = productServiceUpdateCommand.article();
+        var articleFromUpdate = updateProductCommandInfo.article();
         if (articleFromUpdate != null
             && !Objects.equals(articleFromUpdate, entity.getArticle())) {
             entity.setArticle(articleFromUpdate);
         }
 
-        var priceFromUpdate = productServiceUpdateCommand.price();
+        var priceFromUpdate = updateProductCommandInfo.price();
         if (priceFromUpdate != null && priceFromUpdate.compareTo(entity.getPrice()) != 0) {
             entity.setPrice(priceFromUpdate);
         }
 
-        var categoryFromUpdate = productServiceUpdateCommand.category();
+        var categoryFromUpdate = updateProductCommandInfo.category();
         if (categoryFromUpdate != null && !Objects.equals(categoryFromUpdate, entity.getCategory())) {
             entity.setCategory(categoryFromUpdate);
         }
 
-        var isAvailableFromUpdate = productServiceUpdateCommand.isAvailable();
+        var isAvailableFromUpdate = updateProductCommandInfo.isAvailable();
         if (isAvailableFromUpdate != null && !Objects.equals(isAvailableFromUpdate, entity.getIsAvailable())) {
             entity.setIsAvailable(isAvailableFromUpdate);
         }
 
-        var quantityFromUpdate = productServiceUpdateCommand.quantity();
+        var quantityFromUpdate = updateProductCommandInfo.quantity();
         if (quantityFromUpdate != null && quantityFromUpdate.compareTo(entity.getQuantity()) != 0) {
             entity.setQuantity(quantityFromUpdate);
         }

@@ -2,6 +2,7 @@ package com.jjsttk.goodswarehouse.shared.enums.order;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.lang.Nullable;
 
 @Schema(description = "OrderEntity status")
 public enum OrderStatus {
@@ -21,7 +22,7 @@ public enum OrderStatus {
     REJECTED;
 
     @JsonCreator
-    public static OrderStatus forValue(String value) {
+    public static @Nullable OrderStatus forValue(@Nullable String value) {
         return value == null ? null : OrderStatus.valueOf(value.strip().toUpperCase());
     }
 }

@@ -2,10 +2,11 @@ package com.jjsttk.goodswarehouse.mapper.product.mapstruct;
 
 import com.jjsttk.goodswarehouse.mapper.product.ProductServiceConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
+import com.jjsttk.goodswarehouse.shared.enums.product.ReservationStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -34,7 +35,7 @@ public abstract class MapstructProductServiceMapper implements ProductServiceCon
             @Mapping(target = "lastQuantityModified", ignore = true)
     })
     public abstract ProductEntity toEntity(
-            ProductServiceCreateCommand productServiceCreateCommand
+            CreateProductCommandInfo createProductCommandInfo
     );
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -47,7 +48,7 @@ public abstract class MapstructProductServiceMapper implements ProductServiceCon
     })
     public abstract void update(
             @MappingTarget ProductEntity entity,
-            ProductServiceUpdateCommand productServiceUpdateCommand
+            UpdateProductCommandInfo updateProductCommandInfo
     );
 
     @Override
@@ -55,14 +56,18 @@ public abstract class MapstructProductServiceMapper implements ProductServiceCon
             @Mapping(target = "reservedQuantity", source = "reservedQuantity"),
             @Mapping(target = "priceAtMoment", source = "price")
     })
-    public abstract ProductServiceReservedProductInfo toProductInfo(
+    public abstract ReservedProductInfo toProductInfo(
             BigDecimal reservedQuantity,
             BigDecimal price
     );
 
     @Override
-    @Mapping(target = "productInfo", source = "reservedProductsResponseMap")
-    public abstract ProductServiceReservationResponse toResponse(
-            Map<UUID, ProductServiceReservedProductInfo> reservedProductsResponseMap
+    @Mappings({
+            @Mapping(target = "reservedProductsInfoMap", source = "reservedProductsResponseMap"),
+            @Mapping(target = "problemsMap", source = "reservationProblemMap")
+    })
+    public abstract ProductReservationResponse toResponse(
+            Map<UUID, ReservedProductInfo> reservedProductsResponseMap,
+            Map<UUID, ReservationStatus> reservationProblemMap
     );
 }

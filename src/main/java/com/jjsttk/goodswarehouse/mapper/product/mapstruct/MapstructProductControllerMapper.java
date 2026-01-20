@@ -6,9 +6,9 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.UpdateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
@@ -44,7 +44,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
                     expression = "java(createRequest.description() == null"
                                  + " ? null : createRequest.description().strip())")
     })
-    public abstract ProductServiceCreateCommand toCommand(CreateProductRequest createRequest);
+    public abstract CreateProductCommandInfo toCommand(CreateProductRequest createRequest);
 
     @Override
     @Mappings({
@@ -60,7 +60,7 @@ public abstract class MapstructProductControllerMapper implements ProductControl
                     expression = "java(updateRequest.description() == null"
                                  + " ? null : updateRequest.description().strip())")
     })
-    public abstract ProductServiceUpdateCommand toCommand(UpdateProductRequest updateRequest);
+    public abstract UpdateProductCommandInfo toCommand(UpdateProductRequest updateRequest);
 
     @Override
     @Mappings({
@@ -74,10 +74,10 @@ public abstract class MapstructProductControllerMapper implements ProductControl
                                  + " : Collections.emptyList())")
     })
     public abstract PageGetProductResponse<GetProductResponse> toResponse(
-            Page<ProductPriceExchangeServiceResponse> serviceResponse
+            Page<ExchangeProductPriceResponse> serviceResponse
     );
 
-    protected abstract List<GetProductResponse> mapContent(List<ProductPriceExchangeServiceResponse> sourceList);
+    protected abstract List<GetProductResponse> mapContent(List<ExchangeProductPriceResponse> sourceList);
 
 
 }

@@ -10,8 +10,7 @@ import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedExcept
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeCancelledException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeUpdatedException;
-import com.jjsttk.goodswarehouse.exception.service.order.product.ProductsToOrderNotFoundException;
-import com.jjsttk.goodswarehouse.exception.service.order.NotEnoughQuantityInStockException;
+import com.jjsttk.goodswarehouse.exception.service.product.ReservationException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -97,9 +96,8 @@ public interface OrderController {
      * @param customerId ID of the authenticated customer (from header)
      * @param request    order creation data including products and quantities
      * @return UUID of the created order
-     * @throws CustomerBannedException           if customer is inactive
-     * @throws NotEnoughQuantityInStockException if insufficient stock
-     * @throws ProductsToOrderNotFoundException  if products not found
+     * @throws CustomerBannedException if customer is inactive
+     * @throws ReservationException    if troubles while reserve products
      */
     @Operation(
             summary = "Create a new order",
@@ -157,10 +155,10 @@ public interface OrderController {
      * @param orderId    UUID of the order to update
      * @param request    list of product updates with new quantities
      * @return UUID of the updated order
-     * @throws NotYourOrderException             if customer doesn't own the order
-     * @throws ResourceNotFoundException         if order not found, product to order not found
-     * @throws OrderCannotBeUpdatedException     if order not in CREATED status
-     * @throws NotEnoughQuantityInStockException if selected product don`t have needed quantity in stock
+     * @throws NotYourOrderException         if customer doesn't own the order
+     * @throws ResourceNotFoundException     if order not found, product to order not found
+     * @throws OrderCannotBeUpdatedException if order not in CREATED status
+     * @throws ReservationException          if needed products have problems while reserve
      */
     @Operation(
             summary = "Update an existing order",
@@ -182,11 +180,12 @@ public interface OrderController {
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "404",
-                            description = "Order not found/Product from update not found",
+                            description = "Order not found",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "409",
-                            description = "Order cannot be updated (wrong status)",
+                            description = "Order cannot be updated (wrong status), "
+                                          + "Product from update not found or product have insufficient quantity",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "500",
@@ -318,9 +317,8 @@ public interface OrderController {
     /**
      * Updates the status of an existing order.
      *
-     * @param orderId    UUID of the order to update status for
-     * @param customerId ID of the authenticated customer (from header)
-     * @param request    Status update data
+     * @param orderId UUID of the order to update status for
+     * @param request Status update data
      * @throws ResourceNotFoundException       if order not found
      * @throws NotYourOrderException           if customer doesn't own the order
      * @throws OrderCannotBeCancelledException if order cannot transition to the requested status
@@ -334,10 +332,6 @@ public interface OrderController {
                             description = "Order status updated successfully",
                             content = @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = UUID.class))),
-                    @ApiResponse(responseCode = "403",
-                            description = "CustomerId header not equal to order.customer.id",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ErrorResponse.class))),
                     @ApiResponse(responseCode = "404",
                             description = "Order not found",
                             content = @Content(mediaType = "application/json",
@@ -346,12 +340,6 @@ public interface OrderController {
     )
     @PatchMapping("/{orderId}/status")
     void updateOrderStatus(
-            @Parameter(
-                    description = "ID of the authenticated customer",
-                    required = true,
-                    example = "12345"
-            )
-            @RequestHeader(name = "customerId") Long customerId,
             @Parameter(
                     description = "UUID of the order to update status for",
                     required = true,

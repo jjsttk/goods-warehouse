@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 /**
@@ -29,7 +30,7 @@ public class JsonResourceLoader {
      * @throws ResourceLoadingException if the resource cannot be loaded or parsed
      * @throws IllegalArgumentException if fileName is null or empty
      */
-    public <T> T loadObject(String fileName, Class<T> type) {
+    public <T> @NonNull T loadObject(@NonNull String fileName, @NonNull Class<T> type) {
         try {
             final String location = "classpath:" + fileName;
             final Resource resource = resourceLoader.getResource(location);

@@ -3,9 +3,9 @@ package com.jjsttk.goodswarehouse.mapper.order.mapstruct;
 import com.jjsttk.goodswarehouse.mapper.order.OrderServiceConverter;
 import com.jjsttk.goodswarehouse.mapper.util.mapstruct.MapstructReferenceMapper;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceResponseContainer;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -53,9 +53,9 @@ public abstract class MapstructOrderServiceMapper implements OrderServiceConvert
             @Mapping(target = "totalPrice", source = "serviceResponse.orderProducts",
                     qualifiedByName = "calculateTotalPrice")
     })
-    public abstract BaseOrderServiceResponse toResponse(
+    public abstract BaseOrderResponse toResponse(
             UUID orderId,
-            OrderProductServiceResponseContainer<OrderProductServiceProductSummary> serviceResponse
+            OrderProductResponseContainer<OrderProductProjection> serviceResponse
     );
 
     /**
@@ -66,7 +66,7 @@ public abstract class MapstructOrderServiceMapper implements OrderServiceConvert
      * @return total price rounded to 2 decimal places
      */
     @Named("calculateTotalPrice")
-    protected BigDecimal calculateTotalPrice(Collection<OrderProductServiceProductSummary> products) {
+    protected BigDecimal calculateTotalPrice(Collection<OrderProductProjection> products) {
         return products.stream()
                 .map(it -> it.price().multiply(it.quantity()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add)

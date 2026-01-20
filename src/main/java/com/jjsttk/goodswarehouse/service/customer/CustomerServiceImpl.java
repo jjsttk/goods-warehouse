@@ -4,7 +4,7 @@ import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.mapper.customer.spring.ConversionServiceCustomerMapper;
 import com.jjsttk.goodswarehouse.persistence.entity.customer.CustomerEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.CustomerRepository;
-import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerServiceDto;
+import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerInfoDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,7 +20,7 @@ public class CustomerServiceImpl implements CustomerService {
      */
     @Override
     @Transactional(readOnly = true)
-    public BaseCustomerServiceDto getById(Long id) {
+    public BaseCustomerInfoDto getById(Long id) {
         var mbCustomer = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(CustomerEntity.class, id));
         return mapper.mapToServiceResponse(mbCustomer);

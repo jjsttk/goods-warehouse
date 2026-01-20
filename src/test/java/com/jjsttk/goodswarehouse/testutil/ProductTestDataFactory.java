@@ -4,12 +4,12 @@ import com.jjsttk.goodswarehouse.controller.product.dto.request.CreateProductReq
 import com.jjsttk.goodswarehouse.controller.product.dto.response.GetProductResponse;
 import com.jjsttk.goodswarehouse.controller.product.dto.response.PageGetProductResponse;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReservationCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import org.instancio.Instancio;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -67,8 +68,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceCreateCommand getProductCreateCommand(ProductEntity productEntity) {
-        return Instancio.of(ProductServiceCreateCommand.class)
+    public static CreateProductCommandInfo getProductCreateCommand(ProductEntity productEntity) {
+        return Instancio.of(CreateProductCommandInfo.class)
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
                 .set(field("category"), productEntity.getCategory())
@@ -78,8 +79,8 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceProductDetailedResponse getProductServiceResponse(ProductEntity productEntity) {
-        return Instancio.of(ProductServiceProductDetailedResponse.class)
+    public static ProductDetailedResponse getProductServiceResponse(ProductEntity productEntity) {
+        return Instancio.of(ProductDetailedResponse.class)
                 .set(field("id"), productEntity.getId())
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
@@ -108,7 +109,7 @@ public class ProductTestDataFactory {
         return List.copyOf(list);
     }
 
-    public static List<ProductServiceProductDetailedResponse> getServiceResponsesList(List<ProductEntity> entities) {
+    public static List<ProductDetailedResponse> getServiceResponsesList(List<ProductEntity> entities) {
         return entities.stream()
                 .map(ProductTestDataFactory::getProductServiceResponse)
                 .toList();
@@ -141,10 +142,10 @@ public class ProductTestDataFactory {
         return Specification.unrestricted();
     }
 
-    public static ProductPriceExchangeServiceResponse getProductPriceExchangeServiceResponse(
+    public static ExchangeProductPriceResponse getProductPriceExchangeServiceResponse(
             ProductEntity productEntity
     ) {
-        return Instancio.of(ProductPriceExchangeServiceResponse.class)
+        return Instancio.of(ExchangeProductPriceResponse.class)
                 .set(field("id"), productEntity.getId())
                 .set(field("name"), productEntity.getName())
                 .set(field("article"), productEntity.getArticle())
@@ -158,24 +159,25 @@ public class ProductTestDataFactory {
                 .create();
     }
 
-    public static ProductServiceReservationCommand getReservationCommand(Map<UUID, BigDecimal> productQuantities) {
-        return ProductServiceReservationCommand.builder()
+    public static ReserveProductCommandInfo getReservationCommand(Map<UUID, BigDecimal> productQuantities) {
+        return ReserveProductCommandInfo.builder()
                 .productQuantities(productQuantities)
                 .build();
     }
 
-    public static ProductServiceReservationResponse getReservationResponse(
+    public static ProductReservationResponse getReservationResponseWithEmptyProblemsMap(
             List<ProductEntity> productEntityList,
             Map<UUID, BigDecimal> productQuantities
     ) {
-        return ProductServiceReservationResponse.builder()
-                .productInfo(productEntityList.stream().collect(Collectors.toMap(
+        return ProductReservationResponse.builder()
+                .reservedProductsInfoMap(productEntityList.stream().collect(Collectors.toMap(
                         ProductEntity::getId,
-                        v -> ProductServiceReservedProductInfo.builder()
+                        v -> ReservedProductInfo.builder()
                                 .priceAtMoment(v.getPrice())
                                 .reservedQuantity(productQuantities.get(v.getId()))
                                 .build()
                 )))
+                .problemsMap(Collections.emptyMap())
                 .build();
     }
 }

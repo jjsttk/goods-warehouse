@@ -2,7 +2,7 @@ package com.jjsttk.goodswarehouse.service.exchange.provider;
 
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.AllExchangeProvidersFailedException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;

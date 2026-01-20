@@ -11,11 +11,11 @@ import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleExcep
 import com.jjsttk.goodswarehouse.mapper.product.ProductControllerConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
 import com.jjsttk.goodswarehouse.service.product.price.exchange.ProductPriceExchangeService;
-import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ProductPriceExchangeServiceResponse;
+import com.jjsttk.goodswarehouse.service.product.price.exchange.dto.response.ExchangeProductPriceResponse;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
@@ -79,9 +79,9 @@ class ProductControllerTest {
     private CreateProductRequest controllerRequestStub;
     private GetProductResponse controllerResponseStub;
 
-    private ProductServiceCreateCommand createCommandStub;
-    private ProductServiceProductDetailedResponse serviceResponseStub;
-    private ProductPriceExchangeServiceResponse priceExchangeResponseStub;
+    private CreateProductCommandInfo createCommandStub;
+    private ProductDetailedResponse serviceResponseStub;
+    private ExchangeProductPriceResponse priceExchangeResponseStub;
 
     private ProductEntity productEntityStub;
 
@@ -253,7 +253,7 @@ class ProductControllerTest {
                 .category(Category.CLOTHING)
                 .build();
 
-        var updateCommand = ProductServiceUpdateCommand.builder()
+        var updateCommand = UpdateProductCommandInfo.builder()
                 .category(Category.CLOTHING)
                 .build();
 
@@ -308,7 +308,7 @@ class ProductControllerTest {
     @Test
     void getAllProductsShouldReturnEmptyPage() throws Exception {
         Pageable pageable = PageRequest.of(0, 10);
-        Page<ProductServiceProductDetailedResponse> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
+        Page<ProductDetailedResponse> emptyServicePage = new PageImpl<>(List.of(), pageable, 0);
         PageGetProductResponse<GetProductResponse> expectedPageResponse =
                 ProductTestDataFactory.getGetPageProductResponse(pageable, List.of());
 

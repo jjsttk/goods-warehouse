@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -22,9 +21,9 @@ public interface ProductRepository extends JpaRepository<ProductEntity, UUID>, J
     // Select for update
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM ProductEntity p WHERE p.id = :uuid")
-    Optional<ProductEntity> findByIdLocked(@NonNull UUID uuid);
+    Optional<ProductEntity> findByIdLocked(UUID uuid);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    List<ProductEntity> findAllByIdInAndIsAvailableIsTrue(@NonNull Collection<UUID> ids);
+    List<ProductEntity> findAllByIdInAndIsAvailableIsTrue(Collection<UUID> ids);
 
 }

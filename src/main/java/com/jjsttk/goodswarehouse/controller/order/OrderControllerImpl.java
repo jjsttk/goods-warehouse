@@ -41,8 +41,10 @@ public class OrderControllerImpl implements OrderController {
 
     @Override
     @GetMapping("/{orderId}")
-    public GetOrderResponse getOrderById(@RequestHeader(name = "customerId") Long customerId,
-                                         @PathVariable UUID orderId) {
+    public GetOrderResponse getOrderById(
+            @RequestHeader(name = "customerId") Long customerId,
+            @PathVariable UUID orderId
+    ) {
         var orderServiceResponse = orderService.getById(customerId, orderId);
         return mapper.toResponse(orderServiceResponse);
     }
@@ -53,11 +55,13 @@ public class OrderControllerImpl implements OrderController {
     @Override
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UUID createOrder(@RequestHeader(name = "customerId") Long customerId,
-                            @Valid @RequestBody OrderCreateRequest request) {
-        var serviceCommand = mapper.toServiceCommand(request);
+    public UUID createOrder(
+            @RequestHeader(name = "customerId") Long customerId,
+            @Valid @RequestBody OrderCreateRequest request
+    ) {
+        var createOrderCommandInfo = mapper.toServiceCommand(request);
 
-        return orderService.create(customerId, serviceCommand);
+        return orderService.create(customerId, createOrderCommandInfo);
     }
 
     /**
@@ -70,9 +74,9 @@ public class OrderControllerImpl implements OrderController {
             @PathVariable UUID orderId,
             @Valid @RequestBody List<OrderProductUpdateRequest> request
     ) {
-        var serviceCommand = mapper.toServiceCommand(orderId, request);
+        var updateOrderCommandInfo = mapper.toServiceCommand(orderId, request);
 
-        return orderService.update(customerId, serviceCommand);
+        return orderService.update(customerId, updateOrderCommandInfo);
     }
 
     /**
@@ -82,8 +86,10 @@ public class OrderControllerImpl implements OrderController {
     @Override
     @DeleteMapping("/{orderId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void cancelOrderById(@RequestHeader Long customerId,
-                                @PathVariable UUID orderId) {
+    public void cancelOrderById(
+            @RequestHeader Long customerId,
+            @PathVariable UUID orderId
+    ) {
         orderService.cancel(customerId, orderId);
     }
 
@@ -92,8 +98,10 @@ public class OrderControllerImpl implements OrderController {
      */
     @Override
     @PostMapping("/{orderId}/confirm")
-    public void confirmOrder(@RequestHeader(name = "customerId") Long customerId,
-                             @PathVariable UUID orderId) {
+    public void confirmOrder(
+            @RequestHeader(name = "customerId") Long customerId,
+            @PathVariable UUID orderId
+    ) {
         orderService.confirm(customerId, orderId);
     }
 
@@ -102,9 +110,10 @@ public class OrderControllerImpl implements OrderController {
      */
     @Override
     @PatchMapping("/{orderId}/status")
-    public void updateOrderStatus(@RequestHeader Long customerId,
-                                  @PathVariable UUID orderId,
-                                  @RequestBody OrderUpdateStatusRequest orderUpdateStatusRequest) {
-        orderService.updateOrderStatus(customerId, orderId, orderUpdateStatusRequest.status());
+    public void updateOrderStatus(
+            @PathVariable UUID orderId,
+            @RequestBody OrderUpdateStatusRequest orderUpdateStatusRequest
+    ) {
+        orderService.updateOrderStatus(orderId, orderUpdateStatusRequest.status());
     }
 }

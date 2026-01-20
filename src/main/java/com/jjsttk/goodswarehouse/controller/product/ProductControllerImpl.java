@@ -117,8 +117,10 @@ public class ProductControllerImpl implements ProductController {
      */
     @Override
     @PatchMapping("/{id}")
-    public UUID updateProductById(@PathVariable UUID id,
-                                  @Valid @RequestBody UpdateProductRequest updateDto) {
+    public UUID updateProductById(
+            @PathVariable UUID id,
+            @Valid @RequestBody UpdateProductRequest updateDto
+    ) {
         var productServiceUpdateCommand = mapper.toCommand(updateDto);
         var baseProductServiceDto = productService.update(id, productServiceUpdateCommand);
         return baseProductServiceDto.id();

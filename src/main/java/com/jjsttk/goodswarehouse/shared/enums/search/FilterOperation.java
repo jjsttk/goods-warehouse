@@ -2,6 +2,7 @@ package com.jjsttk.goodswarehouse.shared.enums.search;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import io.swagger.v3.oas.annotations.media.Schema;
+import org.springframework.lang.Nullable;
 
 @Schema(description = "Filter operation")
 public enum FilterOperation {
@@ -28,7 +29,7 @@ public enum FilterOperation {
     }
 
     @JsonCreator
-    public static FilterOperation fromString(String value) {
+    public static @Nullable FilterOperation fromString(@Nullable String value) {
         if (value == null) {
             return null;
         }

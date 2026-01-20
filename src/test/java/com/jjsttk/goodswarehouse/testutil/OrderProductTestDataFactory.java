@@ -4,8 +4,8 @@ import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.key.OrderProductId;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceResponseContainer;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import org.instancio.Instancio;
 
 import java.math.BigDecimal;
@@ -38,20 +38,20 @@ public class OrderProductTestDataFactory {
                 .create();
     }
 
-    public static OrderProductServiceResponseContainer<OrderProductServiceProductSummary> getServiceResponseBasedEntity(
+    public static OrderProductResponseContainer<OrderProductProjection> getServiceResponseBasedEntity(
             OrderEntity order
     ) {
-        return OrderProductServiceResponseContainer.<OrderProductServiceProductSummary>builder()
+        return OrderProductResponseContainer.<OrderProductProjection>builder()
                 .orderProducts(order.getOrderProducts().stream()
                         .map(OrderProductTestDataFactory::getOrderProductServiceProductSummaryBasedOn)
                         .toList())
                 .build();
     }
 
-    public static OrderProductServiceProductSummary getOrderProductServiceProductSummaryBasedOn(
+    public static OrderProductProjection getOrderProductServiceProductSummaryBasedOn(
             OrderProductEntity orderProduct
     ) {
-        return Instancio.of(OrderProductServiceProductSummary.class)
+        return Instancio.of(OrderProductProjection.class)
                 .set(field("productId"), orderProduct.getId().getProductId())
                 .set(field("name"), orderProduct.getProduct().getName())
                 .set(field("quantity"), orderProduct.getOrderedQuantity())

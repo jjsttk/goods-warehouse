@@ -28,32 +28,30 @@ public class ReferenceConverter {
     /**
      * Converts an ID to an entity of the specified type using the {@link EntityManager}.
      * <p>
-     * If the given ID is {@code null}, this method returns {@code null}.
-     * Otherwise, it retrieves the entity from the database based on the provided ID.
+     * Retrieves the entity from the database based on the provided ID.
      * </p>
      *
      * @param id          the ID of the entity to retrieve.
      * @param entityClass the class type of the entity to return.
      * @param <T>         the type of the entity, which must extend {@link BaseEntity}.
-     * @return the entity corresponding to the given ID, or {@code null} if the ID is {@code null}.
+     * @return the entity corresponding to the given ID.
      */
     public <T extends BaseEntity> T toEntity(Long id, Class<T> entityClass) {
-        return id == null ? null : entityManager.getReference(entityClass, id);
+        return entityManager.getReference(entityClass, id);
     }
 
     /**
      * Converts an ID to an entity of the specified type using the {@link EntityManager}.
      * <p>
-     * If the given ID is {@code null}, this method returns {@code null}.
-     * Otherwise, it retrieves the entity from the database based on the provided ID.
+     * Retrieves the entity from the database based on the provided ID.
      * </p>
      *
      * @param id          the ID of the entity to retrieve.
      * @param entityClass the class type of the entity to return.
      * @param <T>         the type of the entity, which must extend {@link BaseEntity}.
-     * @return the entity corresponding to the given ID, or {@code null} if the ID is {@code null}.
+     * @return the entity corresponding to the given ID.
      */
     public <T extends BaseEntity> T toEntity(UUID id, Class<T> entityClass) {
-        return id == null ? null : entityManager.getReference(entityClass, id);
+        return entityManager.getReference(entityClass, id);
     }
 }

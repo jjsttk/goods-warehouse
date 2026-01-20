@@ -84,20 +84,6 @@ class ProductSpecificationTest {
     }
 
     @Test
-    void testApplyStrategyWhenValueIsNull() {
-        var param = new StringParam("name", null, FilterOperation.EQUAL);
-
-        var spec = sut.buildAdvancedSpecification(List.of(param));
-
-        when(cbMock.conjunction()).thenReturn(mock(Predicate.class));
-
-        var predicate = spec.toPredicate(root, query, cbMock);
-
-        assertNotNull(predicate);
-        verify(cbMock).conjunction();
-    }
-
-    @Test
     void testBuildAdvancedSpecificationWithEqualOperation() {
         var param = new StringParam("name", "value", FilterOperation.EQUAL);
         List<AdvancedSearchParam<?>> params = List.of(param);

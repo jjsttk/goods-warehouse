@@ -4,6 +4,9 @@ import com.jjsttk.goodswarehouse.shared.enums.search.FilterOperation;
 import lombok.Builder;
 
 @Builder
-public record StringParam(String field, String value,
-                          FilterOperation operation) implements AdvancedSearchParam<String> {
+public record StringParam(
+        String field,
+        String value,
+        FilterOperation operation
+) implements AdvancedSearchParam<String> {
 }

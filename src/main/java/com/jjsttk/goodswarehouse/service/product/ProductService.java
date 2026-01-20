@@ -1,11 +1,11 @@
 package com.jjsttk.goodswarehouse.service.product;
 
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReservationCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
 import org.springframework.data.domain.Page;
@@ -19,9 +19,9 @@ public interface ProductService {
      * Retrieves a paginated list of products from the database.
      *
      * @param pageable pagination and sorting information
-     * @return a page of {@link ProductServiceProductDetailedResponse} representing the products
+     * @return a page of {@link ProductDetailedResponse} representing the products
      */
-    Page<ProductServiceProductDetailedResponse> getAll(Pageable pageable);
+    Page<ProductDetailedResponse> getAll(Pageable pageable);
 
     /**
      * Retrieves a product by its unique identifier.
@@ -30,7 +30,7 @@ public interface ProductService {
      * @return product service response representation of the found product
      * @throws ResourceNotFoundException if no product is found with the given productId
      */
-    ProductServiceProductDetailedResponse getById(UUID id);
+    ProductDetailedResponse getById(UUID id);
 
     /**
      * Creates a new product in the database.
@@ -38,7 +38,7 @@ public interface ProductService {
      * @param createCommandDto request DTO containing product creation data
      * @return product service response containing the ID of the created product
      */
-    ProductServiceProductDetailedResponse create(ProductServiceCreateCommand createCommandDto);
+    ProductDetailedResponse create(CreateProductCommandInfo createCommandDto);
 
     /**
      * Updates an existing product with new values.
@@ -52,7 +52,7 @@ public interface ProductService {
      * @return updated product service response
      * @throws ResourceNotFoundException if the product is not found
      */
-    ProductServiceProductDetailedResponse update(UUID productId, ProductServiceUpdateCommand updateCommandDto);
+    ProductDetailedResponse update(UUID productId, UpdateProductCommandInfo updateCommandDto);
 
     /**
      * Deletes a product by its UUID.
@@ -66,22 +66,22 @@ public interface ProductService {
      * Retrieves a paginated list of products from the database.
      *
      * @param simpleSearchDto filter parameters and page information
-     * @return a page of {@link ProductServiceProductDetailedResponse} representing the products
+     * @return a page of {@link ProductDetailedResponse} representing the products
      */
-    Page<ProductServiceProductDetailedResponse> simpleSearch(SimpleSearchDto simpleSearchDto);
+    Page<ProductDetailedResponse> simpleSearch(SimpleSearchDto simpleSearchDto);
 
     /**
      * Retrieves a paginated list of products from the database.
      *
      * @param pageable     pagination and sorting information
      * @param filterParams filter parameters and page information
-     * @return a page of {@link ProductServiceProductDetailedResponse} representing the products
+     * @return a page of {@link ProductDetailedResponse} representing the products
      */
-    Page<ProductServiceProductDetailedResponse> advancedSearch(
+    Page<ProductDetailedResponse> advancedSearch(
             Pageable pageable, List<AdvancedSearchParam<?>> filterParams
     );
 
-    ProductServiceReservationResponse reserveProductsWithLock(
-            ProductServiceReservationCommand command
+    ProductReservationResponse reserveProductsWithLock(
+            ReserveProductCommandInfo command
     );
 }

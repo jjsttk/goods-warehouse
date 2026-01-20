@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.testutil;
 
 import com.jjsttk.goodswarehouse.persistence.entity.customer.CustomerEntity;
-import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerServiceDto;
+import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerInfoDto;
 import org.instancio.Instancio;
 import static org.instancio.Select.field;
 
@@ -20,8 +20,8 @@ public class CustomerTestDataFactory {
     }
 
 
-    public static BaseCustomerServiceDto getCustomerServiceDtoFromCustomerEntity(CustomerEntity customerEntity) {
-        return Instancio.of(BaseCustomerServiceDto.class)
+    public static BaseCustomerInfoDto getCustomerServiceDtoFromCustomerEntity(CustomerEntity customerEntity) {
+        return Instancio.of(BaseCustomerInfoDto.class)
                 .set(field("id"), customerEntity.getId())
                 .set(field("email"), customerEntity.getEmail())
                 .set(field("login"), customerEntity.getLogin())

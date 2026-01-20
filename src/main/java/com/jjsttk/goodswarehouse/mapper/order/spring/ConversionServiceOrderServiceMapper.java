@@ -4,17 +4,17 @@ import com.jjsttk.goodswarehouse.mapper.order.OrderServiceConverter;
 import com.jjsttk.goodswarehouse.mapper.util.converter.ReferenceConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.customer.CustomerEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
-import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderServiceResponse;
-import com.jjsttk.goodswarehouse.service.order.dto.response.OrderServiceProductInOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceProductSummary;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductServiceResponseContainer;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -29,8 +29,8 @@ public final class ConversionServiceOrderServiceMapper implements OrderServiceCo
 
     @Override
     public OrderEntity toEntity(
-            @NonNull Long customerId,
-            @NonNull String deliveryAddress
+            Long customerId,
+            String deliveryAddress
     ) {
         return OrderEntity.builder()
                 .customer(entityConverter.toEntity(customerId, CustomerEntity.class))
@@ -39,15 +39,21 @@ public final class ConversionServiceOrderServiceMapper implements OrderServiceCo
     }
 
     @Override
-    public BaseOrderServiceResponse toResponse(
-            @NonNull UUID orderId,
-            @NonNull OrderProductServiceResponseContainer<OrderProductServiceProductSummary> serviceResponse
+    public BaseOrderResponse toResponse(
+            UUID orderId,
+            OrderProductResponseContainer<OrderProductProjection> serviceResponse
     ) {
         return serviceResponse.orderProducts().stream()
                 .collect(Collectors.teeing(
 
                         Collectors.mapping(
-                                summary -> conversionService.convert(summary, OrderServiceProductInOrderResponse.class),
+                                summary ->
+                                        Objects.requireNonNull(
+                                                conversionService.convert(
+                                                        summary,
+                                                        BaseProductInOrderResponse.class
+                                                )
+                                        ),
                                 toList()
                         ),
 
@@ -56,7 +62,7 @@ public final class ConversionServiceOrderServiceMapper implements OrderServiceCo
                                 reducing(BigDecimal.ZERO, BigDecimal::add)
                         ),
 
-                        (products, totalPrice) -> BaseOrderServiceResponse.builder()
+                        (products, totalPrice) -> BaseOrderResponse.builder()
                                 .orderId(orderId)
                                 .products(products)
                                 .totalPrice(totalPrice.setScale(2, RoundingMode.HALF_UP))

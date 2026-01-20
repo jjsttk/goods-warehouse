@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
-import com.jjsttk.goodswarehouse.service.exchange.dto.request.ExchangeData;
+import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;

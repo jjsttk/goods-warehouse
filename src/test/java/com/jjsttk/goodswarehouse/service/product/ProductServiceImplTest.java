@@ -1,18 +1,16 @@
 package com.jjsttk.goodswarehouse.service.product;
 
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
-import com.jjsttk.goodswarehouse.exception.service.order.NotEnoughQuantityInStockException;
-import com.jjsttk.goodswarehouse.exception.service.order.product.ProductsToOrderNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.product.NotUniqueArticleException;
 import com.jjsttk.goodswarehouse.mapper.product.ProductServiceConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
 import com.jjsttk.goodswarehouse.persistence.repository.ProductRepository;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceCreateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceReservationCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.command.ProductServiceUpdateCommand;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceProductDetailedResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservationResponse;
-import com.jjsttk.goodswarehouse.service.product.dto.response.ProductServiceReservedProductInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.CreateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.command.UpdateProductCommandInfo;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductDetailedResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
+import com.jjsttk.goodswarehouse.service.product.dto.response.ReservedProductInfo;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.AdvancedSearchParam;
 import com.jjsttk.goodswarehouse.service.product.search.advanced.param.StringParam;
 import com.jjsttk.goodswarehouse.service.product.search.simple.SimpleSearchDto;
@@ -33,8 +31,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -43,7 +43,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -66,8 +65,8 @@ class ProductServiceImplTest {
 
     private Specification<ProductEntity> specificationStub;
     private ProductEntity productEntityStub;
-    private ProductServiceCreateCommand createCommandStub;
-    private ProductServiceProductDetailedResponse serviceResponseStub;
+    private CreateProductCommandInfo createCommandStub;
+    private ProductDetailedResponse serviceResponseStub;
     private Pageable pageable;
 
     @BeforeEach
@@ -98,7 +97,7 @@ class ProductServiceImplTest {
 
     @Test
     void createShouldThrowNotUniqueArticleExceptionWhenArticleIsNotUniqueAndCategoryValid() {
-        var commandStub = ProductServiceCreateCommand.builder()
+        var commandStub = CreateProductCommandInfo.builder()
                 .name(productEntityStub.getName())
                 .description(productEntityStub.getDescription())
                 .article("existingArticle")
@@ -163,7 +162,7 @@ class ProductServiceImplTest {
                     return serviceResponsesStub.get(index);
                 });
 
-        Page<ProductServiceProductDetailedResponse> result = sut.getAll(pageable);
+        Page<ProductDetailedResponse> result = sut.getAll(pageable);
 
         assertThat(result).isNotNull();
         assertThat(result.getTotalElements()).isEqualTo(entitiesStub.size());
@@ -283,12 +282,12 @@ class ProductServiceImplTest {
 
     @Test
     void updateShouldCheckArticleUniquenessAndUpdateProduct() {
-        var updateDto = ProductServiceUpdateCommand.builder()
+        var updateDto = UpdateProductCommandInfo.builder()
                 .article("newArticleTest")
                 .build();
         when(repositoryMock.findByIdLocked(productEntityStub.getId()))
                 .thenReturn(Optional.of(productEntityStub));
-        when(repositoryMock.findByArticle(updateDto.article()))
+        when(repositoryMock.findByArticle(Objects.requireNonNull(updateDto.article())))
                 .thenReturn(Optional.empty());
 
         sut.update(productEntityStub.getId(), updateDto);
@@ -305,7 +304,7 @@ class ProductServiceImplTest {
         String newArticle = "DIFFERENT_ARTICLE";
 
         duplicateEntity.setArticle(newArticle);
-        var updateCommand = ProductServiceUpdateCommand.builder()
+        var updateCommand = UpdateProductCommandInfo.builder()
                 .article(newArticle)
                 .build();
 
@@ -328,26 +327,27 @@ class ProductServiceImplTest {
         var valueToReserve = productEntityStub.getQuantity();
         var newQuantity = productEntityStub.getQuantity().subtract(valueToReserve);
 
-        var productServiceReservationCommand = ProductServiceReservationCommand.builder()
+        var productServiceReservationCommand = ReserveProductCommandInfo.builder()
                 .productQuantities(Map.of(productEntityStub.getId(), valueToReserve))
                 .build();
 
         var expectedUpdateCommand =
-                ProductServiceUpdateCommand.builder()
+                UpdateProductCommandInfo.builder()
                         .quantity(newQuantity)
                         .build();
 
         var entityListStub = List.of(productEntityStub);
 
-        var productServiceReservedProductInfo = ProductServiceReservedProductInfo.builder()
+        var productServiceReservedProductInfo = ReservedProductInfo.builder()
                 .reservedQuantity(valueToReserve)
                 .priceAtMoment(productEntityStub.getPrice())
                 .build();
 
         var reservedProductInfoStub = Map.of(productEntityStub.getId(), productServiceReservedProductInfo);
 
-        var reserveResponseStub = ProductServiceReservationResponse.builder()
-                .productInfo(reservedProductInfoStub)
+        var reserveResponseStub = ProductReservationResponse.builder()
+                .reservedProductsInfoMap(reservedProductInfoStub)
+                .problemsMap(Collections.emptyMap())
                 .build();
 
         when(repositoryMock.findAllByIdInAndIsAvailableIsTrue(
@@ -356,7 +356,7 @@ class ProductServiceImplTest {
                 .thenReturn(entityListStub);
         when(mapperMock.toProductInfo(any(BigDecimal.class), any(BigDecimal.class)))
                 .thenReturn(productServiceReservedProductInfo);
-        when(mapperMock.toResponse(reservedProductInfoStub))
+        when(mapperMock.toResponse(reservedProductInfoStub, reserveResponseStub.problemsMap()))
                 .thenReturn(reserveResponseStub);
 
         var result =
@@ -367,73 +367,8 @@ class ProductServiceImplTest {
         );
         verify(mapperMock).update(productEntityStub, expectedUpdateCommand);
         verify(mapperMock).toProductInfo(valueToReserve, productEntityStub.getPrice());
-        verify(mapperMock).toResponse(reservedProductInfoStub);
-        verify(repositoryMock).saveAllAndFlush(entityListStub);
+        verify(mapperMock).toResponse(reservedProductInfoStub, reserveResponseStub.problemsMap());
 
         assertEquals(reserveResponseStub, result);
-    }
-
-    @Test
-    public void reserveProductsShouldThrowExceptionWhenSomeProductsNotFound() {
-        var existingProductId = productEntityStub.getId();
-        var missingProductId = UUID.randomUUID();
-
-        ProductServiceReservationCommand reservationCommand =
-                ProductServiceReservationCommand.builder()
-                        .productQuantities(Map.of(
-                                existingProductId, productEntityStub.getQuantity(),
-                                missingProductId, new BigDecimal("2")
-                        ))
-                        .build();
-
-        when(repositoryMock.findAllByIdInAndIsAvailableIsTrue(
-                Set.of(existingProductId, missingProductId)
-        )).thenReturn(List.of(productEntityStub));
-
-        var exception = assertThrows(
-                ProductsToOrderNotFoundException.class,
-                () -> sut.reserveProductsWithLock(reservationCommand)
-        );
-
-
-        assertTrue(exception.getMessage().contains(String.valueOf(missingProductId)));
-
-        verify(repositoryMock).findAllByIdInAndIsAvailableIsTrue(
-                Set.of(existingProductId, missingProductId)
-        );
-
-        verify(mapperMock, never()).update(any(), any());
-        verify(repositoryMock, never()).saveAllAndFlush(any());
-    }
-
-    @Test
-    public void reserveProductsShouldThrowNotEnoughQuantityInStockExceptionWhenSomeProductsDontHaveQuantity() {
-        var existingProductId = productEntityStub.getId();
-
-        ProductServiceReservationCommand reservationCommand =
-                ProductServiceReservationCommand.builder()
-                        .productQuantities(Map.of(
-                                existingProductId, productEntityStub.getQuantity().add(BigDecimal.ONE)
-                        ))
-                        .build();
-
-        when(repositoryMock.findAllByIdInAndIsAvailableIsTrue(
-                Set.of(existingProductId)
-        )).thenReturn(List.of(productEntityStub));
-
-        var exception = assertThrows(
-                NotEnoughQuantityInStockException.class,
-                () -> sut.reserveProductsWithLock(reservationCommand)
-        );
-
-
-        assertThat(exception.getMessage()).contains("Not enough quantity in stock for product productId = ");
-
-        verify(repositoryMock).findAllByIdInAndIsAvailableIsTrue(
-                Set.of(existingProductId)
-        );
-
-        verify(mapperMock, never()).update(any(), any());
-        verify(repositoryMock, never()).saveAllAndFlush(any());
     }
 }
