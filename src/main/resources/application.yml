@@ -64,11 +64,24 @@ app:
       record-stats: true
 
   rest:
+    tax-payer-service:
+      host: http://localhost:8089
+      methods:
+        post:
+          get-tins: /tins/resolve
+
+    account-service:
+      host: http://localhost:8090
+      methods:
+        post:
+          get-acc-numbers: /accounts/search-by-logins
+
     exchange-service:
       host: http://localhost:8088
       fallback-file: backupRates.json
       methods:
-        currencies: /api/v1/currencies
+        get:
+          currencies: /api/v1/currencies
       timeout:
         connect: 5s
         read: 3s

@@ -69,7 +69,7 @@ public class WebClientExchangeProvider implements ExchangeDataProvider {
     public ExchangeData getExchangeData() {
         try {
             return exchangeServiceWebClient.get()
-                    .uri(props.getMethods().getCurrencies())
+                    .uri(props.getMethods().getGet().getCurrencies())
                     .retrieve()
                     .bodyToMono(ExchangeData.class)
                     .blockOptional()
