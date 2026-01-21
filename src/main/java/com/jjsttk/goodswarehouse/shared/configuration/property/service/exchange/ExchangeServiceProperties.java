@@ -18,6 +18,12 @@ public class ExchangeServiceProperties {
     @Getter
     @Setter
     public static class Methods {
+        private GetHttpMethodConfig get = new GetHttpMethodConfig();
+    }
+
+    @Getter
+    @Setter
+    public static class GetHttpMethodConfig {
         private String currencies;
     }
 

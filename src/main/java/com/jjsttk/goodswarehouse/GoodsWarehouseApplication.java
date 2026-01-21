@@ -1,9 +1,11 @@
 package com.jjsttk.goodswarehouse;
 
 import com.jjsttk.goodswarehouse.shared.configuration.property.cache.CacheProperties;
-import com.jjsttk.goodswarehouse.shared.configuration.property.service.exchange.ExchangeServiceProperties;
 import com.jjsttk.goodswarehouse.shared.configuration.property.rest.RestProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.service.account.AccountServiceProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.service.exchange.ExchangeServiceProperties;
 import com.jjsttk.goodswarehouse.shared.configuration.property.service.scheduling.SchedulingProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.service.tax.TaxPayerServiceProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -16,7 +18,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 @EnableConfigurationProperties({
         SchedulingProperties.class, RestProperties.class,
-        ExchangeServiceProperties.class, CacheProperties.class
+        ExchangeServiceProperties.class, CacheProperties.class,
+        TaxPayerServiceProperties.class, AccountServiceProperties.class
 })
 @SpringBootApplication
 public class GoodsWarehouseApplication {
