@@ -4,6 +4,7 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.create.OrderCreate
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.OrderProductUpdateRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.status.OrderUpdateStatusRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
+import com.jjsttk.goodswarehouse.controller.order.dto.response.OrderInfo;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
 import com.jjsttk.goodswarehouse.service.order.OrderService;
@@ -51,6 +52,16 @@ public class OrderControllerImpl implements OrderController {
         var sessionCurrencyRate = exchangeRateService.getCurrentSessionExchangeRate();
 
         return mapper.toResponse(orderServiceResponse, sessionCurrencyRate);
+    }
+
+    @Override
+    @GetMapping("/by-product/{productId}")
+    public List<OrderInfo> getOrdersByProductId(@PathVariable UUID productId) {
+        var resultList = orderService.getOrdersDetailedInfoByProductId(productId);
+
+        return resultList.stream()
+                .map(mapper::toResponse)
+                .toList();
     }
 
     /**
