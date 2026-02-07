@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.exception.service.exchange;
+package com.jjsttk.goodswarehouse.exception.service.web;
 
 public class ReadTimeoutRetryAttemptsExhaustedException extends RetryExhaustedException {
     private static final String EXCEPTION_MESSAGE_FORMAT = "All %d read timeout retry attempts exhausted";

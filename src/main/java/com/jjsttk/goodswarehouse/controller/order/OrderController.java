@@ -4,6 +4,7 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.create.OrderCreate
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.OrderProductUpdateRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.status.OrderUpdateStatusRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
+import com.jjsttk.goodswarehouse.controller.order.dto.response.OrderInfo;
 import com.jjsttk.goodswarehouse.exception.dto.response.ErrorResponse;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedException;
@@ -26,9 +27,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -40,6 +44,7 @@ import java.util.UUID;
         name = "Order Management",
         description = "APIs for managing customer orders in the warehouse system"
 )
+@RequestMapping("/api/v1/orders")
 public interface OrderController {
 
     /**
@@ -47,7 +52,7 @@ public interface OrderController {
      *
      * @param customerId ID of the authenticated customer (from header)
      * @param orderId    UUID of the order to retrieve
-     * @return order details with products and pricing information
+     * @return Order details with products and pricing information
      * @throws ResourceNotFoundException if order not found
      * @throws NotYourOrderException     if customer doesn't own the order
      */
@@ -88,6 +93,32 @@ public interface OrderController {
                     example = "123e4567-e89b-12d3-a456-426614174000"
             )
             @PathVariable UUID orderId
+    );
+
+    /**
+     * Retrieves a list of detailed information about orders that use the product of interest.
+     *
+     * @param ids UUIDs of the products
+     * @return Detailed information about orders that contain this product.
+     */
+    @Operation(
+            summary = "Get detailed information about orders by using productId",
+            description = "Returns detailed information about orders containing the given productId.",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Data retrieved successfully",
+                            content = @Content(mediaType = "application/json",
+                                    schema = @Schema(implementation = OrderInfo.class))),
+            }
+    )
+    @GetMapping("/by-products")
+    Map<UUID, List<OrderInfo>> getProductOrdersByProductId(
+            @Parameter(
+                    description = "UUID of the product",
+                    required = true,
+                    example = "123e4567-e89b-12d3-a456-426614174000"
+            )
+            @RequestParam List<UUID> ids
     );
 
     /**

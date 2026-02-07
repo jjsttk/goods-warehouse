@@ -2,7 +2,7 @@
  * Default non-null API contract for the package.
  * All parameters and return values are considered non-nullable unless annotated with @Nullable.
  */
-@NonNullApi
+@NullMarked
 package com.jjsttk.goodswarehouse.service.order;
 
-import org.springframework.lang.NonNullApi;
+import org.jspecify.annotations.NullMarked;

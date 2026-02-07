@@ -11,7 +11,7 @@ import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInf
 import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.persistence.repository.projections.OrderProductSummaryProjection;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import org.instancio.Instancio;
@@ -85,7 +85,7 @@ public class OrderTestDataFactory {
     }
 
     public static BaseProductInOrderResponse getBaseProductInOrderResponseBasedOn(
-            OrderProductProjection orderProductSummary
+            OrderProductSummaryProjection orderProductSummary
     ) {
         return Instancio.of(BaseProductInOrderResponse.class)
                 .set(field("productId"), orderProductSummary.productId())

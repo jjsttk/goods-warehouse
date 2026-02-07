@@ -1,5 +1,6 @@
 package com.jjsttk.goodswarehouse.service.order;
 
+import com.jjsttk.goodswarehouse.controller.order.dto.response.OrderInfo;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedException;
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
@@ -11,6 +12,8 @@ import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInf
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -34,11 +37,11 @@ public interface OrderService {
     /**
      * Creates a new order in the database.
      *
-     * @param customerId                ID of the customer creating the order
+     * @param customerId             ID of the customer creating the order
      * @param createOrderCommandInfo request DTO containing order creation data
      * @return order service response containing the created order details
-     * @throws CustomerBannedException           if customer is inactive
-     * @throws ReservationException  if troubles while reserve products
+     * @throws CustomerBannedException if customer is inactive
+     * @throws ReservationException    if troubles while reserve products
      */
     UUID create(Long customerId, CreateOrderCommandInfo createOrderCommandInfo);
 
@@ -52,10 +55,10 @@ public interface OrderService {
      * @param customerId    ID of the customer making the update request
      * @param updateCommand DTO containing update data
      * @return updated order in service response format
-     * @throws ResourceNotFoundException         if the order is not found
-     * @throws NotYourOrderException       if customer tries to update another customer's order
-     * @throws OrderCannotBeUpdatedException     if order status is not equal CREATED
-     * @throws ReservationException  if troubles while reserve products
+     * @throws ResourceNotFoundException     if the order is not found
+     * @throws NotYourOrderException         if customer tries to update another customer's order
+     * @throws OrderCannotBeUpdatedException if order status is not equal CREATED
+     * @throws ReservationException          if troubles while reserve products
      */
 
     UUID update(Long customerId, UpdateOrderCommandInfo updateCommand);
@@ -96,8 +99,17 @@ public interface OrderService {
      *
      * @param orderId UUID of the order to update
      * @param status  new status to set
-     * @throws ResourceNotFoundException       if order not found
-     * @throws NotYourOrderException           if customer doesn't own the order
+     * @throws ResourceNotFoundException if order not found
+     * @throws NotYourOrderException     if customer doesn't own the order
      */
     void updateOrderStatus(UUID orderId, OrderStatus status);
+
+    /**
+     * Provides comprehensive information about orders that use each product from the provided list.
+     * @param productIds UUIDs of interested products
+     * @return {@code HashMap} where:
+     * {@code KEY} is productId from productIds, {@code Value} is a list of DTO objects,
+     * each of which contains information about orders that contain the required id from the key
+     */
+    Map<UUID, List<OrderInfo>> getOrdersDetailedInfosByProductIds(List<UUID> productIds);
 }

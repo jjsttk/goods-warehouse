@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.shared.configuration.property.service.scheduling;
+package com.jjsttk.goodswarehouse.shared.configuration.property.scheduling;
 
 import lombok.Getter;
 import lombok.Setter;

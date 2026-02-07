@@ -1,10 +1,10 @@
-package com.jjsttk.goodswarehouse.shared.configuration.service.exchange;
+package com.jjsttk.goodswarehouse.shared.util.webclient;
 
-import com.jjsttk.goodswarehouse.exception.service.exchange.ReadTimeoutRetryAttemptsExhaustedException;
-import com.jjsttk.goodswarehouse.exception.service.exchange.ServerErrorRetryAttemptsExhaustedException;
+import com.jjsttk.goodswarehouse.exception.service.web.ReadTimeoutRetryAttemptsExhaustedException;
+import com.jjsttk.goodswarehouse.exception.service.web.ServerErrorRetryAttemptsExhaustedException;
 import io.netty.handler.timeout.ReadTimeoutException;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -18,8 +18,8 @@ import java.time.Duration;
  * Contains predefined retry filters for common failure scenarios.
  */
 @Slf4j
-@Component
-public final class ExchangeServiceWebClientStrategy {
+@UtilityClass
+public final class WebClientRetryUtils {
 
     /**
      * Creates a retry filter for read timeout errors.
@@ -29,14 +29,14 @@ public final class ExchangeServiceWebClientStrategy {
      * @param backoffDuration delay between retry attempts
      * @return ExchangeFilterFunction that retries on read timeouts
      */
-    public ExchangeFilterFunction getReadTimeoutRetryFilterFunction(
+    public static ExchangeFilterFunction getReadTimeoutRetryFilterFunction(
             int maxAttempts, Duration backoffDuration
     ) {
         return (request, next) ->
                 next.exchange(request)
                         .retryWhen(Retry.fixedDelay(maxAttempts, backoffDuration)
                                 .filter(throwable -> throwable instanceof WebClientRequestException
-                                        && throwable.getCause() instanceof ReadTimeoutException)
+                                                     && throwable.getCause() instanceof ReadTimeoutException)
 
                                 .doBeforeRetry(retrySignal ->
                                         log.debug("Read timeout retry attempt: {}/{}",
@@ -58,7 +58,7 @@ public final class ExchangeServiceWebClientStrategy {
      * @param backoffDuration delay between retry attempts
      * @return ExchangeFilterFunction that retries on server errors
      */
-    public ExchangeFilterFunction getServerErrorRetryFilterFunction(int maxAttempts, Duration backoffDuration) {
+    public static ExchangeFilterFunction getServerErrorRetryFilterFunction(int maxAttempts, Duration backoffDuration) {
         return (request, next) ->
                 next.exchange(request).flatMap(
                                 response -> {
@@ -84,5 +84,4 @@ public final class ExchangeServiceWebClientStrategy {
                                     );
                                 }));
     }
-
 }

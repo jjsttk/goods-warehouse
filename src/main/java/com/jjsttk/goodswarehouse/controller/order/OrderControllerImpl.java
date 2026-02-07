@@ -4,6 +4,7 @@ import com.jjsttk.goodswarehouse.controller.order.dto.request.create.OrderCreate
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.product.OrderProductUpdateRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.request.update.status.OrderUpdateStatusRequest;
 import com.jjsttk.goodswarehouse.controller.order.dto.response.GetOrderResponse;
+import com.jjsttk.goodswarehouse.controller.order.dto.response.OrderInfo;
 import com.jjsttk.goodswarehouse.mapper.order.OrderControllerConverter;
 import com.jjsttk.goodswarehouse.service.exchange.ExchangeRateService;
 import com.jjsttk.goodswarehouse.service.order.OrderService;
@@ -19,10 +20,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -51,6 +54,15 @@ public class OrderControllerImpl implements OrderController {
         var sessionCurrencyRate = exchangeRateService.getCurrentSessionExchangeRate();
 
         return mapper.toResponse(orderServiceResponse, sessionCurrencyRate);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    @GetMapping("/by-products")
+    public Map<UUID, List<OrderInfo>> getProductOrdersByProductId(@RequestParam List<UUID> ids) {
+        return orderService.getOrdersDetailedInfosByProductIds(ids);
     }
 
     /**

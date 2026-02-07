@@ -3,8 +3,8 @@ package com.jjsttk.goodswarehouse.mapper.order.mapstruct;
 import com.jjsttk.goodswarehouse.mapper.order.OrderServiceConverter;
 import com.jjsttk.goodswarehouse.mapper.util.mapstruct.MapstructReferenceMapper;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
+import com.jjsttk.goodswarehouse.persistence.repository.projections.OrderProductSummaryProjection;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
 import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import com.jjsttk.goodswarehouse.shared.enums.order.OrderStatus;
 import org.mapstruct.Mapper;
@@ -47,6 +47,6 @@ public abstract class MapstructOrderServiceMapper implements OrderServiceConvert
     })
     public abstract BaseOrderResponse toResponse(
             UUID orderId,
-            OrderProductResponseContainer<OrderProductProjection> serviceResponse
+            OrderProductResponseContainer<OrderProductSummaryProjection> serviceResponse
     );
 }

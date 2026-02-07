@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.exception.service.exchange;
+package com.jjsttk.goodswarehouse.exception.service.web;
 
 public class RetryExhaustedException extends RuntimeException {
 

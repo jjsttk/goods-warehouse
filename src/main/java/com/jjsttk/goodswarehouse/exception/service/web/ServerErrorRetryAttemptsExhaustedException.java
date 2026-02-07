@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.exception.service.exchange;
+package com.jjsttk.goodswarehouse.exception.service.web;
 
 public class ServerErrorRetryAttemptsExhaustedException extends RetryExhaustedException {
     private static final String EXCEPTION_MESSAGE_FORMAT = "All %d server error retry attempts exhausted";

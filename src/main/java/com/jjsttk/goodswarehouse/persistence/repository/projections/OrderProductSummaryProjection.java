@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.service.order.product.dto.response;
+package com.jjsttk.goodswarehouse.persistence.repository.projections;
 
 import lombok.Builder;
 import org.springframework.lang.NonNull;
@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.util.UUID;
 
 @Builder
-public record OrderProductProjection(
+public record OrderProductSummaryProjection(
         @NonNull UUID productId,
         @NonNull String name,
         @NonNull BigDecimal quantity,

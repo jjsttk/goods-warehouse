@@ -1,4 +1,4 @@
-package com.jjsttk.goodswarehouse.shared.configuration;
+package com.jjsttk.goodswarehouse.shared.configuration.service.exchange.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.jjsttk.goodswarehouse.shared.configuration.property.cache.CacheProperties;

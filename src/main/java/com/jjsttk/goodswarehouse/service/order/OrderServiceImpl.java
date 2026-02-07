@@ -1,5 +1,6 @@
 package com.jjsttk.goodswarehouse.service.order;
 
+import com.jjsttk.goodswarehouse.controller.order.dto.response.OrderInfo;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedException;
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
@@ -17,6 +18,8 @@ import com.jjsttk.goodswarehouse.service.customer.CustomerService;
 import com.jjsttk.goodswarehouse.service.customer.dto.response.BaseCustomerInfoDto;
 import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
 import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
+import com.jjsttk.goodswarehouse.service.order.dto.internal.CustomerExternalData;
+import com.jjsttk.goodswarehouse.service.order.dto.internal.DetailedOrderContext;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
 import com.jjsttk.goodswarehouse.service.order.product.OrderProductService;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
@@ -28,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -154,6 +158,46 @@ public class OrderServiceImpl implements OrderService {
         orderEntity.setStatus(status);
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Map<UUID, List<OrderInfo>> getOrdersDetailedInfosByProductIds(List<UUID> productIds) {
+        var allowedStatuses = List.of(OrderStatus.CREATED, OrderStatus.CONFIRMED);
+        var orders = orderRepository.findAllByProductIdIn(productIds, allowedStatuses);
+
+        if (orders.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        var detailedOrderContext = orders.stream()
+                .collect(Collectors.teeing(
+                        Collectors.toMap(
+                                it -> it.getCustomer().getId(),
+                                it -> it.getCustomer().getLogin(),
+                                (existing, replacement) -> existing
+                        ),
+
+                        Collectors.groupingBy(
+                                it -> it.getRequestedProduct().getId().getProductId()
+                        ),
+
+                        DetailedOrderContext::new
+                ));
+
+        var customerExternalData =
+                fetchCustomerExternalDataByLoginsMap(detailedOrderContext.customerIdToLoginMap());
+
+        return orderMapper.toResponse(
+                detailedOrderContext.groupedByProductIdProjectionMap(),
+                customerExternalData
+        );
+    }
+
+    private CustomerExternalData fetchCustomerExternalDataByLoginsMap(Map<Long, String> idLoginMap) {
+        return customerService.getExternalDataByLogins(idLoginMap);
+    }
+
     // ---------------------------------- <CREATE> HELPER METHODS ------------------------------------------------------
 
     private OrderEntity assembleOrder(BaseCustomerInfoDto customerDto, CreateOrderCommandInfo createCommand) {
@@ -217,7 +261,6 @@ public class OrderServiceImpl implements OrderService {
             throw new OrderCannotBeUpdatedException(order.getId(), order.getStatus());
         }
     }
-
 
     private Map<UUID, ReservationStatus> updateExistingDependencies(
             List<OrderProductEntity> existingProducts,
