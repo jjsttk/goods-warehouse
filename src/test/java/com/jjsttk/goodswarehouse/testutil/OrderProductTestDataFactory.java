@@ -4,7 +4,7 @@ import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.key.OrderProductId;
 import com.jjsttk.goodswarehouse.persistence.entity.product.ProductEntity;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.persistence.repository.projections.OrderProductSummaryProjection;
 import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import org.instancio.Instancio;
 
@@ -38,20 +38,20 @@ public class OrderProductTestDataFactory {
                 .create();
     }
 
-    public static OrderProductResponseContainer<OrderProductProjection> getResponseContainedWithProjectionBasedOnEntity(
+    public static OrderProductResponseContainer<OrderProductSummaryProjection> getResponseContainerWithProjection(
             OrderEntity order
     ) {
-        return OrderProductResponseContainer.<OrderProductProjection>builder()
+        return OrderProductResponseContainer.<OrderProductSummaryProjection>builder()
                 .orderProducts(order.getOrderProducts().stream()
                         .map(OrderProductTestDataFactory::getOrderProductProjectionBasedOn)
                         .toList())
                 .build();
     }
 
-    public static OrderProductProjection getOrderProductProjectionBasedOn(
+    public static OrderProductSummaryProjection getOrderProductProjectionBasedOn(
             OrderProductEntity orderProduct
     ) {
-        return Instancio.of(OrderProductProjection.class)
+        return Instancio.of(OrderProductSummaryProjection.class)
                 .set(field("productId"), orderProduct.getId().getProductId())
                 .set(field("name"), orderProduct.getProduct().getName())
                 .set(field("quantity"), orderProduct.getOrderedQuantity())

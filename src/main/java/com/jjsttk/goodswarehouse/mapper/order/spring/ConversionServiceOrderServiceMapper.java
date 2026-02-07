@@ -4,9 +4,9 @@ import com.jjsttk.goodswarehouse.mapper.order.OrderServiceConverter;
 import com.jjsttk.goodswarehouse.mapper.util.converter.ReferenceConverter;
 import com.jjsttk.goodswarehouse.persistence.entity.customer.CustomerEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
+import com.jjsttk.goodswarehouse.persistence.repository.projections.OrderProductSummaryProjection;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseOrderResponse;
 import com.jjsttk.goodswarehouse.service.order.dto.response.BaseProductInOrderResponse;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
 import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
@@ -35,7 +35,7 @@ public final class ConversionServiceOrderServiceMapper implements OrderServiceCo
     @Override
     public BaseOrderResponse toResponse(
             UUID orderId,
-            OrderProductResponseContainer<OrderProductProjection> serviceResponse
+            OrderProductResponseContainer<OrderProductSummaryProjection> serviceResponse
     ) {
         return BaseOrderResponse.builder()
                 .orderId(orderId)

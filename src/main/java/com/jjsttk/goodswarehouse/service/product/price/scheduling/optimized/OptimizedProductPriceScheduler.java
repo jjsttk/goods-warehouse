@@ -1,7 +1,7 @@
 package com.jjsttk.goodswarehouse.service.product.price.scheduling.optimized;
 
 import com.jjsttk.goodswarehouse.service.product.price.scheduling.ProductPriceScheduler;
-import com.jjsttk.goodswarehouse.shared.configuration.property.service.scheduling.SchedulingProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.scheduling.SchedulingProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;

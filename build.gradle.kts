@@ -65,3 +65,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
     systemProperty("spring.profiles.active", "test")
 }
+
+tasks.jar {
+    enabled = false // only snapshot jar created while 'false'
+}

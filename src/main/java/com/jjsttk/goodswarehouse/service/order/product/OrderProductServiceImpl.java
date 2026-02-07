@@ -2,7 +2,7 @@ package com.jjsttk.goodswarehouse.service.order.product;
 
 import com.jjsttk.goodswarehouse.mapper.order.product.OrderProductConverter;
 import com.jjsttk.goodswarehouse.persistence.repository.OrderProductRepository;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.persistence.repository.projections.OrderProductSummaryProjection;
 import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class OrderProductServiceImpl implements OrderProductService {
      */
     @Override
     @Transactional(readOnly = true)
-    public OrderProductResponseContainer<OrderProductProjection> getOrderedProducts(
+    public OrderProductResponseContainer<OrderProductSummaryProjection> getOrderedProducts(
             UUID orderId
     ) {
         var result = repository.findProductSummariesByOrderId(orderId);

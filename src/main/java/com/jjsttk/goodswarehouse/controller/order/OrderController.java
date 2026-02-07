@@ -28,9 +28,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -94,11 +96,10 @@ public interface OrderController {
     );
 
     /**
-     * Retrieves an order by its unique ID.
+     * Retrieves a list of detailed information about orders that use the product of interest.
      *
-     * @param productId UUID of the product
+     * @param ids UUIDs of the products
      * @return Detailed information about orders that contain this product.
-     * @throws ResourceNotFoundException If the specified product is not available in any of the orders.
      */
     @Operation(
             summary = "Get detailed information about orders by using productId",
@@ -107,21 +108,17 @@ public interface OrderController {
                     @ApiResponse(responseCode = "200",
                             description = "Data retrieved successfully",
                             content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = GetOrderResponse.class))),
-                    @ApiResponse(responseCode = "404",
-                            description = "Orders containing this productId not found",
-                            content = @Content(mediaType = "application/json",
-                                    schema = @Schema(implementation = ErrorResponse.class))),
+                                    schema = @Schema(implementation = OrderInfo.class))),
             }
     )
-    @GetMapping("/by-product/{productId}")
-    List<OrderInfo> getOrdersByProductId(
+    @GetMapping("/by-products")
+    Map<UUID, List<OrderInfo>> getProductOrdersByProductId(
             @Parameter(
                     description = "UUID of the product",
                     required = true,
                     example = "123e4567-e89b-12d3-a456-426614174000"
             )
-            @PathVariable UUID productId
+            @RequestParam List<UUID> ids
     );
 
     /**
