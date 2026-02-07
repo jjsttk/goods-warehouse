@@ -25,6 +25,7 @@ Spring Boot приложение для управления складом то
 - Gradle 8+
 - Docker (опционально)
 - PostgreSQL (для prod профиля)
+- Helm (опционально)
 
 ### Быстрый старт с профилем dev и базой h2 для локальной разработки и тестирования:
 
@@ -47,6 +48,18 @@ cd goods-warehouse
 
 # Запуск приложения
 ./gradlew bootRun
+````
+
+### 2.1 Запуск в кластере k8s с использованием helm
+````
+# Установка warehouse, а так же необходимых внешних сервисов
+# helm upgrade --install [release-name] [path-to-helm-chart] --namespace [your-namespace] --create-namespace
+helm upgrade --install warehouse-stack deployment/helm/ --namespace wh --create-namespace
+
+
+# Удаление warehouse, и всех зависимостей
+# helm uninstall [release-name] -n [namespace]
+helm uninstall warehouse-stack -n wh    
 ````
 
 Приложение будет доступно по адресу: http://localhost:8080
