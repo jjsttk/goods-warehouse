@@ -1,6 +1,6 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
-import com.jjsttk.goodswarehouse.shared.configuration.property.service.exchange.ExchangeServiceProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.rest.ExchangeServiceProperties;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderEmptyResponseException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderRequestFailedException;
@@ -69,7 +69,7 @@ public class WebClientExchangeProvider implements ExchangeDataProvider {
     public ExchangeData getExchangeData() {
         try {
             return exchangeServiceWebClient.get()
-                    .uri(props.getMethods().getGet().getCurrencies())
+                    .uri(props.getEndpoints().getCurrencies())
                     .retrieve()
                     .bodyToMono(ExchangeData.class)
                     .blockOptional()

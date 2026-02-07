@@ -13,11 +13,12 @@ import com.jjsttk.goodswarehouse.persistence.entity.order.OrderEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.OrderProductEntity;
 import com.jjsttk.goodswarehouse.persistence.entity.order.product.key.OrderProductId;
 import com.jjsttk.goodswarehouse.persistence.repository.OrderRepository;
+import com.jjsttk.goodswarehouse.persistence.repository.projections.OrderProductSummaryProjection;
 import com.jjsttk.goodswarehouse.service.customer.CustomerService;
 import com.jjsttk.goodswarehouse.service.order.dto.command.CreateOrderCommandInfo;
 import com.jjsttk.goodswarehouse.service.order.dto.command.UpdateOrderCommandInfo;
 import com.jjsttk.goodswarehouse.service.order.product.OrderProductService;
-import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductProjection;
+import com.jjsttk.goodswarehouse.service.order.product.dto.response.OrderProductResponseContainer;
 import com.jjsttk.goodswarehouse.service.product.ProductService;
 import com.jjsttk.goodswarehouse.service.product.dto.command.ReserveProductCommandInfo;
 import com.jjsttk.goodswarehouse.service.product.dto.response.ProductReservationResponse;
@@ -104,7 +105,7 @@ class OrderServiceImplTest {
         // Verify
         verify(orderRepositoryMock).existsByIdAndCustomerId(orderId, customerId);
         verify(orderProductServiceMock, never()).getOrderedProducts(any());
-        verify(orderMapperMock, never()).toResponse(any(), any());
+        verify(orderMapperMock, never()).toResponse(any(UUID.class), any(OrderProductResponseContainer.class));
     }
 
     @ParameterizedTest
@@ -116,7 +117,7 @@ class OrderServiceImplTest {
     ) {
         UUID orderId = orderEntity.getId();
 
-        var productsResponse = OrderProductTestDataFactory.getResponseContainedWithProjectionBasedOnEntity(orderEntity);
+        var productsResponse = OrderProductTestDataFactory.getResponseContainerWithProjection(orderEntity);
         var expectedResponse = OrderTestDataFactory.getBaseOrderResponse(orderEntity);
 
         when(orderRepositoryMock.existsByIdAndCustomerId(orderId, customerId))
@@ -278,13 +279,13 @@ class OrderServiceImplTest {
         existingOrderProduct.getProduct().setQuantity(valueToAddToExistedProduct);
 
         // orderProductMap before update to comparison quantity change right, and change price if updated correctly
-        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductProjection>();
+        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductSummaryProjection>();
         // productMap before update to comparison quantity change right
         var productIdQuantityMapBeforeUpdate = new HashMap<UUID, BigDecimal>();
         existingOrder.getOrderProducts().forEach(it -> {
             orderProductIdToSummaryMapBeforeUpdate.put(
                     it.getId().getProductId(),
-                    OrderProductProjection.builder()
+                    OrderProductSummaryProjection.builder()
                             .productId(it.getId().getProductId())
                             .quantity(it.getOrderedQuantity())
                             .name(it.getProduct().getName())
@@ -470,13 +471,13 @@ class OrderServiceImplTest {
         existingOrderProduct.getProduct().setQuantity(valueToAddToExistedProduct);
 
         // orderProductMap before update to comparison quantity change right, and change price if updated correctly
-        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductProjection>();
+        var orderProductIdToSummaryMapBeforeUpdate = new HashMap<UUID, OrderProductSummaryProjection>();
         // productMap before update to comparison quantity change right
         var productIdQuantityMapBeforeUpdate = new HashMap<UUID, BigDecimal>();
         existingOrder.getOrderProducts().forEach(it -> {
             orderProductIdToSummaryMapBeforeUpdate.put(
                     it.getId().getProductId(),
-                    OrderProductProjection.builder()
+                    OrderProductSummaryProjection.builder()
                             .productId(it.getId().getProductId())
                             .quantity(it.getOrderedQuantity())
                             .name(it.getProduct().getName())

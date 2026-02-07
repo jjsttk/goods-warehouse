@@ -20,10 +20,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -54,14 +56,13 @@ public class OrderControllerImpl implements OrderController {
         return mapper.toResponse(orderServiceResponse, sessionCurrencyRate);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    @GetMapping("/by-product/{productId}")
-    public List<OrderInfo> getOrdersByProductId(@PathVariable UUID productId) {
-        var resultList = orderService.getOrdersDetailedInfoByProductId(productId);
-
-        return resultList.stream()
-                .map(mapper::toResponse)
-                .toList();
+    @GetMapping("/by-products")
+    public Map<UUID, List<OrderInfo>> getProductOrdersByProductId(@RequestParam List<UUID> ids) {
+        return orderService.getOrdersDetailedInfosByProductIds(ids);
     }
 
     /**

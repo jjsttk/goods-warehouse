@@ -1395,13 +1395,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BaseUrl}}/actuator/metrics",
+					"raw": "http://localhost:9091/actuator/health",
+					"protocol": "http",
 					"host": [
-						"{{BaseUrl}}"
+						"localhost"
 					],
+					"port": "9091",
 					"path": [
 						"actuator",
-						"metrics"
+						"health"
 					]
 				}
 			},
@@ -1428,10 +1430,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BaseUrl}}/actuator/metrics/cache.gets?tag=name:exchangeRateClientCache&tag=result:hit",
+					"raw": "http://localhost:9091/actuator/metrics/cache.gets?tag=name:exchangeRateClientCache&tag=result:hit",
+					"protocol": "http",
 					"host": [
-						"{{BaseUrl}}"
+						"localhost"
 					],
+					"port": "9091",
 					"path": [
 						"actuator",
 						"metrics",
@@ -1472,10 +1476,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BaseUrl}}/actuator/metrics/cache.gets?tag=name:exchangeRateClientCache&tag=result:miss",
+					"raw": "http://localhost:9091/actuator/metrics/cache.gets?tag=name:exchangeRateClientCache&tag=result:miss",
+					"protocol": "http",
 					"host": [
-						"{{BaseUrl}}"
+						"localhost"
 					],
+					"port": "9091",
 					"path": [
 						"actuator",
 						"metrics",
@@ -1516,10 +1522,12 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{BaseUrl}}/actuator/metrics/cache.size?tag=name:exchangeRateClientCache  ",
+					"raw": "http://localhost:9091/actuator/metrics/cache.size?tag=name:exchangeRateClientCache  ",
+					"protocol": "http",
 					"host": [
-						"{{BaseUrl}}"
+						"localhost"
 					],
+					"port": "9091",
 					"path": [
 						"actuator",
 						"metrics",
@@ -2134,6 +2142,387 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Partial update product2 for ordering",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Product was partial updated correctly\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.eql(pm.collectionVariables.get(\"secondProductId\"));",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"quantity\": 10\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/products/{{secondProductId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products",
+						"{{secondProductId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order with firstProductId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has order ID\", function () {",
+							"    var orderId = pm.response.json();",
+							"    pm.expect(orderId).to.not.be.undefined;",
+							"    pm.collectionVariables.set(\"orderWithFirstProductId\", orderId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "3",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"deliveryAddress\": \"test address postman\",\n    \"products\": [\n        {\n            \"id\": \"{{firstProductId}}\",\n            \"quantity\": 3\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order with secondProductId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has order ID\", function () {",
+							"    var orderId = pm.response.json();",
+							"    pm.expect(orderId).to.not.be.undefined;",
+							"    pm.collectionVariables.set(\"orderWithSecondProductId\", orderId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "3",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"deliveryAddress\": \"test address postman\",\n    \"products\": [\n        {\n            \"id\": \"{{secondProductId}}\",\n            \"quantity\": 2\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create order with thirdProductId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response has order ID\", function () {",
+							"    var orderId = pm.response.json();",
+							"    pm.expect(orderId).to.not.be.undefined;",
+							"    pm.collectionVariables.set(\"orderWithThirdProductId\", orderId);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "3",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"deliveryAddress\": \"test address postman\",\n    \"products\": [\n        {\n            \"id\": \"{{thirdProductId}}\",\n            \"quantity\": 4\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get order Copy",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"})",
+							"",
+							"pm.test(\"Response is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "currency",
+						"value": "rub",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{BaseUrl}}/api/v1/orders/by-products?ids={{firstProductId}}, {{thirdProductId}}",
+					"host": [
+						"{{BaseUrl}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"orders",
+						"by-products"
+					],
+					"query": [
+						{
+							"key": "ids",
+							"value": "{{firstProductId}}, {{thirdProductId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "minikube example",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "warehouse.local",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Test Product 1\",\n  \"article\": 1234562,\n  \"category\": \"ELECTRONICS\",\n  \"quantity\": 10,\n  \"price\": 99.99,\n  \"description\": null,\n  \"isAvailable\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost/api/v1/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "minikube example",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disabledSystemHeaders": {}
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "customerId",
+						"value": "1",
+						"type": "text"
+					},
+					{
+						"key": "currency",
+						"value": "eur",
+						"type": "text"
+					},
+					{
+						"key": "Host",
+						"value": "warehouse.local",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "http://localhost/api/v1/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"path": [
+						"api",
+						"v1",
+						"products"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -2177,6 +2566,18 @@
 		},
 		{
 			"key": "firstOrderId",
+			"value": ""
+		},
+		{
+			"key": "orderWithFirstProductId",
+			"value": ""
+		},
+		{
+			"key": "orderWithSecondProductId",
+			"value": ""
+		},
+		{
+			"key": "orderWithThirdProductId",
 			"value": ""
 		}
 	]

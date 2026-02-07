@@ -58,7 +58,7 @@ public class ExchangeRateServiceImpl implements ExchangeRateService {
             return BigDecimal.ONE;
         }
 
-        return Optional.ofNullable(exchangeDataProvider.getExchangeData())
+        return Optional.of(exchangeDataProvider.getExchangeData())
                 .map(ExchangeData::rates)
                 .map(rates -> rates.get(sessionCurrency))
                 .orElse(BigDecimal.ONE);

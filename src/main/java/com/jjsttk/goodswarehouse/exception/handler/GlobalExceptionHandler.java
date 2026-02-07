@@ -3,6 +3,8 @@ package com.jjsttk.goodswarehouse.exception.handler;
 import com.jjsttk.goodswarehouse.exception.dto.response.ErrorResponse;
 import com.jjsttk.goodswarehouse.exception.service.ResourceNotFoundException;
 import com.jjsttk.goodswarehouse.exception.service.customer.CustomerBannedException;
+import com.jjsttk.goodswarehouse.exception.service.customer.ExternalServiceException;
+import com.jjsttk.goodswarehouse.exception.service.customer.inn.InnServiceException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
 import com.jjsttk.goodswarehouse.exception.service.order.NotYourOrderException;
 import com.jjsttk.goodswarehouse.exception.service.order.OrderCannotBeCancelledException;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.time.OffsetDateTime;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,6 +40,16 @@ public final class GlobalExceptionHandler {
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ErrorResponse> handleMissingRequestHeader(Exception ex) {
         return buildResponse(HttpStatus.FORBIDDEN, ex);
+    }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<ErrorResponse> handleExternalServiceException(InnServiceException ex) {
+        return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, ex);
+    }
+
+    @ExceptionHandler(CompletionException.class)
+    public ResponseEntity<ErrorResponse> handleAsyncException(CompletionException ex) {
+        return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, ex);
     }
 
     @ExceptionHandler(CustomerBannedException.class)

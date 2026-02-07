@@ -1,3 +1,6 @@
+server:
+  port: ${APP_PORT:8080}
+
 spring:
   application:
     name: goods-warehouse
@@ -19,6 +22,8 @@ spring:
         order_updates: true
 
 management:
+  server:
+    port: ${ACTUATOR_PORT:9091}
   endpoints:
     web:
       exposure:
@@ -34,29 +39,30 @@ management:
 logging:
   level:
     root: info
+    com.jjsttk.goodswarehouse.service.exchange: debug
     #org.hibernate.SQL: DEBUG
     #org.hibernate.stat: DEBUG
     #org.hibernate.orm.jdbc.bind: TRACE
 
 app:
   mapper:
-    type: mapstruct # Choose between: conversion-service, mapstruct
+    type: ${MAPPER_TYPE:mapstruct} # Choose between: conversion-service, mapstruct
 
   aspect:
     transactional:
-      measure-execution-time: false # Highlighted because the aspect class lacks a @Value annotation for the property. ${} is used.
+      measure-execution-time: ${MEASURE_TRANSACTIONAL:false} # Highlighted because the aspect class lacks a @Value annotation for the property. ${} is used.
 
   scheduling:
-    enabled: false
-    period: 60000 # ms
-    price-increase-percentage: 10.1
+    enabled: ${SCHEDULING_ENABLED:false}
+    period: ${SCHEDULING_PERIOD:60000} # in ms
+    price-increase-percentage: ${SCHEDULING_PRICE_PERCENT_INCREASE:10.1}
     optimization:
-      enabled: false
-      use-exclusive-lock: true
-      output-file-name: scheduling-db-result.log
+      enabled: ${SCHEDULING_OPTIMIZATION_ENABLED:true}
+      use-exclusive-lock: ${SCHEDULING_USE_LOCK:true}
+      output-file-name: ${SCHEDULING_LOG_FILENAME:scheduling-db-result.log}
 
   exchange-rate-client:
-    implementation: real
+    implementation: ${EXCHANGE_RATE_CLIENT_IMPLEMENTATION:real} # real / mock
 
   cache:
     exchange-rate-client:
@@ -64,31 +70,48 @@ app:
       record-stats: true
 
   rest:
-    tax-payer-service:
-      host: http://localhost:8089
-      methods:
-        post:
-          get-tins: /tins/resolve
+    inn-service:
+      host: ${INN_SERVICE_HOST:http://localhost:8089}
+      endpoints:
+        inns: ${INN_SERVICE_INNS_ENDPOINT:/api/v1/inns/resolve}
+      timeout:
+        connect: ${INN_SERVICE_TIMEOUT_CONNECT_DURATION:5s}
+        read: ${INN_SERVICE_TIMEOUT_READ_DURATION:5s}
+      retry:
+        read-timeout:
+          max-attempts: ${INN_SERVICE_READ_TIMEOUT_RETRY_ATTEMPTS:10}
+          backoff: ${INN_SERVICE_READ_TIMEOUT_RETRY_BACKOFF_DURATION:2s}
+        server-errors:
+          max-attempts: ${INN_SERVICE_SERVER_ERRORS_RETRY_ATTEMPTS:1}
+          backoff: ${INN_SERVICE_SERVER_ERRORS_RETRY_BACKOFF_DURATION:5s}
 
     account-service:
-      host: http://localhost:8090
-      methods:
-        post:
-          get-acc-numbers: /accounts/search-by-logins
+      host: ${ACCOUNT_SERVICE_HOST:http://localhost:8090}
+      endpoints:
+        acc-numbers: ${ACCOUNT_SERVICE_ACC_NUMBERS_ENDPOINT:/api/v1/account-numbers/search-by-logins}
+      timeout:
+        connect: ${ACCOUNT_SERVICE_TIMEOUT_CONNECT_DURATION:5s}
+        read: ${ACCOUNT_SERVICE_TIMEOUT_READ_DURATION:5s}
+      retry:
+        read-timeout:
+          max-attempts: ${ACCOUNT_SERVICE_READ_TIMEOUT_RETRY_ATTEMPTS:10}
+          backoff: ${ACCOUNT_SERVICE_READ_TIMEOUT_RETRY_BACKOFF_DURATION:2s}
+        server-errors:
+          max-attempts: ${ACCOUNT_SERVICE_SERVER_ERRORS_RETRY_ATTEMPTS:1}
+          backoff: ${ACCOUNT_SERVICE_SERVER_ERRORS_RETRY_BACKOFF_DURATION:5s}
 
     exchange-service:
-      host: http://localhost:8088
-      fallback-file: backupRates.json
-      methods:
-        get:
-          currencies: /api/v1/currencies
+      host: ${EXCHANGE_SERVICE_HOST:http://localhost:8088}
+      fallback-file: ${EXCHANGE_SERVICE_FALLBACK_FILE_NAME:backupRates.json}
+      endpoints:
+        currencies: ${EXCHANGE_SERVICE_CURRENCIES_ENDPOINT:/api/v1/currencies}
       timeout:
-        connect: 5s
-        read: 3s
-        retry:
-          read-timeout:
-            max-attempts: 10
-            backoff: 2s
-          server-errors:
-            max-attempts: 1
-            backoff: 5s
+        connect: ${EXCHANGE_SERVICE_TIMEOUT_CONNECT_DURATION:5s}
+        read: ${EXCHANGE_SERVICE_TIMEOUT_READ_DURATION:3s}
+      retry:
+        read-timeout:
+          max-attempts: ${EXCHANGE_SERVICE_READ_TIMEOUT_RETRY_ATTEMPTS:10}
+          backoff: ${EXCHANGE_SERVICE_READ_TIMEOUT_RETRY_BACKOFF_DURATION:2s}
+        server-errors:
+          max-attempts: ${EXCHANGE_SERVICE_SERVER_ERRORS_RETRY_ATTEMPTS:1}
+          backoff: ${EXCHANGE_SERVICE_SERVER_ERRORS_RETRY_BACKOFF_DURATION:5s}
