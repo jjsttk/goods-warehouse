@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.db.appName}}
+spec:
+  type: {{ .Values.db.type }}
+  ports:
+    - port: {{ .Values.db.containerPort }}       # Порт, на который будет стучаться warehouse
+      targetPort: {{ .Values.db.containerPort }} # Порт внутри контейнера postgres
+      protocol: {{ .Values.db.protocol }}
+  selector:
+    app: {{ .Values.db.appName }}

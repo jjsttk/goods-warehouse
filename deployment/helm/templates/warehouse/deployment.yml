@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.warehouse.appName }}
+  labels:
+    app: {{ .Values.warehouse.appName }}
+spec:
+  replicas: {{ .Values.warehouse.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.warehouse.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.warehouse.appName }}
+    spec:
+      containers:
+        - name: {{ .Values.warehouse.containerName}}
+          image: {{ .Values.warehouse.image }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.warehouse.containerPort }}
+            - name: management
+              containerPort: {{ .Values.warehouse.actuatorPort }}
+
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-{{ .Values.warehouse.appName }}-configmap
+
+          env:
+            - name: LOGGING_LEVEL_COM_JJSTTK_GOODSWAREHOUSE_SERVICE_EXCHANGE
+              value: "DEBUG"
+
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: DB_SERVER
+              value: "{{ .Release.Name }}-{{ .Values.db.appName }}"
+            - name: DB_PORT
+              value: {{ .Values.db.containerPort | default 5432 | quote }}
+            - name: DB_NAME
+              value: {{ .Values.db.name | quote }}
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-warehouse-secret
+                  key: db-user
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-warehouse-secret
+                  key: db-password
+
+            # ФИНАЛЬНАЯ СБОРКА СТРОКИ
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://$(DB_SERVER):$(DB_PORT)/$(DB_NAME)?user=$(DB_USER)&password=$(DB_PASSWORD)"
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 120
+            periodSeconds: 60
+            failureThreshold: 2
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            periodSeconds: 15
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 2
+            periodSeconds: 15
