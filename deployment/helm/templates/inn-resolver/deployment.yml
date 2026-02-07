@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.innResolver.appName }}
+  labels:
+    app: {{ .Values.innResolver.appName }}
+spec:
+  replicas: {{ .Values.innResolver.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.innResolver.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.innResolver.appName }}
+    spec:
+      containers:
+        - name: {{ .Values.innResolver.containerName}}
+          image: {{ .Values.innResolver.image}}
+          ports:
+            - name: http
+              containerPort: {{ .Values.innResolver.containerPort }}
+            - name: management
+              containerPort: {{ .Values.innResolver.actuatorPort }}
+
+          env:
+            - name: APP_PORT
+              value: {{ .Values.innResolver.containerPort | quote }}
+
+            - name: ACTUATOR_PORT
+              value: {{ .Values.innResolver.actuatorPort | quote }}
+
+            - name: RESPONSE_DELAY
+              value: "3s"
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 60
+            failureThreshold: 5
+            periodSeconds: 20
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            periodSeconds: 15
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 1
+            periodSeconds: 10

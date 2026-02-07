@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.exchangeService.appName }}
+  labels:
+    app: {{ .Values.exchangeService.appName | quote }}
+spec:
+  type: {{ .Values.exchangeService.serviceType | quote}}
+  selector:
+    app: {{ .Values.exchangeService.appName | quote }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.exchangeService.containerPort }}
+      targetPort: http
+
+    - name: management
+      protocol: TCP
+      port: {{ .Values.exchangeService.actuatorPort }}
+      targetPort: management

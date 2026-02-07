@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.accountNumberResolver.appName }}
+  labels:
+    app: {{ .Values.accountNumberResolver.appName | quote }}
+spec:
+  replicas: {{ .Values.accountNumberResolver.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.accountNumberResolver.appName | quote }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.accountNumberResolver.appName | quote }}
+    spec:
+      containers:
+        - name: {{ .Values.accountNumberResolver.containerName | quote }}
+          image: {{ .Values.accountNumberResolver.image}}
+          ports:
+            - name: http
+              containerPort: {{ .Values.accountNumberResolver.containerPort }}
+            - name: management
+              containerPort: {{ .Values.accountNumberResolver.actuatorPort }}
+
+          env:
+            - name: APP_PORT
+              value: {{ .Values.accountNumberResolver.containerPort | quote}}
+
+            - name: ACTUATOR_PORT
+              value: {{ .Values.accountNumberResolver.actuatorPort | quote }}
+
+            - name: RESPONSE_DELAY
+              value: "3s"
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 60
+            failureThreshold: 5
+            periodSeconds: 20
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            periodSeconds: 15
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 1
+            periodSeconds: 10

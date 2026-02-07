@@ -1,0 +1,13 @@
+apiVersion: v2
+name: warehouse-stack
+version: 1.0.0
+type: application
+
+description: >
+  Infrastructure for the warehouse inventory service
+  and its external dependencies (inn-service, acc-num-service, exchange-service)
+
+maintainers:
+  - name: Aleksandr Konstantinov
+    email: job@jjsttk.ru
+appVersion: 1.0.0

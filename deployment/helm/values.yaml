@@ -1,0 +1,61 @@
+# db settings
+db:
+  appName: "postgres"
+  name: "warehouseDb"
+  containerName: "postgres"
+  image: postgres:16
+  storageSize: "1Gi"
+  containerPort: 5432
+  type: ClusterIP
+  protocol: TCP
+  storageName: pgdata
+  mountPath: /var/lib/postgresql/data
+
+# ingress settings for warehouse app
+ingress:
+  name: "ingress"
+  enabled: true
+  host: warehouse.local
+  path: /
+  pathType: ImplementationSpecific
+  port: 80
+
+# warehouse main app settings
+warehouse:
+  appName: "warehouse"
+  containerName: "warehouse"
+  replicaCount: 3
+  image: jjsttk/warehouse:1.0.0
+  actuatorPort: 9091
+  containerPort: 8080
+  serviceType: ClusterIP
+
+# exchange-service app settings
+exchangeService:
+  appName: "exchange-service"
+  containerName: "exchange-service"
+  replicaCount: 1
+  image: jjsttk/exchange-service:1.0.0-logs
+  actuatorPort: 9091
+  containerPort: 8088
+  serviceType: ClusterIP
+
+# inn resolver app settings
+innResolver:
+  appName: "inn-resolver-service"
+  containerName: "inn-resolver-service"
+  replicaCount: 1
+  image: jjsttk/inn-resolver:1.0.0
+  actuatorPort: 9091
+  containerPort: 8089
+  serviceType: ClusterIP
+
+# account number app settings
+accountNumberResolver:
+  appName: "acc-num-resolver-service"
+  containerName: "acc-num-resolver-service"
+  replicaCount: 1
+  image: jjsttk/account-number-resolver:1.0.0
+  actuatorPort: 9091
+  containerPort: 8090
+  serviceType: ClusterIP

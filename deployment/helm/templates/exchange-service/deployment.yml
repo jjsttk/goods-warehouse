@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.exchangeService.appName }}
+  labels:
+    app: {{ .Values.exchangeService.appName | quote }}
+spec:
+  replicas: {{ .Values.exchangeService.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.exchangeService.appName | quote }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.exchangeService.appName | quote }}
+    spec:
+      containers:
+        - name: {{ .Values.exchangeService.containerName | quote }}
+          image: {{ .Values.exchangeService.image}}
+          ports:
+            - name: http
+              containerPort: {{ .Values.exchangeService.containerPort }}
+            - name: management
+              containerPort: {{ .Values.exchangeService.actuatorPort }}
+
+          env:
+            - name: APP_PORT
+              value: {{ .Values.exchangeService.containerPort | quote }}
+
+            - name: ACTUATOR_PORT
+              value: {{ .Values.exchangeService.actuatorPort | quote }}
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 60
+            failureThreshold: 5
+            periodSeconds: 20
+
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 3
+            periodSeconds: 15
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: management
+            initialDelaySeconds: 0
+            failureThreshold: 1
+            periodSeconds: 10
