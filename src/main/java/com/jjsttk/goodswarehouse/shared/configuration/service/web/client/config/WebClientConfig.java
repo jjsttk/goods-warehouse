@@ -1,9 +1,12 @@
 package com.jjsttk.goodswarehouse.shared.configuration.service.web.client.config;
 
-import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.AccountServiceWebClientFactory;
-import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.ExchangeServiceWebClientFactory;
-import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.InnWebClientFactory;
-import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.WebClientAbstractFactory;
+import com.jjsttk.goodswarehouse.shared.configuration.property.rest.AccountServiceProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.rest.ExchangeServiceProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.rest.InnServiceProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.property.rest.RestServiceProperties;
+import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.WebClientFactoryImpl;
+import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.WebClientFactory;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +18,9 @@ import org.springframework.web.reactive.function.client.WebClient;
  */
 @Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class WebClientConfig {
+    private final WebClientFactory webClientFactory;
 
     /**
      * Creates a configured WebClient instance for exchange service communication.
@@ -30,14 +35,13 @@ public class WebClientConfig {
      * </ul>
      * </p>
      *
-     * @param factory the factory responsible for creating and configuring
-     *                the exchange service WebClient instance
+     * @param props the specific configuration properties for the exchange service
      * @return fully configured WebClient instance for exchange service API calls
-     * @see WebClientAbstractFactory#create()
+     * @see WebClientFactoryImpl#create(RestServiceProperties)
      */
     @Bean
-    public WebClient exchangeServiceWebClient(ExchangeServiceWebClientFactory factory) {
-        return factory.create();
+    public WebClient exchangeServiceWebClient(ExchangeServiceProperties props) {
+        return webClientFactory.create(props);
     }
 
     /**
@@ -53,14 +57,13 @@ public class WebClientConfig {
      * </ul>
      * </p>
      *
-     * @param factory the factory responsible for creating and configuring
-     *                the Inn service WebClient instance
+     * @param props the specific configuration properties for the Inn service
      * @return fully configured WebClient instance for Inn service API calls
-     * @see WebClientAbstractFactory#create()
+     * @see WebClientFactoryImpl#create(RestServiceProperties)
      */
     @Bean
-    public WebClient innWebClient(InnWebClientFactory factory) {
-        return factory.create();
+    public WebClient innWebClient(InnServiceProperties props) {
+        return webClientFactory.create(props);
     }
 
     /**
@@ -76,13 +79,12 @@ public class WebClientConfig {
      * </ul>
      * </p>
      *
-     * @param factory the factory responsible for creating and configuring
-     *                the Account service WebClient instance
-     * @return fully configured WebClient instance for Account service API calls
-     * @see WebClientAbstractFactory#create()
+     * @param props the specific configuration properties for the account service
+     * @return fully configured WebClient instance for account service API calls
+     * @see WebClientFactoryImpl#create(RestServiceProperties)
      */
     @Bean
-    public WebClient accountServiceWebClient(AccountServiceWebClientFactory factory) {
-        return factory.create();
+    public WebClient accountServiceWebClient(AccountServiceProperties props) {
+        return webClientFactory.create(props);
     }
 }

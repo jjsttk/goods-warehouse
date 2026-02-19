@@ -56,8 +56,6 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerExternalData getExternalDataByLogins(Map<Long, String> idLoginMap) {
         var logins = idLoginMap.values();  // unique
 
-        log.info("Logins: {}", logins);
-
         var innsMapCf = innService.getLoginToInnMapAsync(logins);
         var accNumsMapCf = accountService.getAccountNumbersMapAsync(logins);
 
