@@ -1,5 +1,6 @@
 package com.jjsttk.goodswarehouse.shared.util.json;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jjsttk.goodswarehouse.exception.service.util.ResourceLoadingException;
 import lombok.RequiredArgsConstructor;
@@ -25,18 +26,18 @@ public class JsonResourceLoader {
      *
      * @param <T>      the type of object to deserialize
      * @param fileName the name of the JSON file in classpath (e.g., "data/rates.json")
-     * @param type     the class type to deserialize into
+     * @param typeReference     the reference type to deserialize into
      * @return the deserialized object
      * @throws ResourceLoadingException if the resource cannot be loaded or parsed
      * @throws IllegalArgumentException if fileName is null or empty
      */
-    public <T> @NonNull T loadObject(@NonNull String fileName, @NonNull Class<T> type) {
+    public <T> @NonNull T loadObject(@NonNull String fileName, @NonNull TypeReference<T> typeReference) {
         try {
             final String location = "classpath:" + fileName;
             final Resource resource = resourceLoader.getResource(location);
             log.debug("Loading object from: {}", fileName);
 
-            final T result = objectMapper.readValue(resource.getInputStream(), type);
+            final T result = objectMapper.readValue(resource.getInputStream(), typeReference);
             log.debug("Successfully loaded object from: {}", fileName);
             return result;
 

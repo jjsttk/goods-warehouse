@@ -26,13 +26,23 @@ public class WebClientFactoryImpl
      */
     @Override
     public WebClient create(RestServiceProperties properties) {
+        return prebuildWebClient(properties).build();
+    }
+
+    private WebClient.Builder prebuildWebClient(RestServiceProperties properties) {
+        var host = properties.getHost();
         var timeout = properties.getTimeout();
         var httpClient = createHttpClient(timeout);
-
         var retry = properties.getRetry();
         var filterList = getFilters(retry);
 
-        return buildWebClient(httpClient, properties.getHost(), filterList);
+        var builder = WebClient.builder()
+                .baseUrl(host)
+                .clientConnector(new ReactorClientHttpConnector(httpClient));
+
+        filterList.forEach(builder::filter);
+
+        return builder;
     }
 
     private HttpClient createHttpClient(TimeoutSettings timeoutSettings) {
@@ -61,15 +71,5 @@ public class WebClientFactoryImpl
         return WebClientRetryUtils.getServerErrorRetryFilterFunction(
                 serverErrorPolicy.getMaxAttempts(), serverErrorPolicy.getBackoff()
         );
-    }
-
-    private WebClient buildWebClient(HttpClient httpClient, String host, List<ExchangeFilterFunction> filters) {
-        var builder = WebClient.builder()
-                .baseUrl(host)
-                .clientConnector(new ReactorClientHttpConnector(httpClient));
-
-        filters.forEach(builder::filter);
-
-        return builder.build();
     }
 }

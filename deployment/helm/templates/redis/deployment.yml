@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.redis.appName }}
+  labels:
+    app: {{ .Values.redis.appName }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.redis.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.redis.appName }}
+    spec:
+      containers:
+        - name: {{ .Values.redis.containerName }}
+          image: {{ .Values.redis.image }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.redis.containerPort }}
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-redis-secret
+                  key: redis-password
+
+          command: [ "sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\"" ]

@@ -1,14 +1,19 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
-import com.jjsttk.goodswarehouse.shared.configuration.property.rest.ExchangeServiceProperties;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.FileContainsEmptyRatesException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderRequestFailedException;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
+import com.jjsttk.goodswarehouse.shared.configuration.property.rest.ExchangeServiceProperties;
 import com.jjsttk.goodswarehouse.shared.util.json.JsonResourceLoader;
+import com.jjsttk.goodswarehouse.shared.util.parser.ExchangeDataParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * Loads fallback exchange rate data from JSON files when external services are unavailable.
@@ -51,9 +56,15 @@ public class FileBasedExchangeProvider implements ExchangeDataProvider {
         var fallbackFileName = properties.getFallbackFile();
 
         try {
-            var result = jsonResourceLoader.loadObject(fallbackFileName, ExchangeData.class);
+            var srcMap = jsonResourceLoader.loadObject(
+                    fallbackFileName,
+                    new TypeReference<Map<String, BigDecimal>>() {
+                    }
+            );
 
-            if (result.rates() == null || result.rates().isEmpty()) {
+            var result = ExchangeDataParser.convert(srcMap);
+
+            if (result.rates().isEmpty()) {
                 throw new FileContainsEmptyRatesException(fallbackFileName);
             }
 

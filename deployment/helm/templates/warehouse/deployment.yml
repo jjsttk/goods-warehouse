@@ -15,7 +15,7 @@ spec:
         app: {{ .Values.warehouse.appName }}
     spec:
       containers:
-        - name: {{ .Values.warehouse.containerName}}
+        - name: {{ .Values.warehouse.containerName }}
           image: {{ .Values.warehouse.image }}
           ports:
             - name: http
@@ -33,13 +33,14 @@ spec:
 
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
+
+            # DB
             - name: DB_SERVER
               value: "{{ .Release.Name }}-{{ .Values.db.appName }}"
             - name: DB_PORT
               value: {{ .Values.db.containerPort | default 5432 | quote }}
             - name: DB_NAME
               value: {{ .Values.db.name | quote }}
-
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -50,10 +51,16 @@ spec:
                 secretKeyRef:
                   name: {{ .Release.Name }}-warehouse-secret
                   key: db-password
-
             # ФИНАЛЬНАЯ СБОРКА СТРОКИ
             - name: SPRING_DATASOURCE_URL
               value: "jdbc:postgresql://$(DB_SERVER):$(DB_PORT)/$(DB_NAME)?user=$(DB_USER)&password=$(DB_PASSWORD)"
+
+            # REDIS
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-redis-secret
+                  key: redis-password
 
           startupProbe:
             httpGet:

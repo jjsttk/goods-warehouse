@@ -1,53 +1,69 @@
 package com.jjsttk.goodswarehouse.shared.configuration.service.exchange.cache;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.jjsttk.goodswarehouse.shared.configuration.property.cache.CacheProperties;
-import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.data.redis.cache.RedisCacheManager;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializationContext;
 
-/**
- * Configuration class for cache beans in the application.
- * <p>
- * Configures Caffeine cache instances with properties-driven settings
- * for expiration, statistics recording, and cache naming.
- * </p>
- *
- * @see CacheProperties
- * @see CaffeineCache
- */
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 @Configuration
 public class CacheConfig {
 
     /**
-     * Creates a CaffeineCache instance for exchange rate client caching.
+     * Configures a {@link RedisCacheManager} with strictly defined caches.
      * <p>
-     * Configures the cache with write-based expiration and optional statistics
-     * recording based on application properties. The cache name and expiration
-     * settings are retrieved from {@link CacheProperties}.
+     * Validates that each {@link CacheProperties} has a unique, non-null cache name.
+     * Dynamic cache creation is disabled to ensure all used caches are explicitly configured.
      * </p>
      *
-     * @param cacheProperties the cache configuration properties
-     * @return configured CaffeineCache instance for exchange rate data
-     * @see CacheProperties.ExchangeRateClientProperties#getCacheName()
-     * @see CacheProperties.ExchangeRateClientProperties#getExpireAfterWrite()
-     * @see CacheProperties.ExchangeRateClientProperties#isRecordStats()
+     * @param connectionFactory the factory to establish Redis connections
+     * @param allProps          list of all available cache property implementations
+     * @return configured RedisCacheManager
+     * @throws NullPointerException  if a cache name is missing
+     * @throws IllegalStateException if duplicate cache names are detected
      */
     @Bean
-    public CaffeineCache buildCaffeineCache(CacheProperties cacheProperties) {
-        var caffeinePrebuild = Caffeine.newBuilder()
-                .expireAfterWrite(cacheProperties.getExchangeRateClient().getExpireAfterWrite());
+    public RedisCacheManager cacheManager(
+            RedisConnectionFactory connectionFactory,
+            List<CacheProperties> allProps
+    ) {
 
-        if (cacheProperties.getExchangeRateClient().isRecordStats()) {
-            return new CaffeineCache(
-                    cacheProperties.getExchangeRateClient().getCacheName(),
-                    caffeinePrebuild.recordStats().build()
-            );
-        }
+        var cacheConfigs = allProps.stream()
+                .collect(Collectors.toMap(
+                        // С Supplier — строка формируется только при обнаружении null
+                        prop -> Objects.requireNonNull(
+                                prop.getCacheName(),
+                                () -> String.format(
+                                        "Implementation %s has null cache name!",
+                                        prop.getClass().getSimpleName()
+                                )
+                        ),
+                        this::createConfiguration,
+                        (existing, replacement) -> {
+                            throw new IllegalStateException("Duplicate cache name found in configurations");
+                        }
+                ));
 
-        return new CaffeineCache(
-                cacheProperties.getExchangeRateClient().getCacheName(),
-                caffeinePrebuild.build()
-        );
+        return RedisCacheManager.builder(connectionFactory)
+                .disableCreateOnMissingCache()
+                .withInitialCacheConfigurations(cacheConfigs)
+                .build();
+    }
+
+    private RedisCacheConfiguration createConfiguration(CacheProperties cacheProperties) {
+        return RedisCacheConfiguration.defaultCacheConfig()
+                .entryTtl(cacheProperties.getExpireAfterWrite())
+                .serializeValuesWith(
+                        RedisSerializationContext.SerializationPair.fromSerializer(
+                                new GenericJackson2JsonRedisSerializer()
+                        )
+                );
     }
 }
