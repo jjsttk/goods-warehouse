@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.redis.appName }}
+  labels:
+    app: {{ .Values.redis.appName | quote }}
+spec:
+  type: {{ .Values.redis.serviceType | quote}}
+  selector:
+    app: {{ .Values.redis.appName | quote }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.redis.containerPort }}
+      targetPort: http

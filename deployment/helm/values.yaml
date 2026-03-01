@@ -25,9 +25,17 @@ warehouse:
   appName: "warehouse"
   containerName: "warehouse"
   replicaCount: 3
-  image: jjsttk/warehouse:1.0.0
+  image: jjsttk/warehouse:1.0.1
   actuatorPort: 9091
   containerPort: 8080
+  serviceType: ClusterIP
+
+# redis settings
+redis:
+  appName: "redis-cache"
+  containerName: "redis-cache"
+  image: redis:7.0-alpine
+  containerPort: 6379
   serviceType: ClusterIP
 
 # exchange-service app settings

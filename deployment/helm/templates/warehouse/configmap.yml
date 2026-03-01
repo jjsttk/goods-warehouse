@@ -10,6 +10,12 @@ data:
   MEASURE_TRANSACTIONAL: "false"
   EXCHANGE_RATE_CLIENT_IMPLEMENTATION: "real"
 
+  # cache setup
+  REDIS_HOST: "{{ .Release.Name }}-{{ .Values.redis.appName }}"
+  REDIS_PORT: {{ .Values.redis.containerPort | quote}}
+  EXCHANGE_RATE_CLIENT_CACHE_EXPIRE: "1m"
+  EXCHANGE_RATE_CLIENT_CACNE_NAME: "rates-redis-cache"
+
   # Scheduling setup
   SCHEDULING_ENABLED: "false"
   SCHEDULING_PERIOD: "60000"

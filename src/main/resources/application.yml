@@ -12,6 +12,14 @@ spring:
     property-naming-strategy: LOWER_CAMEL_CASE
     deserialization:
       fail-on-unknown-properties: false
+  cache:
+    type: redis
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:qwerty}
+
   jpa:
     open-in-view: false
     properties:
@@ -66,8 +74,8 @@ app:
 
   cache:
     exchange-rate-client:
-      expire-after-write: 1m
-      record-stats: true
+      expire-after-write: ${EXCHANGE_RATE_CLIENT_CACHE_EXPIRE:1m}
+      cache-name: ${EXCHANGE_RATE_CLIENT_CACNE_NAME:rates-redis-cache}
 
   rest:
     inn-service:

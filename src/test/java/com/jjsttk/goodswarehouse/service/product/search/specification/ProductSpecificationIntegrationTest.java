@@ -40,14 +40,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ProductSpecificationIntegrationTest {
 
     @Container
-    private static final PostgreSQLContainer<?> POSTGRE_SQL_CONTAINER =
+    private static final PostgreSQLContainer<?> POSTGRESQL_CONTAINER =
             new PostgreSQLContainer<>("postgres:16-alpine");
 
     @DynamicPropertySource
     private static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", POSTGRE_SQL_CONTAINER::getJdbcUrl);
-        registry.add("spring.datasource.username", POSTGRE_SQL_CONTAINER::getUsername);
-        registry.add("spring.datasource.password", POSTGRE_SQL_CONTAINER::getPassword);
+        registry.add("spring.datasource.url", POSTGRESQL_CONTAINER::getJdbcUrl);
+        registry.add("spring.datasource.username", POSTGRESQL_CONTAINER::getUsername);
+        registry.add("spring.datasource.password", POSTGRESQL_CONTAINER::getPassword);
     }
 
     @Autowired

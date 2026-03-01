@@ -4,8 +4,8 @@ import com.jjsttk.goodswarehouse.shared.configuration.property.rest.AccountServi
 import com.jjsttk.goodswarehouse.shared.configuration.property.rest.ExchangeServiceProperties;
 import com.jjsttk.goodswarehouse.shared.configuration.property.rest.InnServiceProperties;
 import com.jjsttk.goodswarehouse.shared.configuration.property.rest.RestServiceProperties;
-import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.WebClientFactoryImpl;
 import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.WebClientFactory;
+import com.jjsttk.goodswarehouse.shared.configuration.service.web.client.factory.WebClientFactoryImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

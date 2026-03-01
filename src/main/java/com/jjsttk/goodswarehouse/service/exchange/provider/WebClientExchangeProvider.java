@@ -1,16 +1,21 @@
 package com.jjsttk.goodswarehouse.service.exchange.provider;
 
-import com.jjsttk.goodswarehouse.shared.configuration.property.rest.ExchangeServiceProperties;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ExchangeRateProviderException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderEmptyResponseException;
 import com.jjsttk.goodswarehouse.exception.service.exchange.provider.ProviderRequestFailedException;
 import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeData;
+import com.jjsttk.goodswarehouse.shared.configuration.property.rest.ExchangeServiceProperties;
+import com.jjsttk.goodswarehouse.shared.util.parser.ExchangeDataParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * Fetches exchange rates from an external currency API using {@link WebClient}.
@@ -65,15 +70,22 @@ public class WebClientExchangeProvider implements ExchangeDataProvider {
      * @see Cacheable
      */
     @Override
-    @Cacheable(value = "exchangeRateClientCache", unless = "#result == null && #result.rates().empty")
+    @Cacheable(
+            value = "rates-redis-cache",
+            key = "'current-rates'",
+            unless = "#result == null || #result.rates()?.isEmpty()"
+    )
     public ExchangeData getExchangeData() {
         try {
-            return exchangeServiceWebClient.get()
+            var srcMap =  exchangeServiceWebClient.get()
                     .uri(props.getEndpoints().getCurrencies())
                     .retrieve()
-                    .bodyToMono(ExchangeData.class)
+                    .bodyToMono(new ParameterizedTypeReference<Map<String, BigDecimal>>() {
+                    })
                     .blockOptional()
                     .orElseThrow(() -> new ProviderEmptyResponseException(PROVIDER_NAME));
+
+            return ExchangeDataParser.convert(srcMap);
 
         } catch (Exception e) {
             throw new ProviderRequestFailedException(e.getMessage(), e);

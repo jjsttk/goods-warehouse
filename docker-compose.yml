@@ -1,19 +1,37 @@
 services:
   db:
-    image: postgres:15
+    image: postgres:16
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - 5433:5433
-
-  app:
-    build: .
-    environment:
-      SPRING_PROFILES_ACTIVE: prod
-      DATABASE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}?user=${POSTGRES_USER}&password=${POSTGRES_PASSWORD}
+      - "5433:5432"
+  redis:
+    image: redis/redis-stack:latest  # Версия со встроенным GUI
     ports:
-      - 8080:8080
-    depends_on:
-      - db
+      - "6379:6379"   # Порт для подключения приложений
+      - "8001:8001"   # Порт для веб-интерфейса RedisInsight
+    environment:
+      REDIS_ARGS: "--requirepass ${REDIS_PASSWORD}"
+    volumes:
+      - redis_data:/data
+
+  exchange-service:
+    image: jjsttk/exchange-service:1.0.0-logs
+    ports:
+      - "8088:8088"
+
+  inn-service:
+    image: jjsttk/inn-resolver:1.0.0
+    ports:
+      - "8089:8089"
+
+  account-service:
+    image: jjsttk/account-number-resolver:1.0.0
+    ports:
+      - "8090:8090"
+
+volumes:
+  postgres_data:
+  redis_data:

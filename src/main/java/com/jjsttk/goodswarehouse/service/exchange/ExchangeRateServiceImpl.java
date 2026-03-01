@@ -6,6 +6,7 @@ import com.jjsttk.goodswarehouse.service.exchange.dto.response.ExchangeRate;
 import com.jjsttk.goodswarehouse.service.exchange.provider.ExchangeDataProvider;
 import com.jjsttk.goodswarehouse.shared.enums.exchange.PriceCurrency;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -21,6 +22,7 @@ import java.util.Optional;
  * The service ensures that all price conversions throughout the warehouse system
  * stay consistent with the current session settings.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExchangeRateServiceImpl implements ExchangeRateService {
